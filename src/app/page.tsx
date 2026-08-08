@@ -106,7 +106,7 @@ export default async function HomePage() {
       data-design-own-world="Warm training-ground photography, paper surfaces, deep navy, olive and saffron."
       data-design-story="Aspiration, academy proof, preparation choices, technology workflows, results and enquiry."
       data-design-first-viewport="Marathi promise, real training image, admission action and academy credibility."
-      data-design-form="established-extension-system-demo-v1"
+      data-design-form="established-extension-system-demo-v2"
     />
     <SiteNav phone={phone} />
 
