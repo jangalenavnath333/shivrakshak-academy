@@ -51,7 +51,7 @@ async function getHomeData() {
   }
 }
 
-const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data'], { revalidate: 300 })
+const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v2'], { revalidate: 300 })
 
 export default async function HomePage() {
   const { settings, media, courses, notices } = await getCachedHomeData()
