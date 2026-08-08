@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase-admin'
+import { getAdminUser } from '@/lib/admin-auth'
 
 // Returns next sequential admission code: S-01, S-02, S-03...
 export async function GET() {
+  if (!await getAdminUser()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const supabase = createSupabaseAdminClient()
 

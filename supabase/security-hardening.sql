@@ -3,6 +3,32 @@
 
 begin;
 
+create sequence if not exists public.admission_code_seq;
+
+do $$
+declare
+  current_max bigint;
+begin
+  select coalesce(max(substring(roll_number from '^S-([0-9]+)$')::bigint), 0)
+    into current_max
+    from public.students
+    where roll_number ~ '^S-[0-9]+$';
+  perform setval('public.admission_code_seq', greatest(current_max, 1), current_max > 0);
+end $$;
+
+create or replace function public.next_admission_code()
+returns text
+language sql
+volatile
+set search_path = public
+as $$
+  select 'S-' || lpad(nextval('public.admission_code_seq')::text, 2, '0');
+$$;
+
+alter table public.students alter column roll_number set default public.next_admission_code();
+create unique index if not exists documents_student_type_unique
+  on public.documents(student_id, doc_type);
+
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -60,16 +86,25 @@ alter view public.mess_expiry_reminders set (security_invoker = true);
 
 -- Student identity documents must never be public.
 update storage.buckets set public = false where id = 'student-documents';
+insert into storage.buckets (id, name, public)
+values ('notice-attachments', 'notice-attachments', true)
+on conflict (id) do update set public = excluded.public;
 
 drop policy if exists "public_read" on storage.objects;
 drop policy if exists "public_upload" on storage.objects;
 drop policy if exists "public_update" on storage.objects;
 drop policy if exists "public_delete" on storage.objects;
 drop policy if exists "admin_manage_student_documents" on storage.objects;
+drop policy if exists "public_read_public_academy_files" on storage.objects;
+drop policy if exists "admin_manage_academy_files" on storage.objects;
 
-create policy "admin_manage_student_documents" on storage.objects
+create policy "public_read_public_academy_files" on storage.objects
+  for select to anon, authenticated
+  using (bucket_id in ('student-photos', 'notice-attachments'));
+
+create policy "admin_manage_academy_files" on storage.objects
   for all to authenticated
-  using (bucket_id = 'student-documents' and public.is_admin())
-  with check (bucket_id = 'student-documents' and public.is_admin());
+  using (bucket_id in ('student-photos', 'student-documents', 'notice-attachments') and public.is_admin())
+  with check (bucket_id in ('student-photos', 'student-documents', 'notice-attachments') and public.is_admin());
 
 commit;

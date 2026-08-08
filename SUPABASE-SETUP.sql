@@ -141,19 +141,36 @@ ALTER TABLE mess_subscriptions  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notices             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_logs       ENABLE ROW LEVEL SECURITY;
 
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN LANGUAGE SQL STABLE SECURITY DEFINER SET search_path = public
+AS $$ SELECT COALESCE(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'admin' $$;
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated;
+
 DROP POLICY IF EXISTS "allow_all_students"  ON students;
 DROP POLICY IF EXISTS "allow_all_fees"      ON fee_payments;
 DROP POLICY IF EXISTS "allow_all_docs"      ON documents;
 DROP POLICY IF EXISTS "allow_all_mess"      ON mess_subscriptions;
 DROP POLICY IF EXISTS "allow_all_notices"   ON notices;
 DROP POLICY IF EXISTS "allow_all_wa"        ON whatsapp_logs;
+DROP POLICY IF EXISTS "admin_all_students" ON students;
+DROP POLICY IF EXISTS "admin_all_fees" ON fee_payments;
+DROP POLICY IF EXISTS "admin_all_docs" ON documents;
+DROP POLICY IF EXISTS "admin_all_mess" ON mess_subscriptions;
+DROP POLICY IF EXISTS "admin_all_notices" ON notices;
+DROP POLICY IF EXISTS "admin_all_wa" ON whatsapp_logs;
+DROP POLICY IF EXISTS "public_read_published_notices" ON notices;
 
-CREATE POLICY "allow_all_students" ON students            FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_fees"     ON fee_payments        FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_docs"     ON documents           FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_mess"     ON mess_subscriptions  FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_notices"  ON notices             FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_wa"       ON whatsapp_logs       FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "admin_all_students" ON students FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "admin_all_fees" ON fee_payments FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "admin_all_docs" ON documents FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "admin_all_mess" ON mess_subscriptions FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "admin_all_notices" ON notices FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "admin_all_wa" ON whatsapp_logs FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "public_read_published_notices" ON notices FOR SELECT TO anon, authenticated USING (is_published = true OR public.is_admin());
+
+ALTER VIEW student_fee_summary SET (security_invoker = true);
+ALTER VIEW mess_expiry_reminders SET (security_invoker = true);
 
 
 -- ┌─────────────────────────────────────────┐
@@ -164,19 +181,21 @@ CREATE POLICY "allow_all_wa"       ON whatsapp_logs       FOR ALL USING (true) W
 INSERT INTO storage.buckets (id, name, public)
 VALUES
   ('student-photos',    'student-photos',    true),
-  ('student-documents', 'student-documents', true),
-  ('notices',           'notices',           true)
+  ('student-documents', 'student-documents', false),
+  ('notice-attachments','notice-attachments',true)
 ON CONFLICT (id) DO NOTHING;
 
 DROP POLICY IF EXISTS "public_read"   ON storage.objects;
 DROP POLICY IF EXISTS "public_upload" ON storage.objects;
 DROP POLICY IF EXISTS "public_update" ON storage.objects;
 DROP POLICY IF EXISTS "public_delete" ON storage.objects;
+DROP POLICY IF EXISTS "admin_storage_all" ON storage.objects;
 
-CREATE POLICY "public_read"   ON storage.objects FOR SELECT USING (bucket_id IN ('student-photos','student-documents','notices'));
-CREATE POLICY "public_upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id IN ('student-photos','student-documents','notices'));
-CREATE POLICY "public_update" ON storage.objects FOR UPDATE USING (bucket_id IN ('student-photos','student-documents','notices'));
-CREATE POLICY "public_delete" ON storage.objects FOR DELETE USING (bucket_id IN ('student-photos','student-documents','notices'));
+CREATE POLICY "public_read" ON storage.objects FOR SELECT TO anon, authenticated
+  USING (bucket_id IN ('student-photos','notice-attachments'));
+CREATE POLICY "admin_storage_all" ON storage.objects FOR ALL TO authenticated
+  USING (bucket_id IN ('student-photos','student-documents','notice-attachments') AND public.is_admin())
+  WITH CHECK (bucket_id IN ('student-photos','student-documents','notice-attachments') AND public.is_admin());
 
 
 -- ┌─────────────────────────────────────────┐

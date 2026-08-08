@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { supabase } from '@/lib/supabase'
 import { COURSES } from '@/lib/utils'
+import { adminMutation } from '@/lib/admin-api'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -20,29 +20,15 @@ export default function NewStudentPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true)
-    // Get next sequential code S-01, S-02...
-    let nextCode = 'S-01'
     try {
-      const res = await fetch('/api/next-admission-code')
-      const json = await res.json()
-      nextCode = json.code || 'S-01'
-    } catch { /* fallback S-01 */ }
-
-    const { error } = await supabase.from('students').insert({
-      ...data,
-      roll_number: nextCode,
-      age: Number(data.age) || null,
-      height: Number(data.height) || null,
-      weight: Number(data.weight) || null,
-      chest: Number(data.chest) || null,
-      total_fee: Number(data.total_fee) || 0,
-    })
-    setLoading(false)
-    if (!error) {
+      await adminMutation('student.create', {
+        ...data, age: Number(data.age) || null, height: Number(data.height) || null,
+        weight: Number(data.weight) || null, chest: Number(data.chest) || null,
+        total_fee: Number(data.total_fee) || 0,
+      })
       router.push('/admin/students')
-    } else {
-      alert('Error: ' + error.message)
-    }
+    } catch (error) { alert('Error: ' + (error instanceof Error ? error.message : 'Student could not be created')) }
+    setLoading(false)
   }
 
   return (

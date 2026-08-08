@@ -123,7 +123,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {docs.map((doc) => (
-                <a key={doc.id} href={doc.file_url} target="_blank" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, textDecoration: 'none', color: '#0f172a', fontSize: 13 }}>
+                <a key={doc.id} href={`/api/admin/documents/${doc.id}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, textDecoration: 'none', color: '#0f172a', fontSize: 13 }}>
                   <span>{DOC_TYPES[doc.doc_type] || doc.doc_type}</span>
                   <span style={{ color: '#94a3b8', fontSize: 11, marginLeft: 'auto' }}>📥</span>
                 </a>

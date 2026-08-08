@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Notice } from '@/types'
 import { formatDate } from '@/lib/utils'
+import { adminMutation } from '@/lib/admin-api'
 
 const CATEGORIES: Record<string, { label: string; emoji: string; color: string }> = {
   general: { label: 'सामान्य', emoji: '📢', color: 'badge-gray' },
@@ -26,23 +27,23 @@ export default function NoticesPage() {
 
   const addNotice = async () => {
     setLoading(true)
-    const { data, error } = await supabase.from('notices').insert(form).select().single()
-    if (!error && data) {
+    try {
+      const { data } = await adminMutation<{ data: Notice }>('notice.create', form)
       setNotices(prev => [data, ...prev])
       setForm({ title: '', content: '', category: 'general', is_published: true })
       setTab('list')
-    }
+    } catch (error) { alert(error instanceof Error ? error.message : 'Notice could not be created') }
     setLoading(false)
   }
 
   const togglePublish = async (id: string, is_published: boolean) => {
-    await supabase.from('notices').update({ is_published: !is_published }).eq('id', id)
+    await adminMutation('notice.toggle', { id, is_published: !is_published })
     setNotices(prev => prev.map(n => n.id === id ? { ...n, is_published: !is_published } : n))
   }
 
   const deleteNotice = async (id: string) => {
     if (!confirm('ही notice delete करायची आहे का?')) return
-    await supabase.from('notices').delete().eq('id', id)
+    await adminMutation('notice.delete', { id })
     setNotices(prev => prev.filter(n => n.id !== id))
   }
 

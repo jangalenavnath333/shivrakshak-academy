@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import type { MessSubscription } from '@/types'
+import { adminMutation } from '@/lib/admin-api'
 
 export default function MessPage() {
   const [expiring, setExpiring] = useState<MessSubscription[]>([])
@@ -23,17 +24,12 @@ export default function MessPage() {
 
   const addMess = async () => {
     setLoading(true)
-    const { error } = await supabase.from('mess_subscriptions').insert({
-      student_id: newForm.student_id,
-      start_date: newForm.start_date,
-      end_date: newForm.end_date,
-      amount: Number(newForm.amount),
-    })
-    if (!error) {
+    try {
+      await adminMutation('mess.create', { student_id: newForm.student_id, start_date: newForm.start_date, end_date: newForm.end_date, amount: Number(newForm.amount) })
       setSuccessMsg('✅ मेस नोंदणी झाली!')
       setNewForm({ student_id: '', start_date: '', end_date: '', amount: '' })
       setTimeout(() => setSuccessMsg(''), 3000)
-    }
+    } catch (error) { alert(error instanceof Error ? error.message : 'Mess registration failed') }
     setLoading(false)
   }
 

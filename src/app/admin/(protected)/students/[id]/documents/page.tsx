@@ -24,18 +24,13 @@ export default function DocumentsPage({ params }: { params: Promise<{ id: string
 
   const handleUpload = async (docType: string, file: File) => {
     setUploading(docType)
-    const ext = file.name.split('.').pop()
-    const path = `${id}/${docType}.${ext}`
-    const { data: uploadData, error: uploadError } = await supabase.storage.from('student-documents').upload(path, file, { upsert: true })
-    if (uploadError) { alert('Upload error: ' + uploadError.message); setUploading(null); return }
-    const { data: urlData } = supabase.storage.from('student-documents').getPublicUrl(path)
-    // Upsert doc record
-    await supabase.from('documents').upsert({
-      student_id: id,
-      doc_type: docType,
-      file_url: urlData.publicUrl,
-      file_name: file.name,
-    }, { onConflict: 'student_id,doc_type' })
+    const payload = new FormData()
+    payload.append('student_id', id)
+    payload.append('doc_type', docType)
+    payload.append('file', file)
+    const response = await fetch('/api/admin/documents', { method: 'POST', body: payload })
+    const result = await response.json()
+    if (!response.ok) { alert('Upload error: ' + (result.error || 'Unknown error')); setUploading(null); return }
     setSuccessMsg(`✅ ${DOC_TYPES[docType]} upload झाला!`)
     setTimeout(() => setSuccessMsg(''), 3000)
     await loadDocs()
@@ -75,7 +70,7 @@ export default function DocumentsPage({ params }: { params: Promise<{ id: string
               </div>
 
               {uploaded && doc && (
-                <a href={doc.file_url} target="_blank" style={{ display: 'block', fontSize: 12, color: '#3b82f6', marginBottom: 10, textDecoration: 'none' }}>
+                <a href={`/api/admin/documents/${doc.id}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 12, color: '#3b82f6', marginBottom: 10, textDecoration: 'none' }}>
                   📥 {doc.file_name} पहा
                 </a>
               )}

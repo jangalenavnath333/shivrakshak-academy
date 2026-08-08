@@ -1,23 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import PrintableForm from './PrintableForm'
-
-async function getNextAdmissionCode(): Promise<string> {
-  try {
-    const res = await fetch('/api/next-admission-code')
-    const json = await res.json()
-    return json.code || 'S-01'
-  } catch {
-    return 'S-01'
-  }
-}
-
-const checkDemo = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-  return !url || url.includes('placeholder') || url.includes('xxxx') || !url.includes('supabase.co')
-}
 
 type FormData = {
   name: string; parent_name: string; address: string
@@ -160,52 +144,25 @@ export default function AdmissionPage() {
   const handleSubmit = async () => {
     if (!agreed) { alert('कृपया नियम व अटी मंजूर करा'); return }
     setLoading(true)
-    const roll = await getNextAdmissionCode()
-    const demo = checkDemo()
 
     try {
-      if (!demo) {
-        // Insert student
-        const { data: student, error } = await supabase.from('students').insert({
-          roll_number: roll,
-          name: form.name, parent_name: form.parent_name,
-          address: form.address, phone: form.phone, parent_phone: form.parent_phone,
-          aadhaar_no: form.aadhaar_no, guarantee_letter_no: form.guarantee_letter_no,
-          dob: form.dob || null, gender: form.gender, course: form.course,
-          admission_date: form.admission_date || null, duration: form.duration,
-          age: Number(form.age) || null, height: Number(form.height) || null,
-          weight: Number(form.weight) || null, chest: Number(form.chest) || null,
-          total_fee: Number(form.total_fee) || 0,
-        }).select().single()
+      const payload = new globalThis.FormData()
+      Object.entries(form).forEach(([key, value]) => payload.append(key, value))
+      payload.append('agreed', 'true')
+      DOC_LIST.forEach(({ key }) => {
+        const document = docs[key]
+        if (document) payload.append(`document:${key}`, document.file)
+      })
 
-        if (!error && student) {
-          // Upload documents to Supabase Storage
-          for (const docInfo of DOC_LIST) {
-            const docFile = docs[docInfo.key]
-            if (!docFile) continue
-            const ext = docFile.file.name.split('.').pop()
-            const path = `${student.id}/${docInfo.key}.${ext}`
-            const { data: upload } = await supabase.storage
-              .from('student-documents')
-              .upload(path, docFile.file, { upsert: true })
-            if (upload) {
-              const { data: urlData } = supabase.storage.from('student-documents').getPublicUrl(path)
-              await supabase.from('documents').insert({
-                student_id: student.id,
-                doc_type: docInfo.key,
-                file_url: urlData.publicUrl,
-                file_name: docFile.file.name,
-              })
-            }
-          }
-        }
-      } else {
-        await new Promise(r => setTimeout(r, 1200))
+      const response = await fetch('/api/admissions', { method: 'POST', body: payload })
+      const result = await response.json()
+      if (!response.ok || !result.code) {
+        throw new Error(result.error || 'Admission failed')
       }
-      setRollNumber(roll)
+      setRollNumber(result.code)
       setSubmitted(true)
-    } catch {
-      alert('Error submitting. Please try again.')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Error submitting. Please try again.')
     }
     setLoading(false)
   }

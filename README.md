@@ -1,4 +1,21 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shivrakshak Academy
+
+Next.js application backed by Supabase Auth, Postgres, and private Storage.
+
+## Security setup
+
+1. Create the initial schema with `SUPABASE-SETUP.sql`.
+2. Review and apply `supabase/security-hardening.sql` before entering real student data.
+3. Create the admin in Supabase Authentication with email/password.
+4. In the Supabase SQL Editor, assign the role using the user's UUID:
+
+```sql
+update auth.users
+set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+where id = '<ADMIN_USER_UUID>';
+```
+
+Sign out and sign in again after assigning the role so the JWT contains the new claim. Never put an admin password or the service-role key in a `NEXT_PUBLIC_` variable.
 
 ## Getting Started
 

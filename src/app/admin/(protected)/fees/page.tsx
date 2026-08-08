@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { StudentFeeSummary } from '@/types'
 import Link from 'next/link'
+import { adminMutation } from '@/lib/admin-api'
 
 export default function FeesPage() {
   const [students, setStudents] = useState<StudentFeeSummary[]>([])
@@ -31,13 +32,8 @@ export default function FeesPage() {
   const handlePayment = async () => {
     if (!selected || !amount) return
     setLoading(true)
-    const { error } = await supabase.from('fee_payments').insert({
-      student_id: selected,
-      amount_paid: Number(amount),
-      payment_date: payDate,
-      payment_mode: mode,
-    })
-    if (!error) {
+    try {
+      await adminMutation('fee.create', { student_id: selected, amount_paid: Number(amount), payment_date: payDate, payment_mode: mode })
       setSuccessMsg(`✅ ₹${amount} यशस्वीरित्या जमा झाले!`)
       setAmount('')
       setSelected(null)
@@ -46,7 +42,7 @@ export default function FeesPage() {
       setStudents(data || [])
       setFiltered(data || [])
       setTimeout(() => setSuccessMsg(''), 3000)
-    }
+    } catch (error) { alert(error instanceof Error ? error.message : 'Payment failed') }
     setLoading(false)
   }
 
