@@ -17,7 +17,8 @@ export default function MessPage() {
   useEffect(() => {
     supabase.from('mess_expiry_reminders').select('*').then(({ data }) => setExpiring(data || []))
     supabase.from('mess_subscriptions').select('*, students(name, phone, parent_phone)').order('created_at', { ascending: false }).limit(100).then(({ data }) => {
-      setAll((data || []).map((d: any) => ({ ...d, student_name: d.students?.name, student_phone: d.students?.phone, parent_phone: d.students?.parent_phone })))
+      type MessRow = MessSubscription & { students?: { name?: string; phone?: string; parent_phone?: string } | null }
+      setAll((data || []).map((d: MessRow) => ({ ...d, student_name: d.students?.name, student_phone: d.students?.phone, parent_phone: d.students?.parent_phone })))
     })
     supabase.from('students').select('id, name, roll_number, phone, parent_phone').order('roll_number', { ascending: true }).then(({ data }) => setStudents(data || []))
   }, [])
@@ -64,15 +65,15 @@ export default function MessPage() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 24 }}>
-        {[
+        {([
           { key: 'expiring', label: `⚠️ संपणार (${expiring.length})` },
           { key: 'all', label: '📋 सर्व मेस' },
           { key: 'new', label: '+ नवीन मेस' },
-        ].map(t => (
+        ] as const).map(t => (
           <button
             key={t.key}
             className="btn"
-            onClick={() => setTab(t.key as any)}
+            onClick={() => setTab(t.key)}
             style={{ background: tab === t.key ? 'white' : 'transparent', color: tab === t.key ? '#0f172a' : '#64748b', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', padding: '8px 16px', border: 'none' }}
           >
             {t.label}

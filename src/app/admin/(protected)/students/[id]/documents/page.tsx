@@ -12,15 +12,15 @@ export default function DocumentsPage({ params }: { params: Promise<{ id: string
   const [uploading, setUploading] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState('')
 
-  useEffect(() => {
-    supabase.from('students').select('name').eq('id', id).single().then(({ data }) => setStudent(data))
-    loadDocs()
-  }, [id])
-
   const loadDocs = async () => {
     const { data } = await supabase.from('documents').select('*').eq('student_id', id)
     setDocs(data || [])
   }
+
+  useEffect(() => {
+    supabase.from('students').select('name').eq('id', id).single().then(({ data }) => setStudent(data))
+    supabase.from('documents').select('*').eq('student_id', id).then(({ data }) => setDocs(data || []))
+  }, [id])
 
   const handleUpload = async (docType: string, file: File) => {
     setUploading(docType)

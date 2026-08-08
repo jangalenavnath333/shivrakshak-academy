@@ -69,8 +69,8 @@ export default function NoticesPage() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 24 }}>
-        {[{ key: 'list', label: '📋 सर्व नोटीस' }, { key: 'new', label: '+ नवीन' }].map(t => (
-          <button key={t.key} className="btn" onClick={() => setTab(t.key as any)}
+        {([{ key: 'list', label: '📋 सर्व नोटीस' }, { key: 'new', label: '+ नवीन' }] as const).map(t => (
+          <button key={t.key} className="btn" onClick={() => setTab(t.key)}
             style={{ background: tab === t.key ? 'white' : 'transparent', color: tab === t.key ? '#0f172a' : '#64748b', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', border: 'none', padding: '8px 16px' }}>
             {t.label}
           </button>

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 const SQL = `-- शिवरक्षक करियर अकॅडमी — Database Setup
 -- हे सर्व copy करा आणि Supabase SQL Editor मध्ये paste करून Run दाबा
@@ -101,11 +102,9 @@ export default function SetupPage() {
   const [dbStatus, setDbStatus] = useState<'checking' | 'ok' | 'missing'>('checking')
   const [bucketsStatus, setBucketsStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
   const [copied, setCopied] = useState(false)
-  const [supabaseUrl, setSupabaseUrl] = useState('')
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-    setSupabaseUrl(url)
     checkDB()
   }, [])
 
@@ -113,7 +112,7 @@ export default function SetupPage() {
     setDbStatus('checking')
     try {
       const res = await fetch('/api/next-admission-code')
-      const json = await res.json()
+      await res.json()
       // If API responds with a code, DB is connected (or at least reachable)
       // Try a more definitive check via students query
       const { createClient } = await import('@supabase/supabase-js')
@@ -343,7 +342,7 @@ export default function SetupPage() {
 
         {/* Navigation */}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <a href="/" style={{ padding: '10px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, fontWeight: 700, textDecoration: 'none', color: '#374151', fontSize: 14 }}>🏠 Home</a>
+          <Link href="/" style={{ padding: '10px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, fontWeight: 700, textDecoration: 'none', color: '#374151', fontSize: 14 }}>🏠 Home</Link>
           <a href="/admin" style={{ padding: '10px 20px', background: '#7c2d12', color: 'white', borderRadius: 10, fontWeight: 700, textDecoration: 'none', fontSize: 14 }}>📊 Admin Panel</a>
           <a href="/admission" style={{ padding: '10px 20px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, fontWeight: 700, textDecoration: 'none', color: '#374151', fontSize: 14 }}>📋 Admission Form</a>
         </div>

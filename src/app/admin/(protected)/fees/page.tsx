@@ -1,15 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import type { StudentFeeSummary } from '@/types'
-import Link from 'next/link'
 import { adminMutation } from '@/lib/admin-api'
 
 export default function FeesPage() {
   const [students, setStudents] = useState<StudentFeeSummary[]>([])
   const [search, setSearch] = useState('')
-  const [filtered, setFiltered] = useState<StudentFeeSummary[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const [amount, setAmount] = useState('')
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0])
@@ -20,14 +18,12 @@ export default function FeesPage() {
   useEffect(() => {
     supabase.from('student_fee_summary').select('*').order('name').then(({ data }) => {
       setStudents(data || [])
-      setFiltered(data || [])
     })
   }, [])
 
-  useEffect(() => {
-    if (!search) { setFiltered(students); return }
-    setFiltered(students.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.roll_number?.includes(search)))
-  }, [search, students])
+  const filtered = useMemo(() => !search ? students : students.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) || s.roll_number?.includes(search)
+  ), [search, students])
 
   const handlePayment = async () => {
     if (!selected || !amount) return
@@ -40,7 +36,6 @@ export default function FeesPage() {
       // Refresh
       const { data } = await supabase.from('student_fee_summary').select('*').order('name')
       setStudents(data || [])
-      setFiltered(data || [])
       setTimeout(() => setSuccessMsg(''), 3000)
     } catch (error) { alert(error instanceof Error ? error.message : 'Payment failed') }
     setLoading(false)

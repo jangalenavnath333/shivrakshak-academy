@@ -33,7 +33,8 @@ export default function WhatsAppPage() {
   const toggleSelect = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }
@@ -89,12 +90,12 @@ export default function WhatsAppPage() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 24 }}>
-        {[
+        {([
           { key: 'individual', label: '👤 एकट्याला' },
           { key: 'bulk', label: '👥 निवडलेल्यांना' },
           { key: 'notice', label: '📢 सर्वांना Notice' },
-        ].map(t => (
-          <button key={t.key} className="btn" onClick={() => setTab(t.key as any)}
+        ] as const).map(t => (
+          <button key={t.key} className="btn" onClick={() => setTab(t.key)}
             style={{ background: tab === t.key ? 'white' : 'transparent', color: tab === t.key ? '#0f172a' : '#64748b', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', border: 'none', padding: '8px 16px' }}>
             {t.label}
           </button>
