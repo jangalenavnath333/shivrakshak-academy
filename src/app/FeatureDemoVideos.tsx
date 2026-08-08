@@ -60,7 +60,7 @@ export default function FeatureDemoVideos({ videos }: { videos: FeatureDemoVideo
             onClick={() => play(video.id)}
             aria-label={`${video.title} demo play करा`}
           >
-            <Image src={video.poster} alt="" fill sizes="(max-width: 720px) 100vw, 50vw" />
+            <Image src={video.poster} alt="" fill loading="eager" fetchPriority="high" sizes="(max-width: 720px) 100vw, 50vw" />
             <span className="feature-demo-play"><Play fill="currentColor" /></span>
             <span className="feature-demo-action">Demo पाहण्यासाठी play करा</span>
           </button> : youtubeId ? <iframe
