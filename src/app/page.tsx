@@ -55,7 +55,7 @@ const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v2'], 
 
 export default async function HomePage() {
   const { settings, media, courses, notices } = await getCachedHomeData()
-  const hero = media.find((item) => item.placement === 'hero')?.url || '/academy-hero-v2.png'
+  const hero = media.find((item) => item.placement === 'hero')?.url || '/academy-hero-v2.jpg'
   const videos = media.filter((item) => item.media_type !== 'image').slice(0, 3)
   const phone = settings.phone || fallbackSettings.phone!
   const whatsapp = settings.whatsapp || phone
