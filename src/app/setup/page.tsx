@@ -135,8 +135,8 @@ export default function SetupPage() {
   async function createBuckets() {
     setBucketsStatus('loading')
     try {
-      await fetch('/api/create-buckets')
-      setBucketsStatus('ok')
+      const response = await fetch('/api/create-buckets', { method: 'POST' })
+      setBucketsStatus(response.ok ? 'ok' : 'error')
     } catch {
       setBucketsStatus('error')
     }

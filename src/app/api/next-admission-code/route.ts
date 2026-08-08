@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase'
+import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 
 // Returns next sequential admission code: S-01, S-02, S-03...
 export async function GET() {
   try {
-    const supabase = getSupabaseAdmin()
+    const supabase = createSupabaseAdminClient()
 
     // Get all roll_numbers matching S-XX pattern
     const { data, error } = await supabase

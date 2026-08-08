@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase'
+import { createSupabaseAdminClient } from '@/lib/supabase-admin'
+import { getAdminUser } from '@/lib/admin-auth'
 
 // Visit: http://localhost:3000/api/create-buckets
-export async function GET() {
-  const supabase = getSupabaseAdmin()
+export async function POST() {
+  const admin = await getAdminUser()
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (process.env.ALLOW_ADMIN_SETUP !== 'true') {
+    return NextResponse.json({ error: 'Setup operations are disabled' }, { status: 403 })
+  }
+  const supabase = createSupabaseAdminClient()
 
   const buckets = [
     { name: 'student-documents', public: false },
@@ -27,29 +33,5 @@ export async function GET() {
     }
   }
 
-  const html = `<!DOCTYPE html>
-<html lang="mr">
-<head>
-<meta charset="UTF-8">
-<title>Buckets — शिवरक्षक अकॅडमी</title>
-<style>
-  body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f8fafc; }
-  h1 { color: #7c2d12; }
-  .item { background: white; border: 1px solid #86efac; border-radius: 8px; padding: 14px 18px; margin: 8px 0; font-size: 15px; }
-  a { color: #7c2d12; font-weight: bold; display: inline-block; margin-top: 20px; }
-</style>
-</head>
-<body>
-<h1>🗂️ Storage Buckets Setup</h1>
-${results.map(r => `<div class="item">${r.status} — <strong>${r.bucket}</strong></div>`).join('')}
-<br>
-<a href="/api/setup">📊 Database Tables Setup करा</a>
-<br>
-<a href="/admin">👉 Admin Panel उघडा</a>
-</body>
-</html>`
-
-  return new NextResponse(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-  })
+  return NextResponse.json({ results })
 }
