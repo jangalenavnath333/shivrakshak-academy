@@ -19,17 +19,17 @@ async function getLatestNotices(): Promise<Notice[]> {
 }
 
 const courses = [
-  { icon: ShieldCheck, title: 'à¤ªà¥‹à¤²à¥€à¤¸ à¤­à¤°à¤¤à¥€', text: 'à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤šà¤¾à¤šà¤£à¥€, à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤¾, à¤®à¤¾à¤¨à¤¸à¤¿à¤• à¤•à¥à¤·à¤®à¤¤à¤¾ à¤†à¤£à¤¿ à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨.', tags: ['Ground', 'Written', 'Mock Tests'] },
-  { icon: Target, title: 'à¤†à¤°à¥à¤®à¥€ / à¤…à¤—à¥à¤¨à¤¿à¤µà¥€à¤°', text: 'à¤¶à¤¾à¤°à¥€à¤°à¤¿à¤• à¤•à¥à¤·à¤®à¤¤à¤¾, à¤¶à¤¿à¤¸à¥à¤¤, GD à¤†à¤£à¤¿ à¤­à¤°à¤¤à¥€ à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¥‡à¤šà¥€ à¤¸à¤‚à¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¯à¤¾à¤°à¥€.', tags: ['Physical', 'GD', 'Interview'] },
-  { icon: Dumbbell, title: 'SRPF à¤µ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¦à¤²', text: 'SRPF, CISF, BSF à¤†à¤£à¤¿ à¤¸à¤‚à¤¬à¤‚à¤§à¤¿à¤¤ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¦à¤²à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤²à¤•à¥à¤·à¥à¤¯à¤¿à¤¤ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£.', tags: ['Running', 'Strength', 'Theory'] },
-  { icon: BookOpenCheck, title: 'à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤¾', text: 'à¤—à¤£à¤¿à¤¤, à¤¬à¥à¤¦à¥à¤§à¤¿à¤®à¤¤à¥à¤¤à¤¾, à¤®à¤°à¤¾à¤ à¥€, à¤‡à¤‚à¤—à¥à¤°à¤œà¥€ à¤†à¤£à¤¿ à¤¸à¤¾à¤®à¤¾à¤¨à¥à¤¯ à¤œà¥à¤žà¤¾à¤¨à¤¾à¤šà¤¾ à¤¸à¤–à¥‹à¤² à¤…à¤­à¥à¤¯à¤¾à¤¸.', tags: ['Daily Class', 'Test Series', 'Notes'] },
+  { icon: ShieldCheck, title: 'पोलीस भरती', text: 'मैदानी चाचणी, लेखी परीक्षा, मानसिक क्षमता आणि वैयक्तिक मार्गदर्शन.', tags: ['Ground', 'Written', 'Mock Tests'] },
+  { icon: Target, title: 'आर्मी / अग्निवीर', text: 'शारीरिक क्षमता, शिस्त, GD आणि भरती प्रक्रियेची संपूर्ण तयारी.', tags: ['Physical', 'GD', 'Interview'] },
+  { icon: Dumbbell, title: 'SRPF व सुरक्षा दल', text: 'SRPF, CISF, BSF आणि संबंधित सुरक्षा दलांसाठी लक्ष्यित प्रशिक्षण.', tags: ['Running', 'Strength', 'Theory'] },
+  { icon: BookOpenCheck, title: 'लेखी परीक्षा', text: 'गणित, बुद्धिमत्ता, मराठी, इंग्रजी आणि सामान्य ज्ञानाचा सखोल अभ्यास.', tags: ['Daily Class', 'Test Series', 'Notes'] },
 ]
 
 const faq = [
-  ['à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¤¾ à¤•à¤¶à¥€ à¤†à¤¹à¥‡?', 'à¤‘à¤¨à¤²à¤¾à¤‡à¤¨ à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤…à¤°à¥à¤œ à¤­à¤°à¤¾ à¤•à¤¿à¤‚à¤µà¤¾ à¤…à¤•à¥…à¤¡à¤®à¥€à¤²à¤¾ à¤­à¥‡à¤Ÿ à¤¦à¥à¤¯à¤¾. à¤…à¤°à¥à¤œà¤¾à¤¨à¤‚à¤¤à¤° à¤†à¤®à¤šà¥€ à¤Ÿà¥€à¤® à¤ªà¥à¤¢à¥€à¤² à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¤¾ à¤¸à¤®à¤œà¤¾à¤µà¥‚à¤¨ à¤¸à¤¾à¤‚à¤—à¥‡à¤².'],
-  ['à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤†à¤£à¤¿ à¤²à¥‡à¤–à¥€ à¤¦à¥‹à¤¨à¥à¤¹à¥€ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£ à¤®à¤¿à¤³à¤¤à¥‡ à¤•à¤¾?', 'à¤¹à¥‹à¤¯. à¤¨à¤¿à¤µà¤¡à¤²à¥‡à¤²à¥à¤¯à¤¾ à¤•à¥‹à¤°à¥à¤¸à¤¨à¥à¤¸à¤¾à¤° à¤¶à¤¾à¤°à¥€à¤°à¤¿à¤• à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£, à¤²à¥‡à¤–à¥€ à¤µà¤°à¥à¤—, à¤Ÿà¥‡à¤¸à¥à¤Ÿ à¤¸à¤¿à¤°à¥€à¤œ à¤†à¤£à¤¿ à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤¦à¤¿à¤²à¥‡ à¤œà¤¾à¤¤à¥‡.'],
-  ['à¤¨à¤¿à¤µà¤¾à¤¸ à¤µ à¤®à¥‡à¤¸ à¤¸à¥à¤µà¤¿à¤§à¤¾ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤†à¤¹à¥‡ à¤•à¤¾?', 'à¤¹à¥‹à¤¯. à¤¬à¤¾à¤¹à¥‡à¤°à¤—à¤¾à¤µà¤šà¥à¤¯à¤¾ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥à¤¯à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¨à¤¿à¤µà¤¾à¤¸ à¤†à¤£à¤¿ à¤®à¥‡à¤¸ à¤¸à¥à¤µà¤¿à¤§à¥‡à¤¬à¤¦à¥à¤¦à¤² à¤ªà¥à¤°à¤µà¥‡à¤¶à¤¾à¤µà¥‡à¤³à¥€ à¤®à¤¾à¤¹à¤¿à¤¤à¥€ à¤¦à¤¿à¤²à¥€ à¤œà¤¾à¤¤à¥‡.'],
-  ['à¤®à¥à¤²à¥€à¤‚à¤¸à¤¾à¤ à¥€ à¤¸à¥à¤µà¤¤à¤‚à¤¤à¥à¤° à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤†à¤¹à¥‡ à¤•à¤¾?', 'à¤¹à¥‹à¤¯. à¤®à¤¹à¤¿à¤²à¤¾ à¤‰à¤®à¥‡à¤¦à¤µà¤¾à¤°à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤µà¤¾à¤¤à¤¾à¤µà¤°à¤£ à¤†à¤£à¤¿ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¥‡à¤¨à¥à¤¸à¤¾à¤° à¤¸à¥à¤µà¤¤à¤‚à¤¤à¥à¤° à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤†à¤¹à¥‡.'],
+  ['प्रवेश प्रक्रिया कशी आहे?', 'ऑनलाइन प्रवेश अर्ज भरा किंवा अकॅडमीला भेट द्या. अर्जानंतर आमची टीम पुढील प्रक्रिया समजावून सांगेल.'],
+  ['मैदानी आणि लेखी दोन्ही प्रशिक्षण मिळते का?', 'होय. निवडलेल्या कोर्सनुसार शारीरिक प्रशिक्षण, लेखी वर्ग, टेस्ट सिरीज आणि वैयक्तिक मार्गदर्शन दिले जाते.'],
+  ['निवास व मेस सुविधा उपलब्ध आहे का?', 'होय. बाहेरगावच्या विद्यार्थ्यांसाठी सुरक्षित निवास आणि मेस सुविधेबद्दल प्रवेशावेळी माहिती दिली जाते.'],
+  ['मुलींसाठी स्वतंत्र मार्गदर्शन आहे का?', 'होय. महिला उमेदवारांसाठी सुरक्षित वातावरण आणि आवश्यकतेनुसार स्वतंत्र मार्गदर्शन उपलब्ध आहे.'],
 ]
 
 export default async function HomePage() {
@@ -39,66 +39,66 @@ export default async function HomePage() {
     <main className="landing-v2">
       {/* THESIS: disciplined momentum, not a generic coaching template. OWN-WORLD: warm white, command navy, field olive, decisive saffron. STORY: see the standard, trust the system, begin admission. FIRST VIEWPORT: statement left, aspirants in motion right, action immediately visible. FORM: editorial recruitment field-guide; seed shivrakshak-2026. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
       <header className="v2-header">
-        <a className="v2-brand" href="#top" aria-label="à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤…à¤•à¥…à¤¡à¤®à¥€ à¤®à¥à¤–à¥à¤¯à¤ªà¥ƒà¤·à¥à¤ "><Logo size={48} /><span><b>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤•</b><small>à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€</small></span></a>
-        <nav className="v2-nav" aria-label="à¤®à¥à¤–à¥à¤¯ à¤¨à¥‡à¤µà¥à¤¹à¤¿à¤—à¥‡à¤¶à¤¨">
-          <a href="#about">à¤†à¤®à¤šà¥à¤¯à¤¾à¤¬à¤¦à¥à¤¦à¤²</a><a href="#courses">à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸</a><a href="#results">à¤¯à¤¶à¥‹à¤—à¤¾à¤¥à¤¾</a><a href="#notices">à¤¸à¥‚à¤šà¤¨à¤¾</a><a href="#contact">à¤¸à¤‚à¤ªà¤°à¥à¤•</a>
+        <a className="v2-brand" href="#top" aria-label="शिवरक्षक अकॅडमी मुख्यपृष्ठ"><Logo size={48} /><span><b>शिवरक्षक</b><small>करियर अकॅडमी</small></span></a>
+        <nav className="v2-nav" aria-label="मुख्य नेव्हिगेशन">
+          <a href="#about">आमच्याबद्दल</a><a href="#courses">कोर्सेस</a><a href="#results">यशोगाथा</a><a href="#notices">सूचना</a><a href="#contact">संपर्क</a>
         </nav>
-        <a className="v2-top-cta" href="tel:9284842177"><Phone size={17} /> à¤®à¥‹à¤«à¤¤ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨</a>
+        <a className="v2-top-cta" href="tel:9284842177"><Phone size={17} /> मोफत मार्गदर्शन</a>
       </header>
 
       <section id="top" className="v2-hero">
         <div className="v2-hero-copy">
-          <span className="v2-kicker"><span /> à¤…à¤¹à¤®à¤¦à¤¨à¤—à¤° Â· à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤¸à¥à¤°à¥‚</span>
-          <h1>à¤µà¤°à¥à¤¦à¥€à¤šà¤‚ à¤¸à¥à¤µà¤ªà¥à¤¨,<br/><em>à¤†à¤¤à¤¾ à¤¹à¥‹à¤£à¤¾à¤° à¤ªà¥‚à¤°à¥à¤£!</em></h1>
-          <p>à¤ªà¥‹à¤²à¥€à¤¸, à¤†à¤°à¥à¤®à¥€, à¤…à¤—à¥à¤¨à¤¿à¤µà¥€à¤°, SRPF à¤†à¤£à¤¿ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¦à¤² à¤­à¤°à¤¤à¥€à¤¸à¤¾à¤ à¥€ à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤µ à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¥‡à¤šà¥€ à¤¶à¤¿à¤¸à¥à¤¤à¤¬à¤¦à¥à¤§, à¤ªà¤°à¤¿à¤£à¤¾à¤®à¤•à¤¾à¤°à¤• à¤¤à¤¯à¤¾à¤°à¥€.</p>
-          <div className="v2-actions"><Link href="/admission" className="v2-primary">à¤†à¤œà¤š à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤˜à¥à¤¯à¤¾ <ArrowRight size={19}/></Link><a href="#courses" className="v2-secondary">à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸ à¤ªà¤¹à¤¾ <ArrowRight size={18}/></a></div>
+          <span className="v2-kicker"><span /> अहमदनगर · प्रवेश सुरू</span>
+          <h1>वर्दीचं स्वप्न,<br/><em>आता होणार पूर्ण!</em></h1>
+          <p>पोलीस, आर्मी, अग्निवीर, SRPF आणि सुरक्षा दल भरतीसाठी मैदानी व लेखी परीक्षेची शिस्तबद्ध, परिणामकारक तयारी.</p>
+          <div className="v2-actions"><Link href="/admission" className="v2-primary">आजच प्रवेश घ्या <ArrowRight size={19}/></Link><a href="#courses" className="v2-secondary">कोर्सेस पहा <ArrowRight size={18}/></a></div>
           <div className="v2-trust">
-            <span><Award/> à¤…à¤¨à¥à¤­à¤µà¥€ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤•</span><span><Dumbbell/> à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ + à¤²à¥‡à¤–à¥€ à¤¤à¤¯à¤¾à¤°à¥€</span><span><Users/> à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨</span>
+            <span><Award/> अनुभवी प्रशिक्षक</span><span><Dumbbell/> मैदानी + लेखी तयारी</span><span><Users/> वैयक्तिक मार्गदर्शन</span>
           </div>
         </div>
-        <div className="v2-hero-photo" role="img" aria-label="à¤®à¥ˆà¤¦à¤¾à¤¨à¤¾à¤µà¤° à¤§à¤¾à¤µà¤£à¥à¤¯à¤¾à¤šà¤¾ à¤¸à¤°à¤¾à¤µ à¤•à¤°à¤£à¤¾à¤°à¥‡ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€">
-          <div className="v2-photo-note"><b>à¤¶à¤¿à¤¸à¥à¤¤. à¤®à¥‡à¤¹à¤¨à¤¤. à¤¯à¤¶.</b><span>à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤¦à¤¿à¤µà¤¸ à¤¨à¤¿à¤µà¤¡à¥€à¤šà¥à¤¯à¤¾ à¤¦à¤¿à¤¶à¥‡à¤¨à¥‡</span></div>
+        <div className="v2-hero-photo" role="img" aria-label="मैदानावर धावण्याचा सराव करणारे विद्यार्थी">
+          <div className="v2-photo-note"><b>शिस्त. मेहनत. यश.</b><span>प्रत्येक दिवस निवडीच्या दिशेने</span></div>
         </div>
       </section>
 
-      <section className="v2-numbers" aria-label="à¤…à¤•à¥…à¤¡à¤®à¥€à¤šà¥€ à¤®à¤¾à¤¹à¤¿à¤¤à¥€">
-        <div><strong>500+</strong><span>à¤¯à¤¶à¤¸à¥à¤µà¥€ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€</span></div><div><strong>8+</strong><span>à¤µà¤¿à¤¶à¥‡à¤· à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸</span></div><div><strong>7+</strong><span>à¤µà¤°à¥à¤·à¤¾à¤‚à¤šà¤¾ à¤…à¤¨à¥à¤­à¤µ</span></div><div><strong>100%</strong><span>à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£à¤¾à¤¸à¤¾à¤ à¥€ à¤¸à¤®à¤°à¥à¤ªà¤£</span></div>
+      <section className="v2-numbers" aria-label="अकॅडमीची माहिती">
+        <div><strong>500+</strong><span>यशस्वी विद्यार्थी</span></div><div><strong>8+</strong><span>विशेष कोर्सेस</span></div><div><strong>7+</strong><span>वर्षांचा अनुभव</span></div><div><strong>100%</strong><span>प्रशिक्षणासाठी समर्पण</span></div>
       </section>
 
       <section id="courses" className="v2-section v2-courses">
-        <div className="v2-section-title"><div><span>à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤§à¥à¤¯à¥‡à¤¯à¤¾à¤¸à¤¾à¤ à¥€ à¤¯à¥‹à¤—à¥à¤¯ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£</span><h2>à¤­à¤°à¤¤à¥€à¤šà¥€ à¤¸à¤‚à¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¯à¤¾à¤°à¥€,<br/>à¤à¤•à¤¾ à¤µà¤¿à¤¶à¥à¤µà¤¾à¤¸à¤¾à¤°à¥à¤¹ à¤ à¤¿à¤•à¤¾à¤£à¥€.</h2></div><p>à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤•à¥‹à¤°à¥à¤¸à¤®à¤§à¥à¤¯à¥‡ à¤«à¤¿à¤Ÿà¤¨à¥‡à¤¸, à¤…à¤­à¥à¤¯à¤¾à¤¸, à¤Ÿà¥‡à¤¸à¥à¤Ÿ à¤†à¤£à¤¿ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨à¤¾à¤šà¤¾ à¤¸à¤®à¤¤à¥‹à¤² à¤†à¤°à¤¾à¤–à¤¡à¤¾.</p></div>
+        <div className="v2-section-title"><div><span>तुमच्या ध्येयासाठी योग्य प्रशिक्षण</span><h2>भरतीची संपूर्ण तयारी,<br/>एका विश्वासार्ह ठिकाणी.</h2></div><p>प्रत्येक कोर्समध्ये फिटनेस, अभ्यास, टेस्ट आणि मार्गदर्शनाचा समतोल आराखडा.</p></div>
         <div className="v2-course-grid">
-          {courses.map(({icon: Icon,title,text,tags}, index)=><article key={title} className="v2-course"><div className="v2-course-image v2-img"><span>0{index+1}</span><Icon/></div><div className="v2-course-body"><h3>{title}</h3><p>{text}</p><ul>{tags.map(t=><li key={t}><CheckCircle2/>{t}</li>)}</ul><a href={WA_LINK} target="_blank" rel="noopener noreferrer">à¤…à¤§à¤¿à¤• à¤®à¤¾à¤¹à¤¿à¤¤à¥€ <ArrowRight/></a></div></article>)}
+          {courses.map(({icon: Icon,title,text,tags}, index)=><article key={title} className="v2-course"><div className="v2-course-image v2-img"><span>0{index+1}</span><Icon/></div><div className="v2-course-body"><h3>{title}</h3><p>{text}</p><ul>{tags.map(t=><li key={t}><CheckCircle2/>{t}</li>)}</ul><a href={WA_LINK} target="_blank" rel="noopener noreferrer">अधिक माहिती <ArrowRight/></a></div></article>)}
         </div>
       </section>
 
       <section id="about" className="v2-method">
-        <div className="v2-method-photo"><div><Trophy/><b>à¤§à¥à¤¯à¥‡à¤¯ à¤«à¤•à¥à¤¤ à¤ªà¤°à¥€à¤•à¥à¤·à¤¾ à¤ªà¤¾à¤¸ à¤•à¤°à¤£à¥‡ à¤¨à¤¾à¤¹à¥€â€”<br/>à¤¨à¤¿à¤µà¤¡à¥€à¤¸à¤¾à¤ à¥€ à¤¤à¤¯à¤¾à¤° à¤¹à¥‹à¤£à¥‡ à¤†à¤¹à¥‡.</b></div></div>
-        <div className="v2-method-copy"><span>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤ªà¤¦à¥à¤§à¤¤</span><h2>à¤®à¥ˆà¤¦à¤¾à¤¨à¤¾à¤ªà¤¾à¤¸à¥‚à¤¨ à¤®à¥‡à¤°à¤¿à¤Ÿà¤ªà¤°à¥à¤¯à¤‚à¤¤, à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤ªà¤¾à¤µà¤²à¤¾à¤µà¤° à¤¸à¥‹à¤¬à¤¤.</h2><p>à¤…à¤¨à¥à¤­à¤µà¥€ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤•, à¤¨à¤¿à¤¯à¤®à¤¿à¤¤ à¤¸à¤°à¤¾à¤µ, à¤ªà¥à¤°à¤—à¤¤à¥€à¤šà¥‡ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤†à¤£à¤¿ à¤•à¤®à¤•à¥à¤µà¤¤ à¤µà¤¿à¤·à¤¯à¤¾à¤‚à¤µà¤° à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤²à¤•à¥à¤·â€”à¤¹à¥€ à¤†à¤®à¤šà¥à¤¯à¤¾ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£à¤¾à¤šà¥€ à¤šà¤¾à¤° à¤¸à¥‚à¤¤à¥à¤°à¥‡.</p><ol><li><b>à¤¦à¥ˆà¤¨à¤¿à¤• à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤¸à¤°à¤¾à¤µ</b><small>Running, long jump, shot put, pull-ups à¤†à¤£à¤¿ drill.</small></li><li><b>à¤¸à¤‚à¤•à¤²à¥à¤ªà¤¨à¤¾ à¤¸à¥à¤ªà¤·à¥à¤Ÿ à¤•à¤°à¤£à¤¾à¤°à¥‡ à¤µà¤°à¥à¤—</b><small>à¤…à¤­à¥à¤¯à¤¾à¤¸à¤•à¥à¤°à¤®à¤¾à¤¨à¥à¤¸à¤¾à¤° notes, à¤ªà¥à¤°à¤¶à¥à¤¨à¤¸à¤‚à¤š à¤†à¤£à¤¿ revision.</small></li><li><b>à¤¨à¤¿à¤¯à¤®à¤¿à¤¤ à¤®à¥‚à¤²à¥à¤¯à¤¾à¤‚à¤•à¤¨</b><small>Mock tests, à¤µà¥‡à¤³à¥‡à¤šà¥‡ à¤¨à¤¿à¤¯à¥‹à¤œà¤¨ à¤†à¤£à¤¿ performance feedback.</small></li></ol><Link href="/admission" className="v2-primary">à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤…à¤°à¥à¤œ à¤­à¤°à¤¾ <ArrowRight size={19}/></Link></div>
+        <div className="v2-method-photo"><div><Trophy/><b>ध्येय फक्त परीक्षा पास करणे नाही—<br/>निवडीसाठी तयार होणे आहे.</b></div></div>
+        <div className="v2-method-copy"><span>शिवरक्षक पद्धत</span><h2>मैदानापासून मेरिटपर्यंत, प्रत्येक पावलावर सोबत.</h2><p>अनुभवी प्रशिक्षक, नियमित सराव, प्रगतीचे परीक्षण आणि कमकुवत विषयांवर वैयक्तिक लक्ष—ही आमच्या प्रशिक्षणाची चार सूत्रे.</p><ol><li><b>दैनिक मैदानी सराव</b><small>Running, long jump, shot put, pull-ups आणि drill.</small></li><li><b>संकल्पना स्पष्ट करणारे वर्ग</b><small>अभ्यासक्रमानुसार notes, प्रश्नसंच आणि revision.</small></li><li><b>नियमित मूल्यांकन</b><small>Mock tests, वेळेचे नियोजन आणि performance feedback.</small></li></ol><Link href="/admission" className="v2-primary">प्रवेश अर्ज भरा <ArrowRight size={19}/></Link></div>
       </section>
 
       <section id="results" className="v2-section v2-results">
-        <div className="v2-result-intro"><span>à¤¯à¤¶à¤¾à¤šà¥€ à¤¸à¥à¤°à¥à¤µà¤¾à¤¤ à¤¯à¥‹à¤—à¥à¤¯ à¤¤à¤¯à¤¾à¤°à¥€à¤¨à¥‡</span><h2>à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤¨à¤¿à¤µà¤¡ à¤¹à¥€ à¤¶à¤¿à¤¸à¥à¤¤à¤¬à¤¦à¥à¤§ à¤ªà¥à¤°à¤µà¤¾à¤¸à¤¾à¤šà¥€ à¤¸à¤¾à¤•à¥à¤·.</h2><p>à¤†à¤®à¤šà¥à¤¯à¤¾ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥à¤¯à¤¾à¤‚à¤¨à¤¾ à¤¸à¤°à¤•à¤¾à¤°à¥€ à¤­à¤°à¤¤à¥€à¤šà¥à¤¯à¤¾ à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤Ÿà¤ªà¥à¤ªà¥à¤¯à¤¾à¤¸à¤¾à¤ à¥€ à¤†à¤¤à¥à¤®à¤µà¤¿à¤¶à¥à¤µà¤¾à¤¸à¤¾à¤¨à¥‡ à¤‰à¤­à¥‡ à¤•à¤°à¤£à¥‡ à¤¹à¥‡à¤š à¤†à¤®à¤šà¥‡ à¤–à¤°à¥‡ à¤¯à¤¶.</p><div className="v2-rating"><div><Star/><Star/><Star/><Star/><Star/></div><b>à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€-à¤•à¥‡à¤‚à¤¦à¥à¤°à¤¿à¤¤ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£</b></div></div>
-        <div className="v2-quote"><Quote/><blockquote>â€œà¤¦à¤°à¤°à¥‹à¤œà¤šà¤¾ à¤¸à¤°à¤¾à¤µ, à¤µà¥‡à¤³à¥‡à¤µà¤° feedback à¤†à¤£à¤¿ à¤¶à¤¿à¤•à¥à¤·à¤•à¤¾à¤‚à¤šà¥‡ à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤²à¤•à¥à¤· à¤¯à¤¾à¤®à¥à¤³à¥‡ à¤¤à¤¯à¤¾à¤°à¥€à¤²à¤¾ à¤¯à¥‹à¤—à¥à¤¯ à¤¦à¤¿à¤¶à¤¾ à¤®à¤¿à¤³à¤¾à¤²à¥€.â€</blockquote><p>â€” à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€ à¤…à¤¨à¥à¤­à¤µ</p></div>
-        <div className="v2-quote"><Quote/><blockquote>â€œà¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤¤à¤¯à¤¾à¤°à¥€à¤¸à¥‹à¤¬à¤¤ à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¥‡à¤šà¥‡ à¤¨à¤¿à¤¯à¥‹à¤œà¤¨à¤¹à¥€ à¤à¤•à¤¾à¤š à¤ à¤¿à¤•à¤¾à¤£à¥€ à¤®à¤¿à¤³à¤¾à¤²à¥à¤¯à¤¾à¤®à¥à¤³à¥‡ à¤¸à¤¾à¤¤à¤¤à¥à¤¯ à¤°à¤¾à¤–à¤¤à¤¾ à¤†à¤²à¥‡.â€</blockquote><p>â€” à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€ à¤…à¤¨à¥à¤­à¤µ</p></div>
+        <div className="v2-result-intro"><span>यशाची सुरुवात योग्य तयारीने</span><h2>प्रत्येक निवड ही शिस्तबद्ध प्रवासाची साक्ष.</h2><p>आमच्या विद्यार्थ्यांना सरकारी भरतीच्या प्रत्येक टप्प्यासाठी आत्मविश्वासाने उभे करणे हेच आमचे खरे यश.</p><div className="v2-rating"><div><Star/><Star/><Star/><Star/><Star/></div><b>विद्यार्थी-केंद्रित प्रशिक्षण</b></div></div>
+        <div className="v2-quote"><Quote/><blockquote>“दररोजचा सराव, वेळेवर feedback आणि शिक्षकांचे वैयक्तिक लक्ष यामुळे तयारीला योग्य दिशा मिळाली.”</blockquote><p>— शिवरक्षक विद्यार्थी अनुभव</p></div>
+        <div className="v2-quote"><Quote/><blockquote>“मैदानी तयारीसोबत लेखी परीक्षेचे नियोजनही एकाच ठिकाणी मिळाल्यामुळे सातत्य राखता आले.”</blockquote><p>— शिवरक्षक विद्यार्थी अनुभव</p></div>
       </section>
 
       <section id="notices" className="v2-notices">
-        <div className="v2-notice-head"><div><span>à¤…à¤•à¥…à¤¡à¤®à¥€ à¤…à¤ªà¤¡à¥‡à¤Ÿà¥à¤¸</span><h2>à¤¤à¤¾à¤œà¥à¤¯à¤¾ à¤¸à¥‚à¤šà¤¨à¤¾</h2></div><a href={WA_LINK} target="_blank" rel="noopener noreferrer"><MessageCircle/> WhatsApp à¤µà¤° à¤µà¤¿à¤šà¤¾à¤°à¤¾</a></div>
+        <div className="v2-notice-head"><div><span>अकॅडमी अपडेट्स</span><h2>ताज्या सूचना</h2></div><a href={WA_LINK} target="_blank" rel="noopener noreferrer"><MessageCircle/> WhatsApp वर विचारा</a></div>
         <div className="v2-notice-list">
-          {notices.length ? notices.map(n=><article key={n.id}><time>{new Date(n.created_at).toLocaleDateString('mr-IN')}</time><div><h3>{n.title}</h3>{n.content&&<p>{n.content}</p>}</div><ArrowRight/></article>) : <article><time>à¤†à¤œ</time><div><h3>à¤¨à¤µà¥€à¤¨ Batch à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤¸à¥à¤°à¥‚</h3><p>à¤¸à¤§à¥à¤¯à¤¾à¤šà¥à¤¯à¤¾ batch, à¤«à¥€ à¤†à¤£à¤¿ à¤µà¥‡à¤³à¤¾à¤ªà¤¤à¥à¤°à¤•à¤¾à¤¸à¤¾à¤ à¥€ à¤…à¤•à¥…à¤¡à¤®à¥€à¤¶à¥€ à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¾.</p></div><ArrowRight/></article>}
+          {notices.length ? notices.map(n=><article key={n.id}><time>{new Date(n.created_at).toLocaleDateString('mr-IN')}</time><div><h3>{n.title}</h3>{n.content&&<p>{n.content}</p>}</div><ArrowRight/></article>) : <article><time>आज</time><div><h3>नवीन Batch प्रवेश सुरू</h3><p>सध्याच्या batch, फी आणि वेळापत्रकासाठी अकॅडमीशी संपर्क करा.</p></div><ArrowRight/></article>}
         </div>
       </section>
 
-      <section className="v2-section v2-faq"><div><span>à¤¤à¥à¤®à¤šà¥‡ à¤ªà¥à¤°à¤¶à¥à¤¨, à¤¸à¥à¤ªà¤·à¥à¤Ÿ à¤‰à¤¤à¥à¤¤à¤°à¥‡</span><h2>à¤µà¤¾à¤°à¤‚à¤µà¤¾à¤° à¤µà¤¿à¤šà¤¾à¤°à¤²à¥‡ à¤œà¤¾à¤£à¤¾à¤°à¥‡ à¤ªà¥à¤°à¤¶à¥à¤¨</h2><p>à¤…à¤œà¥‚à¤¨ à¤•à¤¾à¤¹à¥€ à¤µà¤¿à¤šà¤¾à¤°à¤¾à¤¯à¤šà¥‡ à¤†à¤¹à¥‡? à¤†à¤®à¤šà¥à¤¯à¤¾ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤•à¤¾à¤¶à¥€ à¤¥à¥‡à¤Ÿ à¤«à¥‹à¤¨ à¤•à¤¿à¤‚à¤µà¤¾ WhatsApp à¤µà¤° à¤¬à¥‹à¤²à¤¾.</p><a href="tel:9284842177"><Phone/> 9284842177</a></div><div>{faq.map(([q,a])=><details key={q}><summary>{q}<ChevronDown/></summary><p>{a}</p></details>)}</div></section>
+      <section className="v2-section v2-faq"><div><span>तुमचे प्रश्न, स्पष्ट उत्तरे</span><h2>वारंवार विचारले जाणारे प्रश्न</h2><p>अजून काही विचारायचे आहे? आमच्या मार्गदर्शकाशी थेट फोन किंवा WhatsApp वर बोला.</p><a href="tel:9284842177"><Phone/> 9284842177</a></div><div>{faq.map(([q,a])=><details key={q}><summary>{q}<ChevronDown/></summary><p>{a}</p></details>)}</div></section>
 
       <section id="contact" className="v2-contact">
-        <div><span>à¤†à¤œà¤š à¤¸à¥à¤°à¥à¤µà¤¾à¤¤ à¤•à¤°à¤¾</span><h2>à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤µà¤°à¥à¤¦à¥€à¤šà¥à¤¯à¤¾ à¤¸à¥à¤µà¤ªà¥à¤¨à¤¾à¤²à¤¾<br/>à¤¯à¥‹à¤—à¥à¤¯ à¤¦à¤¿à¤¶à¤¾ à¤¦à¥à¤¯à¤¾.</h2><p>à¤ªà¥à¤°à¤µà¥‡à¤¶, batch timing, à¤«à¥€ à¤•à¤¿à¤‚à¤µà¤¾ à¤¨à¤¿à¤µà¤¾à¤¸ à¤¸à¥à¤µà¤¿à¤§à¥‡à¤¸à¤¾à¤ à¥€ à¤†à¤®à¤šà¥à¤¯à¤¾à¤¶à¥€ à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¾.</p><div className="v2-contact-links"><a href="tel:9284842177"><Phone/> <span><small>à¤•à¥‰à¤² à¤•à¤°à¤¾</small><b>9284842177</b></span></a><a href={WA_LINK} target="_blank" rel="noopener noreferrer"><MessageCircle/><span><small>WhatsApp</small><b>7720991375</b></span></a></div></div>
-        <aside><MapPin/><h3>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€</h3><p>à¤¨à¥à¤¯à¥‚ à¤†à¤°à¥à¤Ÿà¤¸à¥ à¤•à¥‰à¤²à¥‡à¤œà¤šà¥à¤¯à¤¾ à¤ªà¤¾à¤ à¥€à¤®à¤¾à¤—à¥‡, à¤—à¥Œà¤°à¤µ à¤¸à¥à¤ªà¥‹à¤°à¥à¤Ÿà¥à¤¸ à¤œà¤µà¤³, à¤¬à¤¾à¤²à¤¿à¤•à¤¾à¤¶à¥à¤°à¤® à¤°à¥‹à¤¡, à¤…à¤¹à¤®à¤¦à¤¨à¤—à¤° â€” 414001</p><a href="https://maps.google.com/?q=New+Arts+College+Ahmednagar" target="_blank" rel="noopener noreferrer">Google Maps à¤µà¤° à¤ªà¤¹à¤¾ <ArrowRight/></a></aside>
+        <div><span>आजच सुरुवात करा</span><h2>तुमच्या वर्दीच्या स्वप्नाला<br/>योग्य दिशा द्या.</h2><p>प्रवेश, batch timing, फी किंवा निवास सुविधेसाठी आमच्याशी संपर्क करा.</p><div className="v2-contact-links"><a href="tel:9284842177"><Phone/> <span><small>कॉल करा</small><b>9284842177</b></span></a><a href={WA_LINK} target="_blank" rel="noopener noreferrer"><MessageCircle/><span><small>WhatsApp</small><b>7720991375</b></span></a></div></div>
+        <aside><MapPin/><h3>शिवरक्षक करियर अकॅडमी</h3><p>न्यू आर्टस् कॉलेजच्या पाठीमागे, गौरव स्पोर्ट्स जवळ, बालिकाश्रम रोड, अहमदनगर — 414001</p><a href="https://maps.google.com/?q=New+Arts+College+Ahmednagar" target="_blank" rel="noopener noreferrer">Google Maps वर पहा <ArrowRight/></a></aside>
       </section>
 
-      <footer className="v2-footer"><div className="v2-brand"><Logo size={46}/><span><b>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤•</b><small>à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€</small></span></div><p>à¤¶à¤¿à¤¸à¥à¤¤ Â· à¤¸à¤¾à¤¹à¤¸ Â· à¤¸à¥à¤µà¤ªà¥à¤¨à¤ªà¥‚à¤°à¥à¤¤à¥€</p><nav><a href="#courses">à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸</a><a href="#notices">à¤¸à¥‚à¤šà¤¨à¤¾</a><Link href="/admission">à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤…à¤°à¥à¤œ</Link><Link href="/admin">Admin</Link></nav><small>Â© 2026 à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€, à¤…à¤¹à¤®à¤¦à¤¨à¤—à¤°.</small></footer>
-      <a className="v2-fab" href={WA_LINK} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp à¤µà¤° à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¾"><MessageCircle/></a>
+      <footer className="v2-footer"><div className="v2-brand"><Logo size={46}/><span><b>शिवरक्षक</b><small>करियर अकॅडमी</small></span></div><p>शिस्त · साहस · स्वप्नपूर्ती</p><nav><a href="#courses">कोर्सेस</a><a href="#notices">सूचना</a><Link href="/admission">प्रवेश अर्ज</Link><Link href="/admin">Admin</Link></nav><small>© 2026 शिवरक्षक करियर अकॅडमी, अहमदनगर.</small></footer>
+      <a className="v2-fab" href={WA_LINK} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp वर संपर्क करा"><MessageCircle/></a>
       <style>{css}</style>
     </main>
   )
@@ -110,4 +110,3 @@ const css = String.raw`
 @media(max-width:640px){.v2-header{height:72px;padding:0 16px}.v2-brand b{font-size:17px}.v2-brand small{font-size:9px}.v2-top-cta{font-size:0;padding:12px}.v2-top-cta svg{margin:0}.v2-hero{min-height:auto}.v2-hero-copy{padding:54px 20px 42px}.v2-hero h1{font-size:43px}.v2-hero-copy>p{font-size:15px}.v2-actions{flex-direction:column}.v2-actions a{justify-content:center}.v2-trust{gap:12px}.v2-hero-photo{min-height:390px}.v2-photo-note{left:18px;right:18px;bottom:18px}.v2-numbers{margin:0;border-radius:0;grid-template-columns:1fr 1fr;padding:10px 0}.v2-numbers div{padding:18px 5px;border-bottom:1px solid rgba(255,255,255,.13)}.v2-numbers strong{font-size:28px}.v2-section{padding:72px 18px}.v2-section-title{display:block}.v2-section-title h2,.v2-method-copy h2,.v2-result-intro h2,.v2-notice-head h2,.v2-faq h2,.v2-contact h2{font-size:34px}.v2-course-grid{grid-template-columns:1fr}.v2-course p{min-height:auto}.v2-method-photo{min-height:380px}.v2-method-photo>div{left:20px;bottom:24px}.v2-method-copy{padding:60px 20px}.v2-results{grid-template-columns:1fr}.v2-notices{padding:70px 18px}.v2-notice-head{display:block}.v2-notice-head>a{margin-top:20px}.v2-notice-list article{grid-template-columns:70px 1fr}.v2-notice-list article>svg{display:none}.v2-faq{gap:30px}.v2-contact{padding:70px 20px}.v2-contact-links{flex-direction:column}.v2-footer{padding:40px 20px}.v2-footer nav{flex-wrap:wrap}.v2-fab{width:52px;height:52px}}
 @media(prefers-reduced-motion:reduce){.landing-v2 *{scroll-behavior:auto!important;transition:none!important}}
 `
-
