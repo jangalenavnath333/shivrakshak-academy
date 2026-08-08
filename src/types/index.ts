@@ -76,3 +76,41 @@ export interface Notice {
   is_published: boolean
   created_at: string
 }
+
+export interface SiteSettings {
+  id: number
+  academy_name: string
+  tagline?: string
+  hero_title?: string
+  hero_subtitle?: string
+  phone?: string
+  whatsapp?: string
+  email?: string
+  address?: string
+  youtube_url?: string
+  instagram_url?: string
+  facebook_url?: string
+}
+
+export interface MediaAsset {
+  id: string
+  title: string
+  media_type: 'image' | 'video' | 'youtube'
+  placement: string
+  url: string
+  thumbnail_url?: string
+  alt_text?: string
+  sort_order: number
+  is_published: boolean
+}
+
+export interface Course {
+  id: string
+  title: string
+  slug: string
+  description?: string
+  image_url?: string
+  duration?: string
+  is_published: boolean
+  sort_order: number
+}
