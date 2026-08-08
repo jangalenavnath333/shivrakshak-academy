@@ -38,11 +38,13 @@ export async function POST(request: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })
   } else if (action === 'notice.toggle') {
-    const { error } = await supabase.from('notices').update({ is_published: payload.is_published }).eq('id', payload.id)
+    const { data, error } = await supabase.from('notices').update({ is_published: payload.is_published }).eq('id', payload.id).select('id').maybeSingle()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    if (!data) return NextResponse.json({ error: 'Notice not found' }, { status: 404 })
   } else if (action === 'notice.delete') {
-    const { error } = await supabase.from('notices').delete().eq('id', payload.id)
+    const { data, error } = await supabase.from('notices').delete().eq('id', payload.id).select('id').maybeSingle()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    if (!data) return NextResponse.json({ error: 'Notice not found' }, { status: 404 })
   } else if (action === 'student.create') {
     const { data, error } = await supabase.from('students').insert({
       ...payload,

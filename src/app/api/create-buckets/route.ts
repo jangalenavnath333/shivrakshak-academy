@@ -30,7 +30,12 @@ export async function POST() {
     if (error && !error.message.includes('already exists')) {
       results.push({ bucket: bucket.name, status: '❌ Error: ' + error.message })
     } else {
-      results.push({ bucket: bucket.name, status: error ? '✅ आधीच आहे' : '✅ नवीन बनवला' })
+      const { error: updateError } = await supabase.storage.updateBucket(bucket.name, {
+        public: bucket.public,
+        fileSizeLimit: MAX_DOCUMENT_BYTES,
+        allowedMimeTypes: [...DOCUMENT_MIME_TYPES],
+      })
+      results.push({ bucket: bucket.name, status: updateError ? '❌ Error: ' + updateError.message : error ? '✅ आधीच आहे — security updated' : '✅ नवीन बनवला' })
     }
   }
 

@@ -29,6 +29,18 @@ const admissionSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const contentLength = Number(request.headers.get('content-length') || 0)
+    if (contentLength > MAX_ADMISSION_DOCUMENT_BYTES + 1024 * 1024) {
+      return NextResponse.json({ error: 'Admission upload is too large' }, { status: 413 })
+    }
+    const supabase = createSupabaseAdminClient()
+    const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    const clientIp = forwardedFor || request.headers.get('x-real-ip') || 'unknown'
+    const { data: ipAllowed, error: ipLimitError } = await supabase.rpc('consume_admission_rate_limit', { p_key: `ip:${clientIp}` })
+    if (ipLimitError || !ipAllowed) {
+      return NextResponse.json({ error: 'Too many admission attempts. Please try again later.' }, { status: 429 })
+    }
+
     const body = await request.formData()
     const raw = Object.fromEntries(
       Array.from(body.entries()).filter(([, value]) => typeof value === 'string'),
@@ -36,6 +48,11 @@ export async function POST(request: Request) {
     const parsed = admissionSchema.safeParse(raw)
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid admission details', issues: parsed.error.flatten() }, { status: 400 })
+    }
+
+    const { data: phoneAllowed, error: phoneLimitError } = await supabase.rpc('consume_admission_rate_limit', { p_key: `phone:${parsed.data.parent_phone}` })
+    if (phoneLimitError || !phoneAllowed) {
+      return NextResponse.json({ error: 'Too many admission attempts for this phone number.' }, { status: 429 })
     }
 
     const files = Array.from(body.entries()).filter((entry): entry is [string, File] => entry[1] instanceof File)
@@ -53,7 +70,6 @@ export async function POST(request: Request) {
       }
     }
 
-    const supabase = createSupabaseAdminClient()
     const data = parsed.data
     const { data: student, error: studentError } = await supabase.from('students').insert({
       name: data.name,
@@ -91,18 +107,24 @@ export async function POST(request: Request) {
         if (uploadError) throw uploadError
         uploadedPaths.push(path)
 
-        const { error: documentError } = await supabase.from('documents').upsert({
+        const { error: documentError } = await supabase.from('documents').insert({
           student_id: student.id,
           doc_type: docType,
           file_url: path,
           file_name: file.name,
-        }, { onConflict: 'student_id,doc_type' })
+        })
         if (documentError) throw documentError
       }
     } catch {
-      if (uploadedPaths.length) await supabase.storage.from('student-documents').remove(uploadedPaths)
-      await supabase.from('students').delete().eq('id', student.id)
-      return NextResponse.json({ error: 'Documents could not be saved; the admission was rolled back' }, { status: 500 })
+      const storageCleanup = uploadedPaths.length
+        ? await supabase.storage.from('student-documents').remove(uploadedPaths)
+        : { error: null }
+      const studentCleanup = await supabase.from('students').delete().eq('id', student.id)
+      if (storageCleanup.error || studentCleanup.error) {
+        console.error('Admission cleanup requires reconciliation', { studentId: student.id, storageError: storageCleanup.error, studentError: studentCleanup.error })
+        return NextResponse.json({ error: 'Admission failed and requires admin reconciliation', reference: student.id }, { status: 500 })
+      }
+      return NextResponse.json({ error: 'Documents could not be saved; no admission was created' }, { status: 500 })
     }
 
     return NextResponse.json({ code: student.roll_number }, { status: 201 })

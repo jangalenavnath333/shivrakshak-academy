@@ -8,26 +8,38 @@ create sequence if not exists public.admission_code_seq;
 do $$
 declare
   current_max bigint;
+  sequence_value bigint;
+  sequence_called boolean;
 begin
   select coalesce(max(substring(roll_number from '^S-([0-9]+)$')::bigint), 0)
     into current_max
     from public.students
     where roll_number ~ '^S-[0-9]+$';
-  perform setval('public.admission_code_seq', greatest(current_max, 1), current_max > 0);
+  select last_value, is_called into sequence_value, sequence_called from public.admission_code_seq;
+  perform setval(
+    'public.admission_code_seq',
+    greatest(current_max, sequence_value, 1),
+    current_max > 0 or sequence_called
+  );
 end $$;
 
 create or replace function public.next_admission_code()
 returns text
-language sql
+language plpgsql
 volatile
+security definer
 set search_path = public
 as $$
-  select 'S-' || lpad(nextval('public.admission_code_seq')::text, 2, '0');
+begin
+  if auth.role() <> 'service_role'
+     and coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin' then
+    raise exception 'not authorized';
+  end if;
+  return 'S-' || lpad(nextval('public.admission_code_seq')::text, 2, '0');
+end;
 $$;
 
 alter table public.students alter column roll_number set default public.next_admission_code();
-create unique index if not exists documents_student_type_unique
-  on public.documents(student_id, doc_type);
 
 create or replace function public.is_admin()
 returns boolean
@@ -41,6 +53,31 @@ $$;
 
 revoke all on function public.is_admin() from public;
 grant execute on function public.is_admin() to anon, authenticated;
+revoke all on function public.next_admission_code() from public, anon;
+grant execute on function public.next_admission_code() to authenticated, service_role;
+
+create table if not exists public.admission_rate_limits (
+  rate_key text primary key,
+  window_started timestamptz not null default now(),
+  attempts integer not null default 0
+);
+alter table public.admission_rate_limits enable row level security;
+
+create or replace function public.consume_admission_rate_limit(p_key text)
+returns boolean language plpgsql security definer set search_path = public
+as $$
+declare allowed boolean;
+begin
+  insert into public.admission_rate_limits(rate_key, window_started, attempts)
+  values (p_key, now(), 1)
+  on conflict (rate_key) do update set
+    window_started = case when admission_rate_limits.window_started < now() - interval '1 hour' then now() else admission_rate_limits.window_started end,
+    attempts = case when admission_rate_limits.window_started < now() - interval '1 hour' then 1 else admission_rate_limits.attempts + 1 end
+  returning attempts <= 5 into allowed;
+  return allowed;
+end $$;
+revoke all on function public.consume_admission_rate_limit(text) from public, anon, authenticated;
+grant execute on function public.consume_admission_rate_limit(text) to service_role;
 
 alter table public.students enable row level security;
 alter table public.fee_payments enable row level security;

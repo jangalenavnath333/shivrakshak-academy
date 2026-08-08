@@ -37,14 +37,18 @@ export default function NoticesPage() {
   }
 
   const togglePublish = async (id: string, is_published: boolean) => {
-    await adminMutation('notice.toggle', { id, is_published: !is_published })
-    setNotices(prev => prev.map(n => n.id === id ? { ...n, is_published: !is_published } : n))
+    try {
+      await adminMutation('notice.toggle', { id, is_published: !is_published })
+      setNotices(prev => prev.map(n => n.id === id ? { ...n, is_published: !is_published } : n))
+    } catch (error) { alert(error instanceof Error ? error.message : 'Notice update failed') }
   }
 
   const deleteNotice = async (id: string) => {
     if (!confirm('ही notice delete करायची आहे का?')) return
-    await adminMutation('notice.delete', { id })
-    setNotices(prev => prev.filter(n => n.id !== id))
+    try {
+      await adminMutation('notice.delete', { id })
+      setNotices(prev => prev.filter(n => n.id !== id))
+    } catch (error) { alert(error instanceof Error ? error.message : 'Notice deletion failed') }
   }
 
   const sendToWhatsApp = (notice: Notice) => {

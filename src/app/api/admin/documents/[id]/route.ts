@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminUser } from '@/lib/admin-auth'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-
-function storagePath(value: string) {
-  const marker = '/storage/v1/object/public/student-documents/'
-  const path = value.includes(marker) ? value.split(marker)[1] : value
-  return decodeURIComponent(path.split('?')[0])
-}
+import { documentStoragePath } from '@/lib/document-policy'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await getAdminUser()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,7 +12,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const { data, error: signError } = await supabase.storage
     .from('student-documents')
-    .createSignedUrl(storagePath(document.file_url), 60)
+    .createSignedUrl(documentStoragePath(document.file_url), 60)
   if (signError) return NextResponse.json({ error: 'Document is unavailable' }, { status: 404 })
 
   return NextResponse.redirect(data.signedUrl)
