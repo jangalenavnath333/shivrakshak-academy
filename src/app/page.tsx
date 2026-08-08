@@ -51,7 +51,7 @@ async function getHomeData() {
 
 export default async function HomePage() {
   const { settings, media, courses, notices } = await getHomeData()
-  const hero = media.find((item) => item.placement === 'hero')?.url || '/hero-training.svg'
+  const hero = media.find((item) => item.placement === 'hero')?.url || '/academy-hero-v2.png'
   const videos = media.filter((item) => item.media_type !== 'image').slice(0, 3)
   const phone = settings.phone || fallbackSettings.phone!
   const whatsapp = settings.whatsapp || phone
