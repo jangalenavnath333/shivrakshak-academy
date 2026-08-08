@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { COURSES, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import type { Student } from '@/types'
 
 async function getStudents(search?: string, gender?: string, course?: string): Promise<Student[]> {
+  const supabase = await createSupabaseServerClient()
   let query = supabase.from('students').select('*').order('roll_number', { ascending: true })
   if (search) {
     // Search by name OR roll_number (S-01, S-02 style)

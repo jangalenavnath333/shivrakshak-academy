@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { COURSES, DOC_TYPES, formatDate, formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import type { Student, FeePayment, Document, MessSubscription } from '@/types'
 
 async function getStudentData(id: string) {
+  const supabase = await createSupabaseServerClient()
   const [studentRes, feesRes, docsRes, messRes] = await Promise.all([
     supabase.from('students').select('*').eq('id', id).single(),
     supabase.from('fee_payments').select('*').eq('student_id', id).order('payment_date', { ascending: false }),

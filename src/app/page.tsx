@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import type { Notice } from '@/types'
 import SiteNav from './SiteNav'
 import Logo from '@/components/Logo'
@@ -8,6 +8,7 @@ const WA_LINK = 'https://wa.me/917720991375?text=%E0%A4%A8%E0%A4%AE%E0%A4%B8%E0%
 
 async function getLatestNotices(): Promise<Notice[]> {
   try {
+    const supabase = await createSupabaseServerClient()
     const { data } = await supabase
       .from('notices')
       .select('*')

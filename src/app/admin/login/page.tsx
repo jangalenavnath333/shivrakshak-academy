@@ -1,9 +1,12 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -13,16 +16,17 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError('')
 
-    // Simple password check — change ADMIN_PASSWORD in .env.local
-    const correctPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'shivrakshak2024'
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (password === correctPassword) {
-      // Store login in sessionStorage
-      sessionStorage.setItem('admin_logged_in', 'true')
-      router.push('/admin')
-    } else {
-      setError('❌ चुकीचा पासवर्ड! पुन्हा प्रयत्न करा.')
+    if (signInError || data.user?.app_metadata?.role !== 'admin') {
+      if (data.session) await supabase.auth.signOut()
+      setError('❌ ईमेल, पासवर्ड किंवा admin परवानगी चुकीची आहे.')
+      setLoading(false)
+      return
     }
+
+    router.replace('/admin')
+    router.refresh()
     setLoading(false)
   }
 
@@ -53,6 +57,20 @@ export default function AdminLoginPage() {
         </div>
 
         <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              📧 Admin ईमेल
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@example.com"
+              autoComplete="username"
+              required
+              style={{ width: '100%', padding: '12px 14px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 16, outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
               🔐 Admin पासवर्ड
@@ -62,6 +80,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="पासवर्ड टाका..."
+              autoComplete="current-password"
               required
               style={{
                 width: '100%',
@@ -113,15 +132,14 @@ export default function AdminLoginPage() {
         </form>
 
         <div style={{ textAlign: 'center', marginTop: 24 }}>
-          <a href="/" style={{ color: '#78350f', fontSize: 13, textDecoration: 'none' }}>
+          <Link href="/" style={{ color: '#78350f', fontSize: 13, textDecoration: 'none' }}>
             ← मुख्य पानावर जा
-          </a>
+          </Link>
         </div>
 
         <div style={{ marginTop: 24, padding: '12px 14px', background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a' }}>
           <p style={{ fontSize: 11, color: '#92400e', margin: 0 }}>
-            <strong>Default पासवर्ड:</strong> shivrakshak2024<br />
-            बदलण्यासाठी .env.local मध्ये NEXT_PUBLIC_ADMIN_PASSWORD टाका
+            Supabase Auth मधील <strong>admin role</strong> असलेल्या account ने login करा.
           </p>
         </div>
       </div>

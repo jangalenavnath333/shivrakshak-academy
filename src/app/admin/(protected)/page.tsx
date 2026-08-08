@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 
 async function getDashboardStats() {
+  const supabase = await createSupabaseServerClient()
   const [studentsRes, feeSummaryRes, messRes, noticesRes] = await Promise.all([
     supabase.from('students').select('id, gender, course', { count: 'exact' }),
     supabase.from('student_fee_summary').select('total_fee, total_paid, pending_amount'),
