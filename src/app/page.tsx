@@ -31,6 +31,32 @@ const fallbackCourses = [
   { id: 'written', title: 'लेखी परीक्षा', slug: 'written', description: 'गणित, बुद्धिमत्ता, मराठी, सामान्य ज्ञान आणि नियमित Mock Tests', image_url: '/hero-training.svg', is_published: true, sort_order: 4 },
 ] satisfies Course[]
 
+const fallbackCoursePhotos = [
+  '/course-police.jpg',
+  '/course-army.jpg',
+  '/course-srpf.jpg',
+  '/course-written.jpg',
+]
+
+const fallbackResultPhotos = Array.from({ length: 6 }, (_, index) => `/result-${index + 1}.jpg`)
+
+function getYouTubeVideoId(url: string) {
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./, '')
+    let id = ''
+
+    if (host === 'youtu.be') id = parsed.pathname.split('/').filter(Boolean)[0] || ''
+    else if (host === 'youtube.com' || host === 'm.youtube.com') {
+      id = parsed.searchParams.get('v') || parsed.pathname.match(/^\/(?:shorts|embed)\/([^/?]+)/)?.[1] || ''
+    }
+
+    return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null
+  } catch {
+    return null
+  }
+}
+
 async function getHomeData() {
   try {
     const supabase = createPublicSiteClient()
@@ -51,7 +77,7 @@ async function getHomeData() {
   }
 }
 
-const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v2'], { revalidate: 300 })
+const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v3'], { revalidate: 300 })
 
 export default async function HomePage() {
   const { settings, media, courses, notices } = await getCachedHomeData()
@@ -96,7 +122,7 @@ export default async function HomePage() {
         {courses.slice(0, 4).map((course, index) => {
           const dynamicImage = media.find((item) => item.placement === `course-${course.slug}`)?.url
           return <article className="course-tile" key={course.id}>
-            <div className="course-photo">{dynamicImage ? <Image src={dynamicImage} alt={course.title} fill sizes="(max-width: 720px) 100vw, 25vw" /> : <Image className={`course-scene course-scene-${index}`} src="/course-scenes.png" alt={course.title} fill sizes="(max-width: 720px) 100vw, 25vw" />}</div>
+            <div className="course-photo"><Image src={dynamicImage || fallbackCoursePhotos[index] || fallbackCoursePhotos[0]} alt={course.title} fill quality={78} sizes="(max-width: 620px) 100vw, (max-width: 980px) 50vw, 25vw" /></div>
             <div className="course-content"><h3>{course.title}</h3><p>{course.description}</p><ul><li><CheckCircle2 /> नियमित सराव व चाचण्या</li><li><CheckCircle2 /> तज्ज्ञांचे वैयक्तिक मार्गदर्शन</li></ul><a href="#contact">अधिक माहिती <ArrowRight size={16} /></a></div>
           </article>
         })}
@@ -118,15 +144,30 @@ export default async function HomePage() {
     </section>
 
     <section className="video-section" id="videos">
-      <div className="section-heading"><h2>मैदानी सराव आणि मार्गदर्शन</h2><p>नवीन videos admin panelमधून प्रकाशित करता येतात.</p></div>
-      {videos.length ? <div className="video-grid">{videos.map(video => <a key={video.id} href={video.url} target="_blank" rel="noreferrer"><div className="video-thumb">{video.thumbnail_url && <Image src={video.thumbnail_url} alt={video.alt_text || video.title} fill />}<PlayCircle /></div><strong>{video.title}</strong></a>)}</div> : <div className="empty-public"><PlayCircle /><p>प्रशिक्षणाचे videos लवकरच येथे दिसतील.</p></div>}
+      <div className="section-heading"><h2>मैदानी सराव आणि मार्गदर्शन</h2><p>शिवरक्षक अकॅडमीचे प्रशिक्षण आणि विद्यार्थ्यांची प्रत्यक्ष तयारी पहा.</p></div>
+      {videos.length ? <div className="video-grid">{videos.map(video => {
+        const youtubeId = video.media_type === 'youtube' ? getYouTubeVideoId(video.url) : null
+        return <article className="video-card" key={video.id}>
+          <div className="video-frame">
+            {youtubeId ? <iframe
+              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&playsinline=1`}
+              title={video.title}
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            /> : <video controls preload="metadata" poster={video.thumbnail_url || undefined}><source src={video.url} /></video>}
+          </div>
+          <div className="video-caption">{youtubeId ? <Youtube /> : <PlayCircle />}<strong>{video.title}</strong></div>
+        </article>
+      })}</div> : <div className="empty-public"><PlayCircle /><p>प्रशिक्षणाचे videos लवकरच येथे दिसतील.</p></div>}
     </section>
 
     <section className="results-section" id="results">
       <div className="section-heading"><h2>अकॅडमीचे क्षण</h2><p>Admin panelमधून निवड, प्रशिक्षण आणि कार्यक्रमांचे फोटो बदला.</p></div>
       <div className="results-gallery">{Array.from({ length: 6 }).map((_, index) => {
         const photo = media.find((item) => item.placement === `result-${index + 1}`)?.url
-        return <div className="selected-student" key={index}>{photo ? <Image src={photo} alt={`अकॅडमी फोटो ${index + 1}`} fill sizes="(max-width: 600px) 50vw, 16vw" /> : <Image className={`selected-scene selected-student-${index}`} src="/selected-students.png" alt={`निवड झालेला विद्यार्थी ${index + 1}`} fill sizes="(max-width: 600px) 50vw, 16vw" />}</div>
+        return <div className="selected-student" key={index}><Image src={photo || fallbackResultPhotos[index]} alt={`अकॅडमी फोटो ${index + 1}`} fill quality={78} sizes="(max-width: 600px) 50vw, 16vw" /></div>
       })}</div>
       <p className="photo-note">वरील नमुना छायाचित्रे admin panel मधून वास्तविक निवड झालेल्या विद्यार्थ्यांच्या फोटोंनी बदलता येतात.</p>
       <h3 className="commitment-title">विद्यार्थ्यांसाठी आमची बांधिलकी</h3>
