@@ -1,0 +1,4 @@
+import Link from 'next/link'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { Clock3,Radio } from 'lucide-react'
+export default async function ExamsPage(){let exams:{id:string;title:string;description:string;duration_minutes:number;is_live:boolean}[]=[];try{const db=await createSupabaseServerClient();const{data}=await db.from('exams').select('id,title,description,duration_minutes,is_live').eq('is_published',true);exams=data||[]}catch{}return <main className="student-feature-page"><h1>Online परीक्षा</h1><p>Published test निवडा. परीक्षा सुरू करण्यासाठी student login आवश्यक असेल.</p><section className="public-exam-list">{exams.length?exams.map(e=><article key={e.id}><h2>{e.title}</h2><p>{e.description}</p><span><Clock3/> {e.duration_minutes} मिनिटे</span>{e.is_live&&<b><Radio/> LIVE</b>}</article>):<div className="empty-public">सध्या कोणतीही परीक्षा प्रकाशित नाही.</div>}</section><Link href="/">मुख्यपृष्ठावर परत जा</Link></main>}
