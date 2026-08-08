@@ -4,13 +4,14 @@ import { unstable_cache } from 'next/cache'
 import {
   ArrowRight, Award, BookOpenCheck, Camera, CheckCircle2, Clock3,
   Facebook, Instagram, Mail, MapPin, MessageCircle, MonitorCheck,
-  Phone, PlayCircle, ShieldCheck, Target, Users, Youtube,
+  Phone, PlayCircle, Send, ShieldCheck, Target, Users, Youtube,
 } from 'lucide-react'
 import { createPublicSiteClient } from '@/lib/public-site-supabase'
 import type { Course, MediaAsset, Notice, SiteSettings } from '@/types'
 import SiteNav from './SiteNav'
 import Logo from '@/components/Logo'
 import EnquiryForm from './EnquiryForm'
+import VideoShowcase from './VideoShowcase'
 
 const fallbackSettings: SiteSettings = {
   id: 1,
@@ -40,23 +41,6 @@ const fallbackCoursePhotos = [
 
 const fallbackResultPhotos = Array.from({ length: 6 }, (_, index) => `/result-${index + 1}.jpg`)
 
-function getYouTubeVideoId(url: string) {
-  try {
-    const parsed = new URL(url)
-    const host = parsed.hostname.replace(/^www\./, '')
-    let id = ''
-
-    if (host === 'youtu.be') id = parsed.pathname.split('/').filter(Boolean)[0] || ''
-    else if (host === 'youtube.com' || host === 'm.youtube.com') {
-      id = parsed.searchParams.get('v') || parsed.pathname.match(/^\/(?:shorts|embed)\/([^/?]+)/)?.[1] || ''
-    }
-
-    return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null
-  } catch {
-    return null
-  }
-}
-
 async function getHomeData() {
   try {
     const supabase = createPublicSiteClient()
@@ -77,12 +61,17 @@ async function getHomeData() {
   }
 }
 
-const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v3'], { revalidate: 300 })
+const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v4'], { revalidate: 300 })
+
+const shivdalYoutube = 'https://www.youtube.com/@Shivdal_career_academy'
+const shivrakshakYoutube = 'https://www.youtube.com/@shivrakshak_academy_01'
+const shivrakshakInstagram = 'https://www.instagram.com/shivrakshak_academy_01/'
+const shivrakshakTelegram = 'https://t.me/shivrakshakcareeracademy'
 
 export default async function HomePage() {
   const { settings, media, courses, notices } = await getCachedHomeData()
   const hero = media.find((item) => item.placement === 'hero')?.url || '/academy-hero-v2.jpg'
-  const videos = media.filter((item) => item.media_type !== 'image').slice(0, 3)
+  const videos = media.filter((item) => item.media_type !== 'image').slice(0, 4)
   const phone = settings.phone || fallbackSettings.phone!
   const whatsapp = settings.whatsapp || phone
   const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('नमस्कार, मला शिवरक्षक अकॅडमीबद्दल माहिती हवी आहे.')}`
@@ -145,22 +134,13 @@ export default async function HomePage() {
 
     <section className="video-section" id="videos">
       <div className="section-heading"><h2>मैदानी सराव आणि मार्गदर्शन</h2><p>शिवरक्षक अकॅडमीचे प्रशिक्षण आणि विद्यार्थ्यांची प्रत्यक्ष तयारी पहा.</p></div>
-      {videos.length ? <div className="video-grid">{videos.map(video => {
-        const youtubeId = video.media_type === 'youtube' ? getYouTubeVideoId(video.url) : null
-        return <article className="video-card" key={video.id}>
-          <div className="video-frame">
-            {youtubeId ? <iframe
-              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&playsinline=1`}
-              title={video.title}
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            /> : <video controls preload="metadata" poster={video.thumbnail_url || undefined}><source src={video.url} /></video>}
-          </div>
-          <div className="video-caption">{youtubeId ? <Youtube /> : <PlayCircle />}<strong>{video.title}</strong></div>
-        </article>
-      })}</div> : <div className="empty-public"><PlayCircle /><p>प्रशिक्षणाचे videos लवकरच येथे दिसतील.</p></div>}
+      <div className="channel-actions" aria-label="अकॅडमीचे social channels">
+        <a className="channel-youtube" href={shivdalYoutube} target="_blank" rel="noopener noreferrer"><Youtube /><span><small>YouTube</small>Shivdal Career Academy</span><ArrowRight /></a>
+        <a className="channel-youtube" href={settings.youtube_url || shivrakshakYoutube} target="_blank" rel="noopener noreferrer"><Youtube /><span><small>YouTube</small>Shivrakshak Academy</span><ArrowRight /></a>
+        <a className="channel-instagram" href={settings.instagram_url || shivrakshakInstagram} target="_blank" rel="noopener noreferrer"><Instagram /><span><small>Instagram</small>@shivrakshak_academy_01</span><ArrowRight /></a>
+        <a className="channel-telegram" href={shivrakshakTelegram} target="_blank" rel="noopener noreferrer"><Send /><span><small>Telegram</small>अकॅडमी अपडेट्स</span><ArrowRight /></a>
+      </div>
+      {videos.length ? <VideoShowcase videos={videos} /> : <div className="empty-public"><PlayCircle /><p>प्रशिक्षणाचे videos लवकरच येथे दिसतील.</p></div>}
     </section>
 
     <section className="results-section" id="results">
@@ -194,7 +174,7 @@ export default async function HomePage() {
     <footer className="academy-footer">
       <div className="footer-brand"><Logo size={58} /><div><strong>{settings.academy_name}</strong><span>{settings.tagline}</span></div></div>
       <div><h3>संपर्क</h3><p><MapPin size={16} /> {settings.address}</p><p><Phone size={16} /> {phone}</p></div>
-      <div><h3>आमच्याशी जोडा</h3><div className="social-row">{settings.youtube_url && <a href={settings.youtube_url} aria-label="YouTube"><Youtube /></a>}{settings.instagram_url && <a href={settings.instagram_url} aria-label="Instagram"><Instagram /></a>}{settings.facebook_url && <a href={settings.facebook_url} aria-label="Facebook"><Facebook /></a>}<a href={waLink} aria-label="WhatsApp"><MessageCircle /></a><a href={`mailto:${settings.email}`} aria-label="Email"><Mail /></a></div><Link href="/admin" className="admin-entry">Admin Panel</Link></div>
+      <div><h3>आमच्याशी जोडा</h3><div className="social-row"><a href={settings.youtube_url || shivrakshakYoutube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube /></a><a href={settings.instagram_url || shivrakshakInstagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram /></a>{settings.facebook_url && <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook /></a>}<a href={shivrakshakTelegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram"><Send /></a><a href={waLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle /></a><a href={`mailto:${settings.email}`} aria-label="Email"><Mail /></a></div><Link href="/admin" className="admin-entry">Admin Panel</Link></div>
     </footer>
     <a className="floating-whatsapp" href={waLink} target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle /></a>
   </main>

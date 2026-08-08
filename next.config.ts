@@ -7,6 +7,18 @@ const nextConfig: NextConfig = {
   // Images optimization
   images: {
     formats: ['image/webp', 'image/avif'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/vi/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'thtvsqxxbkhdapaxtcqi.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   // Faster builds
   experimental: {
@@ -15,3 +27,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
