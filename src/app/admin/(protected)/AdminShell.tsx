@@ -11,6 +11,10 @@ const navItems = [
   { href: '/admin/mess', icon: '🍽️', label: 'मेस' },
   { href: '/admin/whatsapp', icon: '📱', label: 'WhatsApp' },
   { href: '/admin/notices', icon: '📢', label: 'नोटीस' },
+  { href: '/admin/media', icon: '🖼️', label: 'फोटो व व्हिडिओ' },
+  { href: '/admin/attendance', icon: '📷', label: 'Live Attendance' },
+  { href: '/admin/exams', icon: '📝', label: 'Online परीक्षा' },
+  { href: '/admin/settings', icon: '⚙️', label: 'Website Settings' },
 ]
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
