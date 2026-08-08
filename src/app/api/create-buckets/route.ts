@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 import { getAdminUser } from '@/lib/admin-auth'
+import { DOCUMENT_MIME_TYPES, MAX_DOCUMENT_BYTES } from '@/lib/document-policy'
 
 // Visit: http://localhost:3000/api/create-buckets
 export async function POST() {
@@ -22,8 +23,8 @@ export async function POST() {
   for (const bucket of buckets) {
     const { error } = await supabase.storage.createBucket(bucket.name, {
       public: bucket.public,
-      fileSizeLimit: 10485760, // 10MB
-      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+      fileSizeLimit: MAX_DOCUMENT_BYTES,
+      allowedMimeTypes: [...DOCUMENT_MIME_TYPES],
     })
 
     if (error && !error.message.includes('already exists')) {

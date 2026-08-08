@@ -2,102 +2,13 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-const SQL = `-- शिवरक्षक करियर अकॅडमी — Database Setup
--- हे सर्व copy करा आणि Supabase SQL Editor मध्ये paste करून Run दाबा
+const SQL = `Security note: schema SQL is not embedded in the browser.
 
-CREATE TABLE IF NOT EXISTS students (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  roll_number TEXT UNIQUE,
-  name TEXT NOT NULL,
-  parent_name TEXT,
-  address TEXT,
-  phone TEXT,
-  parent_phone TEXT,
-  aadhaar_no TEXT,
-  guarantee_letter_no TEXT,
-  dob DATE,
-  course TEXT,
-  admission_date DATE,
-  duration TEXT,
-  age INTEGER,
-  height NUMERIC(5,2),
-  weight NUMERIC(5,2),
-  chest NUMERIC(5,2),
-  gender TEXT DEFAULT 'male',
-  total_fee NUMERIC(10,2) DEFAULT 0,
-  photo_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+Review and apply these repository files in order using the Supabase SQL Editor:
+1. SUPABASE-SETUP.sql
+2. supabase/security-hardening.sql
 
-CREATE TABLE IF NOT EXISTS fee_payments (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
-  amount_paid NUMERIC(10,2) NOT NULL,
-  payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  payment_mode TEXT DEFAULT 'cash',
-  receipt_no TEXT,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS documents (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
-  doc_type TEXT NOT NULL,
-  file_url TEXT NOT NULL,
-  file_name TEXT,
-  uploaded_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS mess_subscriptions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
-  start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
-  amount NUMERIC(10,2) DEFAULT 0,
-  is_active BOOLEAN DEFAULT TRUE,
-  reminder_sent BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS notices (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  content TEXT,
-  category TEXT DEFAULT 'general',
-  attachment_url TEXT,
-  is_published BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS whatsapp_logs (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  student_id UUID REFERENCES students(id) ON DELETE SET NULL,
-  phone_number TEXT NOT NULL,
-  message_type TEXT,
-  message_text TEXT,
-  status TEXT DEFAULT 'sent',
-  sent_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE OR REPLACE VIEW student_fee_summary AS
-SELECT
-  s.id, s.name, s.roll_number, s.parent_phone, s.course, s.total_fee,
-  COALESCE(SUM(fp.amount_paid), 0) AS total_paid,
-  s.total_fee - COALESCE(SUM(fp.amount_paid), 0) AS pending_amount
-FROM students s
-LEFT JOIN fee_payments fp ON s.id = fp.student_id
-GROUP BY s.id, s.name, s.roll_number, s.parent_phone, s.course, s.total_fee;
-
-CREATE OR REPLACE VIEW mess_expiry_reminders AS
-SELECT ms.*, s.name AS student_name, s.phone AS student_phone, s.parent_phone
-FROM mess_subscriptions ms
-JOIN students s ON ms.student_id = s.id
-WHERE ms.is_active = TRUE
-  AND ms.end_date <= CURRENT_DATE + INTERVAL '2 days'
-  AND ms.end_date >= CURRENT_DATE;`
-
+Do not use an older copied setup script.`
 export default function SetupPage() {
   const [dbStatus, setDbStatus] = useState<'checking' | 'ok' | 'missing'>('checking')
   const [bucketsStatus, setBucketsStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
@@ -111,10 +22,7 @@ export default function SetupPage() {
   async function checkDB() {
     setDbStatus('checking')
     try {
-      const res = await fetch('/api/next-admission-code')
-      await res.json()
-      // If API responds with a code, DB is connected (or at least reachable)
-      // Try a more definitive check via students query
+      // Check the database directly using the authenticated admin session.
       const { createClient } = await import('@supabase/supabase-js')
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''

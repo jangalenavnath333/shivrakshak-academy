@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminUser } from '@/lib/admin-auth'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-
-const allowedTypes = new Set(['photo', 'signature', 'aadhaar_front', 'aadhaar_back', 'marksheet_10', 'marksheet_12', 'caste_certificate', 'domicile', 'sports_certificate', 'other'])
-const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+import { DOCUMENT_MIME_TYPE_SET, DOCUMENT_TYPE_SET, MAX_DOCUMENT_BYTES } from '@/lib/document-policy'
 
 export async function POST(request: Request) {
   if (!await getAdminUser()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -12,10 +10,10 @@ export async function POST(request: Request) {
   const docType = body.get('doc_type')
   const file = body.get('file')
 
-  if (typeof studentId !== 'string' || typeof docType !== 'string' || !allowedTypes.has(docType) || !(file instanceof File)) {
+  if (typeof studentId !== 'string' || typeof docType !== 'string' || !DOCUMENT_TYPE_SET.has(docType) || !(file instanceof File)) {
     return NextResponse.json({ error: 'Invalid upload' }, { status: 400 })
   }
-  if (!allowedMimeTypes.has(file.type) || file.size > 10 * 1024 * 1024) {
+  if (!DOCUMENT_MIME_TYPE_SET.has(file.type) || file.size > MAX_DOCUMENT_BYTES) {
     return NextResponse.json({ error: 'File must be PDF/JPG/PNG/WEBP and at most 10MB' }, { status: 400 })
   }
 

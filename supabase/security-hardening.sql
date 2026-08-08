@@ -59,9 +59,11 @@ drop policy if exists "allow_all_wa" on public.whatsapp_logs;
 drop policy if exists "admin_all_students" on public.students;
 drop policy if exists "admin_all_fees" on public.fee_payments;
 drop policy if exists "admin_all_documents" on public.documents;
+drop policy if exists "admin_all_docs" on public.documents;
 drop policy if exists "admin_all_mess" on public.mess_subscriptions;
 drop policy if exists "admin_all_notices" on public.notices;
 drop policy if exists "admin_all_whatsapp_logs" on public.whatsapp_logs;
+drop policy if exists "admin_all_wa" on public.whatsapp_logs;
 drop policy if exists "public_read_published_notices" on public.notices;
 
 create policy "admin_all_students" on public.students
@@ -97,6 +99,7 @@ drop policy if exists "public_delete" on storage.objects;
 drop policy if exists "admin_manage_student_documents" on storage.objects;
 drop policy if exists "public_read_public_academy_files" on storage.objects;
 drop policy if exists "admin_manage_academy_files" on storage.objects;
+drop policy if exists "admin_storage_all" on storage.objects;
 
 create policy "public_read_public_academy_files" on storage.objects
   for select to anon, authenticated

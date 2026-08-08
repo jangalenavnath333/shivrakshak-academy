@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createSupabaseAdminClient } from '@/lib/supabase-admin'
+import { DOCUMENT_MIME_TYPE_SET, DOCUMENT_TYPE_SET, MAX_ADMISSION_DOCUMENT_BYTES, MAX_DOCUMENT_BYTES } from '@/lib/document-policy'
 
 const optionalNumber = (schema: z.ZodNumber) =>
   z.preprocess((value) => value === '' ? undefined : value, schema.optional())
@@ -26,13 +27,6 @@ const admissionSchema = z.object({
   agreed: z.literal('true'),
 })
 
-const allowedDocumentTypes = new Set([
-  'photo', 'signature', 'aadhaar_front', 'aadhaar_back', 'marksheet_10',
-  'marksheet_12', 'caste_certificate', 'domicile', 'sports_certificate', 'other',
-])
-const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
-const maxFileSize = 10 * 1024 * 1024
-
 export async function POST(request: Request) {
   try {
     const body = await request.formData()
@@ -45,11 +39,16 @@ export async function POST(request: Request) {
     }
 
     const files = Array.from(body.entries()).filter((entry): entry is [string, File] => entry[1] instanceof File)
+    const seenTypes = new Set<string>()
+    let totalBytes = 0
     for (const [key, file] of files) {
-      if (!key.startsWith('document:') || !allowedDocumentTypes.has(key.slice(9))) {
+      const documentType = key.startsWith('document:') ? key.slice(9) : ''
+      if (!DOCUMENT_TYPE_SET.has(documentType) || seenTypes.has(documentType)) {
         return NextResponse.json({ error: 'Invalid document type' }, { status: 400 })
       }
-      if (!allowedMimeTypes.has(file.type) || file.size > maxFileSize) {
+      seenTypes.add(documentType)
+      totalBytes += file.size
+      if (!DOCUMENT_MIME_TYPE_SET.has(file.type) || file.size > MAX_DOCUMENT_BYTES || totalBytes > MAX_ADMISSION_DOCUMENT_BYTES) {
         return NextResponse.json({ error: `Invalid document: ${file.name}` }, { status: 400 })
       }
     }

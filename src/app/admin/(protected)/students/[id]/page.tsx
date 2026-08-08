@@ -1,27 +1,25 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { COURSES, DOC_TYPES, formatDate, formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
-import type { Student, FeePayment, Document, MessSubscription } from '@/types'
+import type { Student, FeePayment, Document } from '@/types'
 
 async function getStudentData(id: string) {
   const supabase = await createSupabaseServerClient()
-  const [studentRes, feesRes, docsRes, messRes] = await Promise.all([
+  const [studentRes, feesRes, docsRes] = await Promise.all([
     supabase.from('students').select('*').eq('id', id).single(),
     supabase.from('fee_payments').select('*').eq('student_id', id).order('payment_date', { ascending: false }),
     supabase.from('documents').select('*').eq('student_id', id),
-    supabase.from('mess_subscriptions').select('*').eq('student_id', id).order('start_date', { ascending: false }).limit(5),
   ])
   return {
     student: studentRes.data as Student | null,
     fees: feesRes.data as FeePayment[] || [],
     docs: docsRes.data as Document[] || [],
-    mess: messRes.data as MessSubscription[] || [],
   }
 }
 
 export default async function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { student, fees, docs, mess } = await getStudentData(id)
+  const { student, fees, docs } = await getStudentData(id)
 
   if (!student) {
     return <div style={{ padding: 40, textAlign: 'center' }}>विद्यार्थी सापडला नाही</div>
