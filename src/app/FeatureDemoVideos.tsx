@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Camera, MonitorCheck, Play, RotateCcw } from 'lucide-react'
+import { Camera, LoaderCircle, MonitorCheck, Play, RefreshCw, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 
 export interface FeatureDemoVideo {
@@ -28,6 +28,23 @@ function getYouTubeVideoId(url: string) {
 
 export default function FeatureDemoVideos({ videos }: { videos: FeatureDemoVideo[] }) {
   const [activeVideo, setActiveVideo] = useState<string | null>(null)
+  const [playbackState, setPlaybackState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const [attempt, setAttempt] = useState(0)
+
+  function play(videoId: string) {
+    setActiveVideo(videoId)
+    setPlaybackState('loading')
+  }
+
+  function reset() {
+    setActiveVideo(null)
+    setPlaybackState('idle')
+  }
+
+  function retry() {
+    setAttempt((value) => value + 1)
+    setPlaybackState('loading')
+  }
 
   return <div className="feature-demo-grid">
     {videos.map((video) => {
@@ -40,27 +57,47 @@ export default function FeatureDemoVideos({ videos }: { videos: FeatureDemoVideo
           {!isActive ? <button
             className="feature-demo-poster"
             type="button"
-            onClick={() => setActiveVideo(video.id)}
+            onClick={() => play(video.id)}
             aria-label={`${video.title} demo play करा`}
           >
             <Image src={video.poster} alt="" fill sizes="(max-width: 720px) 100vw, 50vw" />
             <span className="feature-demo-play"><Play fill="currentColor" /></span>
             <span className="feature-demo-action">Demo पाहण्यासाठी play करा</span>
           </button> : youtubeId ? <iframe
+            key={`${video.id}-${attempt}`}
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&playsinline=1`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
-          /> : <video autoPlay controls playsInline preload="metadata" poster={video.poster}>
+            onLoad={() => setPlaybackState('ready')}
+            onError={() => setPlaybackState('error')}
+          /> : <video
+            key={`${video.id}-${attempt}`}
+            autoPlay
+            controls
+            playsInline
+            preload="metadata"
+            poster={video.poster}
+            onCanPlay={() => setPlaybackState('ready')}
+            onError={() => setPlaybackState('error')}
+          >
             <source src={video.url} type="video/mp4" />
             तुमचा browser हा video play करू शकत नाही.
           </video>}
+          {isActive && playbackState === 'loading' ? <div className="feature-demo-status" role="status">
+            <LoaderCircle className="feature-demo-spinner" />
+            <strong>Video सुरू होत आहे…</strong>
+          </div> : null}
+          {isActive && playbackState === 'error' ? <div className="feature-demo-status feature-demo-error" role="alert">
+            <strong>Video load झाला नाही.</strong>
+            <button type="button" onClick={retry}><RefreshCw /> पुन्हा प्रयत्न करा</button>
+          </div> : null}
         </div>
         <div className="feature-demo-copy">
           <Icon />
           <div><strong>{video.title}</strong><p>{video.description}</p></div>
-          {isActive ? <button type="button" onClick={() => setActiveVideo(null)}><RotateCcw /> Poster पहा</button> : null}
+          {isActive ? <button type="button" onClick={reset}><RotateCcw /> Poster पहा</button> : null}
         </div>
       </article>
     })}

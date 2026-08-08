@@ -60,6 +60,13 @@ export async function POST(request: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })
   } else if (action === 'media.create') {
+    if (payload.placement.startsWith('demo-')) {
+      if (payload.media_type === 'image' || !payload.thumbnail_url) {
+        return NextResponse.json({ error: 'Demo video आणि त्याचा poster photo आवश्यक आहे.' }, { status: 400 })
+      }
+      const { error: replaceError } = await supabase.from('media_assets').delete().eq('placement', payload.placement)
+      if (replaceError) return NextResponse.json({ error: replaceError.message }, { status: 400 })
+    }
     const { data, error } = await supabase.from('media_assets').insert({ ...payload, thumbnail_url: payload.thumbnail_url || null }).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })

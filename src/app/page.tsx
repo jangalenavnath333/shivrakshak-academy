@@ -99,6 +99,15 @@ export default async function HomePage() {
   const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('नमस्कार, मला शिवरक्षक अकॅडमीबद्दल माहिती हवी आहे.')}`
 
   return <main className="academy-site" id="home">
+    <span
+      hidden
+      aria-hidden="true"
+      data-design-thesis="Real academy proof first; technology demos explain trust without replacing the human story."
+      data-design-own-world="Warm training-ground photography, paper surfaces, deep navy, olive and saffron."
+      data-design-story="Aspiration, academy proof, preparation choices, technology workflows, results and enquiry."
+      data-design-first-viewport="Marathi promise, real training image, admission action and academy credibility."
+      data-design-form="established-extension-system-demo-v1"
+    />
     <SiteNav phone={phone} />
 
     <section className="academy-hero">
