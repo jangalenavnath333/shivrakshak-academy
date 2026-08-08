@@ -12,6 +12,7 @@ import SiteNav from './SiteNav'
 import Logo from '@/components/Logo'
 import EnquiryForm from './EnquiryForm'
 import VideoShowcase from './VideoShowcase'
+import FeatureDemoVideos from './FeatureDemoVideos'
 
 const fallbackSettings: SiteSettings = {
   id: 1,
@@ -61,17 +62,38 @@ async function getHomeData() {
   }
 }
 
-const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v4'], { revalidate: 300 })
+const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v5'], { revalidate: 300 })
 
 const shivdalYoutube = 'https://www.youtube.com/@Shivdal_career_academy'
 const shivrakshakYoutube = 'https://www.youtube.com/@shivrakshak_academy_01'
 const shivrakshakInstagram = 'https://www.instagram.com/shivrakshak_academy_01/'
 const shivrakshakTelegram = 'https://t.me/shivrakshakcareeracademy'
+const academyMediaBase = 'https://bytoykdukngbwiespbwc.supabase.co/storage/v1/object/public/academy-media/website'
 
 export default async function HomePage() {
   const { settings, media, courses, notices } = await getCachedHomeData()
   const hero = media.find((item) => item.placement === 'hero')?.url || '/academy-hero-v2.jpg'
-  const videos = media.filter((item) => item.media_type !== 'image').slice(0, 4)
+  const videos = media.filter((item) => item.media_type !== 'image' && !item.placement.startsWith('demo-')).slice(0, 8)
+  const faceDemo = media.find((item) => item.placement === 'demo-face-attendance')
+  const examDemo = media.find((item) => item.placement === 'demo-online-exam')
+  const featureDemos = [
+    {
+      id: faceDemo?.id || 'demo-face-attendance',
+      kind: 'face' as const,
+      title: faceDemo?.title || 'Face Attendance — कार्यपद्धती',
+      description: 'Camera scanपासून उपस्थिती confirmationपर्यंतची संपूर्ण प्रक्रिया पहा.',
+      url: faceDemo?.url || `${academyMediaBase}/demo-face-attendance-20260809.mp4`,
+      poster: faceDemo?.thumbnail_url || `${academyMediaBase}/demo-face-attendance-poster-20260809.png`,
+    },
+    {
+      id: examDemo?.id || 'demo-online-exam',
+      kind: 'exam' as const,
+      title: examDemo?.title || 'Live Online Exam — कार्यपद्धती',
+      description: 'Login, timer, प्रश्न, submission आणि instant result कसा मिळतो ते पहा.',
+      url: examDemo?.url || `${academyMediaBase}/demo-live-online-exam-20260809.mp4`,
+      poster: examDemo?.thumbnail_url || `${academyMediaBase}/demo-live-online-exam-poster-20260809.png`,
+    },
+  ]
   const phone = settings.phone || fallbackSettings.phone!
   const whatsapp = settings.whatsapp || phone
   const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('नमस्कार, मला शिवरक्षक अकॅडमीबद्दल माहिती हवी आहे.')}`
@@ -132,6 +154,15 @@ export default async function HomePage() {
       </div>
     </section>
 
+    <section className="feature-demo-section" id="system-demo">
+      <div className="feature-demo-heading">
+        <h2>विद्यार्थ्यांसाठी system कसे काम करते?</h2>
+        <p>Face Attendance आणि Live Online Examची सोपी, step-by-step AI प्रात्यक्षिके. Academyचा खरा video admin panelमधून नंतर replace करता येईल.</p>
+      </div>
+      <FeatureDemoVideos videos={featureDemos} />
+      <p className="feature-demo-note">ही समजावण्यासाठी तयार केलेली AI प्रात्यक्षिके आहेत; दाखवलेली व्यक्ती वास्तविक विद्यार्थी नाही.</p>
+    </section>
+
     <section className="video-section" id="videos">
       <div className="section-heading"><h2>मैदानी सराव आणि मार्गदर्शन</h2><p>शिवरक्षक अकॅडमीचे प्रशिक्षण आणि विद्यार्थ्यांची प्रत्यक्ष तयारी पहा.</p></div>
       <div className="channel-actions" aria-label="अकॅडमीचे social channels">
@@ -179,4 +210,3 @@ export default async function HomePage() {
     <a className="floating-whatsapp" href={waLink} target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle /></a>
   </main>
 }
-

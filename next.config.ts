@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         hostname: 'thtvsqxxbkhdapaxtcqi.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'bytoykdukngbwiespbwc.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   // Faster builds
@@ -27,4 +32,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
