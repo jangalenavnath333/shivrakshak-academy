@@ -1,14 +1,16 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { unstable_cache } from 'next/cache'
 import {
   ArrowRight, Award, BookOpenCheck, Camera, CheckCircle2, Clock3,
   Facebook, Instagram, Mail, MapPin, MessageCircle, MonitorCheck,
   Phone, PlayCircle, ShieldCheck, Target, Users, Youtube,
 } from 'lucide-react'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { createPublicSiteClient } from '@/lib/public-site-supabase'
 import type { Course, MediaAsset, Notice, SiteSettings } from '@/types'
 import SiteNav from './SiteNav'
 import Logo from '@/components/Logo'
+import EnquiryForm from './EnquiryForm'
 
 const fallbackSettings: SiteSettings = {
   id: 1,
@@ -31,7 +33,7 @@ const fallbackCourses = [
 
 async function getHomeData() {
   try {
-    const supabase = await createSupabaseServerClient()
+    const supabase = createPublicSiteClient()
     const [settings, media, courses, notices] = await Promise.all([
       supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
       supabase.from('media_assets').select('*').eq('is_published', true).order('sort_order'),
@@ -49,8 +51,10 @@ async function getHomeData() {
   }
 }
 
+const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data'], { revalidate: 300 })
+
 export default async function HomePage() {
-  const { settings, media, courses, notices } = await getHomeData()
+  const { settings, media, courses, notices } = await getCachedHomeData()
   const hero = media.find((item) => item.placement === 'hero')?.url || '/academy-hero-v2.png'
   const videos = media.filter((item) => item.media_type !== 'image').slice(0, 3)
   const phone = settings.phone || fallbackSettings.phone!
@@ -92,7 +96,7 @@ export default async function HomePage() {
         {courses.slice(0, 4).map((course, index) => {
           const dynamicImage = media.find((item) => item.placement === `course-${course.slug}`)?.url
           return <article className="course-tile" key={course.id}>
-            <div className={`course-photo course-scene-${index}`}>{dynamicImage && <Image src={dynamicImage} alt={course.title} fill sizes="(max-width: 720px) 100vw, 25vw" />}</div>
+            <div className="course-photo">{dynamicImage ? <Image src={dynamicImage} alt={course.title} fill sizes="(max-width: 720px) 100vw, 25vw" /> : <Image className={`course-scene course-scene-${index}`} src="/course-scenes.png" alt={course.title} fill sizes="(max-width: 720px) 100vw, 25vw" />}</div>
             <div className="course-content"><h3>{course.title}</h3><p>{course.description}</p><ul><li><CheckCircle2 /> नियमित सराव व चाचण्या</li><li><CheckCircle2 /> तज्ज्ञांचे वैयक्तिक मार्गदर्शन</li></ul><a href="#contact">अधिक माहिती <ArrowRight size={16} /></a></div>
           </article>
         })}
@@ -122,7 +126,7 @@ export default async function HomePage() {
       <div className="section-heading"><h2>अकॅडमीचे क्षण</h2><p>Admin panelमधून निवड, प्रशिक्षण आणि कार्यक्रमांचे फोटो बदला.</p></div>
       <div className="results-gallery">{Array.from({ length: 6 }).map((_, index) => {
         const photo = media.find((item) => item.placement === `result-${index + 1}`)?.url
-        return <div className={`selected-student selected-student-${index}`} key={index}>{photo && <Image src={photo} alt={`अकॅडमी फोटो ${index + 1}`} fill sizes="(max-width: 600px) 50vw, 16vw" />}</div>
+        return <div className="selected-student" key={index}>{photo ? <Image src={photo} alt={`अकॅडमी फोटो ${index + 1}`} fill sizes="(max-width: 600px) 50vw, 16vw" /> : <Image className={`selected-scene selected-student-${index}`} src="/selected-students.png" alt={`निवड झालेला विद्यार्थी ${index + 1}`} fill sizes="(max-width: 600px) 50vw, 16vw" />}</div>
       })}</div>
       <p className="photo-note">वरील नमुना छायाचित्रे admin panel मधून वास्तविक निवड झालेल्या विद्यार्थ्यांच्या फोटोंनी बदलता येतात.</p>
       <h3 className="commitment-title">विद्यार्थ्यांसाठी आमची बांधिलकी</h3>
@@ -137,7 +141,7 @@ export default async function HomePage() {
 
     <section className="help-section">
       <div className="faq-card"><h3>वारंवार विचारले जाणारे प्रश्न</h3>{['प्रवेश प्रक्रिया कशी आहे?','कोर्स कालावधी किती आहे?','वसतिगृहाची सुविधा आहे का?','शारीरिक चाचणीसाठी काय तयारी करावी?','अभ्यास साहित्य उपलब्ध आहे का?'].map(question => <details key={question}><summary>{question}</summary><p>अधिकृत आणि अद्ययावत माहितीसाठी अकॅडमीशी फोन किंवा WhatsApp वर संपर्क करा.</p></details>)}</div>
-      <div className="enquiry-card"><h3>चौकशी फॉर्म</h3><form action="/admission"><div className="enquiry-fields"><input name="name" placeholder="पूर्ण नाव" required /><input name="phone" placeholder="मोबाईल नंबर" required /><input name="email" type="email" placeholder="ई-मेल (पर्यायी)" /><select name="course" defaultValue=""><option value="" disabled>कोर्स निवडा</option>{courses.slice(0,4).map(course => <option key={course.id} value={course.slug}>{course.title}</option>)}</select></div><textarea name="message" placeholder="तुमचा संदेश" /><button type="submit">संपर्क करा <ArrowRight /></button></form></div>
+      <div className="enquiry-card"><h3>चौकशी फॉर्म</h3><EnquiryForm courses={courses.slice(0,4).map(({ id, slug, title }) => ({ id, slug, title }))} /></div>
       <div className="quick-contact"><h3>संपर्क</h3><a href={`tel:${phone}`}><Phone /> {phone}</a><a href={waLink}><MessageCircle /> WhatsApp</a><a href={`mailto:${settings.email}`}><Mail /> {settings.email}</a><p><MapPin /> {settings.address}</p><a className="quick-wa" href={waLink}>WhatsApp वर त्वरित संपर्क करा <ArrowRight /></a></div>
     </section>
 
