@@ -1,7 +1,11 @@
 import Link from 'next/link'
+import {
+  ArrowRight, Award, BookOpenCheck, CheckCircle2, ChevronDown,
+  Dumbbell, GraduationCap, MapPin, Menu, MessageCircle, Phone,
+  Quote, ShieldCheck, Star, Target, Trophy, Users, X,
+} from 'lucide-react'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import type { Notice } from '@/types'
-import SiteNav from './SiteNav'
 import Logo from '@/components/Logo'
 
 const WA_LINK = 'https://wa.me/917720991375?text=%E0%A4%A8%E0%A4%AE%E0%A4%B8%E0%A5%8D%E0%A4%95%E0%A4%BE%E0%A4%B0%2C%20%E0%A4%AE%E0%A4%B2%E0%A4%BE%20%E0%A4%B6%E0%A4%BF%E0%A4%B5%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%95%20%E0%A4%85%E0%A4%95%E0%A5%85%E0%A4%A1%E0%A4%AE%E0%A5%80%E0%A4%AC%E0%A4%A6%E0%A5%8D%E0%A4%A6%E0%A4%B2%20%E0%A4%AE%E0%A4%BE%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%80%20%E0%A4%B9%E0%A4%B5%E0%A5%80%20%E0%A4%B9%E0%A5%8B%E0%A4%A4%E0%A5%80.'
@@ -9,289 +13,101 @@ const WA_LINK = 'https://wa.me/917720991375?text=%E0%A4%A8%E0%A4%AE%E0%A4%B8%E0%
 async function getLatestNotices(): Promise<Notice[]> {
   try {
     const supabase = await createSupabaseServerClient()
-    const { data } = await supabase
-      .from('notices')
-      .select('*')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(6)
+    const { data } = await supabase.from('notices').select('*').eq('is_published', true).order('created_at', { ascending: false }).limit(4)
     return data || []
-  } catch {
-    return []
-  }
+  } catch { return [] }
 }
 
-const COURSES = [
-  { emoji: '🚔', name: 'पोलीस भरती', desc: 'Maharashtra Police' },
-  { emoji: '💂', name: 'आर्मी / अग्निवीर', desc: 'Indian Army' },
-  { emoji: '⚓', name: 'नेव्ही', desc: 'Indian Navy' },
-  { emoji: '✈️', name: 'वायुसेना', desc: 'Indian Airforce' },
-  { emoji: '📋', name: 'एम.पी.एस.सी', desc: 'MPSC Exam' },
-  { emoji: '🚂', name: 'रेल्वे भरती', desc: 'Railway Bharti' },
-  { emoji: '📝', name: 'सरळ सेवा', desc: 'Direct Service' },
-  { emoji: '👔', name: 'स्टाफ सिलेक्शन', desc: 'SSC / CISF / BSF' },
+const courses = [
+  { icon: ShieldCheck, title: 'à¤ªà¥‹à¤²à¥€à¤¸ à¤­à¤°à¤¤à¥€', text: 'à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤šà¤¾à¤šà¤£à¥€, à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤¾, à¤®à¤¾à¤¨à¤¸à¤¿à¤• à¤•à¥à¤·à¤®à¤¤à¤¾ à¤†à¤£à¤¿ à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨.', tags: ['Ground', 'Written', 'Mock Tests'] },
+  { icon: Target, title: 'à¤†à¤°à¥à¤®à¥€ / à¤…à¤—à¥à¤¨à¤¿à¤µà¥€à¤°', text: 'à¤¶à¤¾à¤°à¥€à¤°à¤¿à¤• à¤•à¥à¤·à¤®à¤¤à¤¾, à¤¶à¤¿à¤¸à¥à¤¤, GD à¤†à¤£à¤¿ à¤­à¤°à¤¤à¥€ à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¥‡à¤šà¥€ à¤¸à¤‚à¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¯à¤¾à¤°à¥€.', tags: ['Physical', 'GD', 'Interview'] },
+  { icon: Dumbbell, title: 'SRPF à¤µ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¦à¤²', text: 'SRPF, CISF, BSF à¤†à¤£à¤¿ à¤¸à¤‚à¤¬à¤‚à¤§à¤¿à¤¤ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¦à¤²à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤²à¤•à¥à¤·à¥à¤¯à¤¿à¤¤ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£.', tags: ['Running', 'Strength', 'Theory'] },
+  { icon: BookOpenCheck, title: 'à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤¾', text: 'à¤—à¤£à¤¿à¤¤, à¤¬à¥à¤¦à¥à¤§à¤¿à¤®à¤¤à¥à¤¤à¤¾, à¤®à¤°à¤¾à¤ à¥€, à¤‡à¤‚à¤—à¥à¤°à¤œà¥€ à¤†à¤£à¤¿ à¤¸à¤¾à¤®à¤¾à¤¨à¥à¤¯ à¤œà¥à¤žà¤¾à¤¨à¤¾à¤šà¤¾ à¤¸à¤–à¥‹à¤² à¤…à¤­à¥à¤¯à¤¾à¤¸.', tags: ['Daily Class', 'Test Series', 'Notes'] },
 ]
 
-const FEATURES = [
-  { icon: '🎖️', title: 'माजी सैनिक प्रशिक्षक', desc: 'सेवानिवृत्त लष्करी अधिकाऱ्यांकडून प्रत्यक्ष मैदानी मार्गदर्शन आणि शिस्तबद्ध प्रशिक्षण.' },
-  { icon: '🏃', title: 'दैनिक शारीरिक प्रशिक्षण', desc: 'सकाळी Ground Training — Running, Long Jump, High Jump, Shot Put, Pull-ups, Drill.' },
-  { icon: '📚', title: 'लेखी परीक्षा तयारी', desc: 'GK, गणित, मराठी, इंग्रजी, बुद्धिमत्ता — संपूर्ण अभ्यासक्रम आणि नियमित Test Series.' },
-  { icon: '🍽️', title: 'निवास व मेस सुविधा', desc: 'बाहेरगावच्या विद्यार्थ्यांसाठी सुरक्षित वसतिगृह आणि पौष्टिक मेस सुविधा उपलब्ध.' },
-  { icon: '🏆', title: 'सिद्ध निकाल', desc: '500+ विद्यार्थी महाराष्ट्र पोलीस, आर्मी, नेव्ही, रेल्वे मध्ये यशस्वीरित्या रुजू.' },
-  { icon: '📱', title: 'Online प्रवेश व Updates', desc: 'घरबसल्या online प्रवेश अर्ज, PDF पावती, आणि WhatsApp वर तात्काळ सूचना.' },
+const faq = [
+  ['à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¤¾ à¤•à¤¶à¥€ à¤†à¤¹à¥‡?', 'à¤‘à¤¨à¤²à¤¾à¤‡à¤¨ à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤…à¤°à¥à¤œ à¤­à¤°à¤¾ à¤•à¤¿à¤‚à¤µà¤¾ à¤…à¤•à¥…à¤¡à¤®à¥€à¤²à¤¾ à¤­à¥‡à¤Ÿ à¤¦à¥à¤¯à¤¾. à¤…à¤°à¥à¤œà¤¾à¤¨à¤‚à¤¤à¤° à¤†à¤®à¤šà¥€ à¤Ÿà¥€à¤® à¤ªà¥à¤¢à¥€à¤² à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¤¾ à¤¸à¤®à¤œà¤¾à¤µà¥‚à¤¨ à¤¸à¤¾à¤‚à¤—à¥‡à¤².'],
+  ['à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤†à¤£à¤¿ à¤²à¥‡à¤–à¥€ à¤¦à¥‹à¤¨à¥à¤¹à¥€ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£ à¤®à¤¿à¤³à¤¤à¥‡ à¤•à¤¾?', 'à¤¹à¥‹à¤¯. à¤¨à¤¿à¤µà¤¡à¤²à¥‡à¤²à¥à¤¯à¤¾ à¤•à¥‹à¤°à¥à¤¸à¤¨à¥à¤¸à¤¾à¤° à¤¶à¤¾à¤°à¥€à¤°à¤¿à¤• à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£, à¤²à¥‡à¤–à¥€ à¤µà¤°à¥à¤—, à¤Ÿà¥‡à¤¸à¥à¤Ÿ à¤¸à¤¿à¤°à¥€à¤œ à¤†à¤£à¤¿ à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤¦à¤¿à¤²à¥‡ à¤œà¤¾à¤¤à¥‡.'],
+  ['à¤¨à¤¿à¤µà¤¾à¤¸ à¤µ à¤®à¥‡à¤¸ à¤¸à¥à¤µà¤¿à¤§à¤¾ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤†à¤¹à¥‡ à¤•à¤¾?', 'à¤¹à¥‹à¤¯. à¤¬à¤¾à¤¹à¥‡à¤°à¤—à¤¾à¤µà¤šà¥à¤¯à¤¾ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥à¤¯à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¨à¤¿à¤µà¤¾à¤¸ à¤†à¤£à¤¿ à¤®à¥‡à¤¸ à¤¸à¥à¤µà¤¿à¤§à¥‡à¤¬à¤¦à¥à¤¦à¤² à¤ªà¥à¤°à¤µà¥‡à¤¶à¤¾à¤µà¥‡à¤³à¥€ à¤®à¤¾à¤¹à¤¿à¤¤à¥€ à¤¦à¤¿à¤²à¥€ à¤œà¤¾à¤¤à¥‡.'],
+  ['à¤®à¥à¤²à¥€à¤‚à¤¸à¤¾à¤ à¥€ à¤¸à¥à¤µà¤¤à¤‚à¤¤à¥à¤° à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤†à¤¹à¥‡ à¤•à¤¾?', 'à¤¹à¥‹à¤¯. à¤®à¤¹à¤¿à¤²à¤¾ à¤‰à¤®à¥‡à¤¦à¤µà¤¾à¤°à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤µà¤¾à¤¤à¤¾à¤µà¤°à¤£ à¤†à¤£à¤¿ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¥‡à¤¨à¥à¤¸à¤¾à¤° à¤¸à¥à¤µà¤¤à¤‚à¤¤à¥à¤° à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤†à¤¹à¥‡.'],
 ]
 
 export default async function HomePage() {
   const notices = await getLatestNotices()
 
   return (
-    <div className="site">
-      <SiteNav />
+    <main className="landing-v2">
+      {/* THESIS: disciplined momentum, not a generic coaching template. OWN-WORLD: warm white, command navy, field olive, decisive saffron. STORY: see the standard, trust the system, begin admission. FIRST VIEWPORT: statement left, aspirants in motion right, action immediately visible. FORM: editorial recruitment field-guide; seed shivrakshak-2026. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
+      <header className="v2-header">
+        <a className="v2-brand" href="#top" aria-label="à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤…à¤•à¥…à¤¡à¤®à¥€ à¤®à¥à¤–à¥à¤¯à¤ªà¥ƒà¤·à¥à¤ "><Logo size={48} /><span><b>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤•</b><small>à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€</small></span></a>
+        <nav className="v2-nav" aria-label="à¤®à¥à¤–à¥à¤¯ à¤¨à¥‡à¤µà¥à¤¹à¤¿à¤—à¥‡à¤¶à¤¨">
+          <a href="#about">à¤†à¤®à¤šà¥à¤¯à¤¾à¤¬à¤¦à¥à¤¦à¤²</a><a href="#courses">à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸</a><a href="#results">à¤¯à¤¶à¥‹à¤—à¤¾à¤¥à¤¾</a><a href="#notices">à¤¸à¥‚à¤šà¤¨à¤¾</a><a href="#contact">à¤¸à¤‚à¤ªà¤°à¥à¤•</a>
+        </nav>
+        <a className="v2-top-cta" href="tel:9284842177"><Phone size={17} /> à¤®à¥‹à¤«à¤¤ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨</a>
+      </header>
 
-      {/* ══ TICKER ══ */}
-      <div className="ticker no-print">
-        <div className="ticker-track">
-          <span>🏆 पोलीस भरती 2024-25 नवीन Batch सुरू &nbsp;•&nbsp; ⚡ अग्निवीर Army Batch प्रवेश चालू &nbsp;•&nbsp; 📞 माहितीसाठी: 9284842177 &nbsp;•&nbsp; 🎯 MPSC Batch लवकरच &nbsp;•&nbsp; ✈️ Navy व Airforce Batch प्रवेश सुरू &nbsp;•&nbsp; 🍽️ मेस व वसतिगृह सुविधा उपलब्ध &nbsp;•&nbsp;&nbsp;</span>
-          <span>🏆 पोलीस भरती 2024-25 नवीन Batch सुरू &nbsp;•&nbsp; ⚡ अग्निवीर Army Batch प्रवेश चालू &nbsp;•&nbsp; 📞 माहितीसाठी: 9284842177 &nbsp;•&nbsp; 🎯 MPSC Batch लवकरच &nbsp;•&nbsp; ✈️ Navy व Airforce Batch प्रवेश सुरू &nbsp;•&nbsp; 🍽️ मेस व वसतिगृह सुविधा उपलब्ध &nbsp;•&nbsp;&nbsp;</span>
-        </div>
-      </div>
-
-      {/* ══ HERO ══ */}
-      <section className="hero tactical-bg">
-        <div className="ring ring-1" />
-        <div className="ring ring-2" />
-        <div className="ring ring-3" />
-
-        <div className="hero-inner">
-          <div className="hero-content">
-            <div className="eyebrow">🇮🇳 &nbsp; महाराष्ट्रातील विश्वासार्ह अकॅडमी · SINCE 2018</div>
-
-            <h1 className="hero-title">
-              <span className="line1">शिवरक्षक</span>
-              <span className="line2">करियर अकॅडमी</span>
-            </h1>
-
-            <p className="hero-lead">
-              पोलीस &nbsp;•&nbsp; आर्मी &nbsp;•&nbsp; नेव्ही &nbsp;•&nbsp; एम.पी.एस.सी.<br />
-              <strong style={{ color: '#e2e8f0' }}>भरतीपूर्व संपूर्ण प्रशिक्षण — अहमदनगर</strong>
-            </p>
-            <p className="hero-addr">
-              📍 न्यू आर्टस् कॉलेजच्या पाठीमागे, गौरव स्पोट्स जवळ, बालिकाश्रम रोड, अ.नगर
-            </p>
-
-            <div className="hero-cta">
-              <Link href="/admission" className="btn-hero">📋 प्रवेश अर्ज भरा</Link>
-              <a href={WA_LINK} target="_blank" rel="noopener" className="btn-wa">💬 WhatsApp करा</a>
-              <a href="tel:9284842177" className="btn-ghost">📞 9284842177</a>
-            </div>
-
-            <div className="hero-stats">
-              {[
-                { num: '500+', label: 'यशस्वी विद्यार्थी', sub: 'Selected in Govt Jobs' },
-                { num: '8+', label: 'कोर्सेस', sub: 'Police, Army, Navy...' },
-                { num: '7+', label: 'वर्षे अनुभव', sub: 'Trusted Since 2018' },
-              ].map(s => (
-                <div key={s.num} className="hero-stat">
-                  <div className="stat-num">{s.num}</div>
-                  <div className="stat-label">{s.label}</div>
-                  <div className="stat-sub">{s.sub}</div>
-                </div>
-              ))}
-            </div>
+      <section id="top" className="v2-hero">
+        <div className="v2-hero-copy">
+          <span className="v2-kicker"><span /> à¤…à¤¹à¤®à¤¦à¤¨à¤—à¤° Â· à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤¸à¥à¤°à¥‚</span>
+          <h1>à¤µà¤°à¥à¤¦à¥€à¤šà¤‚ à¤¸à¥à¤µà¤ªà¥à¤¨,<br/><em>à¤†à¤¤à¤¾ à¤¹à¥‹à¤£à¤¾à¤° à¤ªà¥‚à¤°à¥à¤£!</em></h1>
+          <p>à¤ªà¥‹à¤²à¥€à¤¸, à¤†à¤°à¥à¤®à¥€, à¤…à¤—à¥à¤¨à¤¿à¤µà¥€à¤°, SRPF à¤†à¤£à¤¿ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¦à¤² à¤­à¤°à¤¤à¥€à¤¸à¤¾à¤ à¥€ à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤µ à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¥‡à¤šà¥€ à¤¶à¤¿à¤¸à¥à¤¤à¤¬à¤¦à¥à¤§, à¤ªà¤°à¤¿à¤£à¤¾à¤®à¤•à¤¾à¤°à¤• à¤¤à¤¯à¤¾à¤°à¥€.</p>
+          <div className="v2-actions"><Link href="/admission" className="v2-primary">à¤†à¤œà¤š à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤˜à¥à¤¯à¤¾ <ArrowRight size={19}/></Link><a href="#courses" className="v2-secondary">à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸ à¤ªà¤¹à¤¾ <ArrowRight size={18}/></a></div>
+          <div className="v2-trust">
+            <span><Award/> à¤…à¤¨à¥à¤­à¤µà¥€ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤•</span><span><Dumbbell/> à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ + à¤²à¥‡à¤–à¥€ à¤¤à¤¯à¤¾à¤°à¥€</span><span><Users/> à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨</span>
           </div>
+        </div>
+        <div className="v2-hero-photo" role="img" aria-label="à¤®à¥ˆà¤¦à¤¾à¤¨à¤¾à¤µà¤° à¤§à¤¾à¤µà¤£à¥à¤¯à¤¾à¤šà¤¾ à¤¸à¤°à¤¾à¤µ à¤•à¤°à¤£à¤¾à¤°à¥‡ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€">
+          <div className="v2-photo-note"><b>à¤¶à¤¿à¤¸à¥à¤¤. à¤®à¥‡à¤¹à¤¨à¤¤. à¤¯à¤¶.</b><span>à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤¦à¤¿à¤µà¤¸ à¤¨à¤¿à¤µà¤¡à¥€à¤šà¥à¤¯à¤¾ à¤¦à¤¿à¤¶à¥‡à¤¨à¥‡</span></div>
         </div>
       </section>
 
-      {/* ══ COURSES ══ */}
-      <section id="courses" className="section tactical-bg" style={{ background: 'var(--navy-950)' }}>
-        <div className="section-inner">
-          <div className="section-head">
-            <div className="eyebrow">COURSES OFFERED</div>
-            <h2 className="section-title">आमचे कोर्सेस</h2>
-            <p className="section-sub">सरकारी नोकरीच्या प्रत्येक भरतीसाठी संपूर्ण प्रशिक्षण — एकाच ठिकाणी</p>
-          </div>
-          <div className="grid-courses">
-            {COURSES.map(c => (
-              <div key={c.name} className="card course-card">
-                <div className="course-icon">{c.emoji}</div>
-                <div className="course-name">{c.name}</div>
-                <div className="course-desc">{c.desc}</div>
-              </div>
-            ))}
-          </div>
+      <section className="v2-numbers" aria-label="à¤…à¤•à¥…à¤¡à¤®à¥€à¤šà¥€ à¤®à¤¾à¤¹à¤¿à¤¤à¥€">
+        <div><strong>500+</strong><span>à¤¯à¤¶à¤¸à¥à¤µà¥€ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€</span></div><div><strong>8+</strong><span>à¤µà¤¿à¤¶à¥‡à¤· à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸</span></div><div><strong>7+</strong><span>à¤µà¤°à¥à¤·à¤¾à¤‚à¤šà¤¾ à¤…à¤¨à¥à¤­à¤µ</span></div><div><strong>100%</strong><span>à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£à¤¾à¤¸à¤¾à¤ à¥€ à¤¸à¤®à¤°à¥à¤ªà¤£</span></div>
+      </section>
+
+      <section id="courses" className="v2-section v2-courses">
+        <div className="v2-section-title"><div><span>à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤§à¥à¤¯à¥‡à¤¯à¤¾à¤¸à¤¾à¤ à¥€ à¤¯à¥‹à¤—à¥à¤¯ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£</span><h2>à¤­à¤°à¤¤à¥€à¤šà¥€ à¤¸à¤‚à¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¯à¤¾à¤°à¥€,<br/>à¤à¤•à¤¾ à¤µà¤¿à¤¶à¥à¤µà¤¾à¤¸à¤¾à¤°à¥à¤¹ à¤ à¤¿à¤•à¤¾à¤£à¥€.</h2></div><p>à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤•à¥‹à¤°à¥à¤¸à¤®à¤§à¥à¤¯à¥‡ à¤«à¤¿à¤Ÿà¤¨à¥‡à¤¸, à¤…à¤­à¥à¤¯à¤¾à¤¸, à¤Ÿà¥‡à¤¸à¥à¤Ÿ à¤†à¤£à¤¿ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨à¤¾à¤šà¤¾ à¤¸à¤®à¤¤à¥‹à¤² à¤†à¤°à¤¾à¤–à¤¡à¤¾.</p></div>
+        <div className="v2-course-grid">
+          {courses.map(({icon: Icon,title,text,tags}, index)=><article key={title} className="v2-course"><div className="v2-course-image v2-img"><span>0{index+1}</span><Icon/></div><div className="v2-course-body"><h3>{title}</h3><p>{text}</p><ul>{tags.map(t=><li key={t}><CheckCircle2/>{t}</li>)}</ul><a href={WA_LINK} target="_blank" rel="noopener noreferrer">à¤…à¤§à¤¿à¤• à¤®à¤¾à¤¹à¤¿à¤¤à¥€ <ArrowRight/></a></div></article>)}
         </div>
       </section>
 
-      {/* ══ ACHIEVEMENTS ══ */}
-      <section style={{ background: 'linear-gradient(135deg, #c2410c 0%, #b91c1c 45%, #7c2d12 100%)', padding: '60px 20px' }}>
-        <div className="section-inner">
-          <h2 style={{ fontSize: 30, fontWeight: 800, color: '#fff', margin: '0 0 34px', textAlign: 'center', letterSpacing: '-0.5px' }}>
-            आमची उपलब्धी
-          </h2>
-          <div className="grid-stats">
-            {[
-              { num: '500+', label: 'Selected Students', sub: 'सरकारी नोकरी मिळवली' },
-              { num: '8+', label: 'Courses', sub: 'विविध भरती परीक्षा' },
-              { num: '7+', label: 'Years', sub: '2018 पासून कार्यरत' },
-              { num: '100%', label: 'Dedication', sub: 'विद्यार्थ्यांप्रती समर्पण' },
-            ].map(a => (
-              <div key={a.label}>
-                <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', letterSpacing: '-1.5px', lineHeight: 1 }}>{a.num}</div>
-                <div style={{ color: 'rgba(255,255,255,0.92)', fontSize: 14, fontWeight: 700, marginTop: 8 }}>{a.label}</div>
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11.5, marginTop: 3 }}>{a.sub}</div>
-              </div>
-            ))}
-          </div>
+      <section id="about" className="v2-method">
+        <div className="v2-method-photo"><div><Trophy/><b>à¤§à¥à¤¯à¥‡à¤¯ à¤«à¤•à¥à¤¤ à¤ªà¤°à¥€à¤•à¥à¤·à¤¾ à¤ªà¤¾à¤¸ à¤•à¤°à¤£à¥‡ à¤¨à¤¾à¤¹à¥€â€”<br/>à¤¨à¤¿à¤µà¤¡à¥€à¤¸à¤¾à¤ à¥€ à¤¤à¤¯à¤¾à¤° à¤¹à¥‹à¤£à¥‡ à¤†à¤¹à¥‡.</b></div></div>
+        <div className="v2-method-copy"><span>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤ªà¤¦à¥à¤§à¤¤</span><h2>à¤®à¥ˆà¤¦à¤¾à¤¨à¤¾à¤ªà¤¾à¤¸à¥‚à¤¨ à¤®à¥‡à¤°à¤¿à¤Ÿà¤ªà¤°à¥à¤¯à¤‚à¤¤, à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤ªà¤¾à¤µà¤²à¤¾à¤µà¤° à¤¸à¥‹à¤¬à¤¤.</h2><p>à¤…à¤¨à¥à¤­à¤µà¥€ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤•, à¤¨à¤¿à¤¯à¤®à¤¿à¤¤ à¤¸à¤°à¤¾à¤µ, à¤ªà¥à¤°à¤—à¤¤à¥€à¤šà¥‡ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤†à¤£à¤¿ à¤•à¤®à¤•à¥à¤µà¤¤ à¤µà¤¿à¤·à¤¯à¤¾à¤‚à¤µà¤° à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤²à¤•à¥à¤·â€”à¤¹à¥€ à¤†à¤®à¤šà¥à¤¯à¤¾ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£à¤¾à¤šà¥€ à¤šà¤¾à¤° à¤¸à¥‚à¤¤à¥à¤°à¥‡.</p><ol><li><b>à¤¦à¥ˆà¤¨à¤¿à¤• à¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤¸à¤°à¤¾à¤µ</b><small>Running, long jump, shot put, pull-ups à¤†à¤£à¤¿ drill.</small></li><li><b>à¤¸à¤‚à¤•à¤²à¥à¤ªà¤¨à¤¾ à¤¸à¥à¤ªà¤·à¥à¤Ÿ à¤•à¤°à¤£à¤¾à¤°à¥‡ à¤µà¤°à¥à¤—</b><small>à¤…à¤­à¥à¤¯à¤¾à¤¸à¤•à¥à¤°à¤®à¤¾à¤¨à¥à¤¸à¤¾à¤° notes, à¤ªà¥à¤°à¤¶à¥à¤¨à¤¸à¤‚à¤š à¤†à¤£à¤¿ revision.</small></li><li><b>à¤¨à¤¿à¤¯à¤®à¤¿à¤¤ à¤®à¥‚à¤²à¥à¤¯à¤¾à¤‚à¤•à¤¨</b><small>Mock tests, à¤µà¥‡à¤³à¥‡à¤šà¥‡ à¤¨à¤¿à¤¯à¥‹à¤œà¤¨ à¤†à¤£à¤¿ performance feedback.</small></li></ol><Link href="/admission" className="v2-primary">à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤…à¤°à¥à¤œ à¤­à¤°à¤¾ <ArrowRight size={19}/></Link></div>
+      </section>
+
+      <section id="results" className="v2-section v2-results">
+        <div className="v2-result-intro"><span>à¤¯à¤¶à¤¾à¤šà¥€ à¤¸à¥à¤°à¥à¤µà¤¾à¤¤ à¤¯à¥‹à¤—à¥à¤¯ à¤¤à¤¯à¤¾à¤°à¥€à¤¨à¥‡</span><h2>à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤¨à¤¿à¤µà¤¡ à¤¹à¥€ à¤¶à¤¿à¤¸à¥à¤¤à¤¬à¤¦à¥à¤§ à¤ªà¥à¤°à¤µà¤¾à¤¸à¤¾à¤šà¥€ à¤¸à¤¾à¤•à¥à¤·.</h2><p>à¤†à¤®à¤šà¥à¤¯à¤¾ à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥à¤¯à¤¾à¤‚à¤¨à¤¾ à¤¸à¤°à¤•à¤¾à¤°à¥€ à¤­à¤°à¤¤à¥€à¤šà¥à¤¯à¤¾ à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤Ÿà¤ªà¥à¤ªà¥à¤¯à¤¾à¤¸à¤¾à¤ à¥€ à¤†à¤¤à¥à¤®à¤µà¤¿à¤¶à¥à¤µà¤¾à¤¸à¤¾à¤¨à¥‡ à¤‰à¤­à¥‡ à¤•à¤°à¤£à¥‡ à¤¹à¥‡à¤š à¤†à¤®à¤šà¥‡ à¤–à¤°à¥‡ à¤¯à¤¶.</p><div className="v2-rating"><div><Star/><Star/><Star/><Star/><Star/></div><b>à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€-à¤•à¥‡à¤‚à¤¦à¥à¤°à¤¿à¤¤ à¤ªà¥à¤°à¤¶à¤¿à¤•à¥à¤·à¤£</b></div></div>
+        <div className="v2-quote"><Quote/><blockquote>â€œà¤¦à¤°à¤°à¥‹à¤œà¤šà¤¾ à¤¸à¤°à¤¾à¤µ, à¤µà¥‡à¤³à¥‡à¤µà¤° feedback à¤†à¤£à¤¿ à¤¶à¤¿à¤•à¥à¤·à¤•à¤¾à¤‚à¤šà¥‡ à¤µà¥ˆà¤¯à¤•à¥à¤¤à¤¿à¤• à¤²à¤•à¥à¤· à¤¯à¤¾à¤®à¥à¤³à¥‡ à¤¤à¤¯à¤¾à¤°à¥€à¤²à¤¾ à¤¯à¥‹à¤—à¥à¤¯ à¤¦à¤¿à¤¶à¤¾ à¤®à¤¿à¤³à¤¾à¤²à¥€.â€</blockquote><p>â€” à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€ à¤…à¤¨à¥à¤­à¤µ</p></div>
+        <div className="v2-quote"><Quote/><blockquote>â€œà¤®à¥ˆà¤¦à¤¾à¤¨à¥€ à¤¤à¤¯à¤¾à¤°à¥€à¤¸à¥‹à¤¬à¤¤ à¤²à¥‡à¤–à¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¥‡à¤šà¥‡ à¤¨à¤¿à¤¯à¥‹à¤œà¤¨à¤¹à¥€ à¤à¤•à¤¾à¤š à¤ à¤¿à¤•à¤¾à¤£à¥€ à¤®à¤¿à¤³à¤¾à¤²à¥à¤¯à¤¾à¤®à¥à¤³à¥‡ à¤¸à¤¾à¤¤à¤¤à¥à¤¯ à¤°à¤¾à¤–à¤¤à¤¾ à¤†à¤²à¥‡.â€</blockquote><p>â€” à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤µà¤¿à¤¦à¥à¤¯à¤¾à¤°à¥à¤¥à¥€ à¤…à¤¨à¥à¤­à¤µ</p></div>
+      </section>
+
+      <section id="notices" className="v2-notices">
+        <div className="v2-notice-head"><div><span>à¤…à¤•à¥…à¤¡à¤®à¥€ à¤…à¤ªà¤¡à¥‡à¤Ÿà¥à¤¸</span><h2>à¤¤à¤¾à¤œà¥à¤¯à¤¾ à¤¸à¥‚à¤šà¤¨à¤¾</h2></div><a href={WA_LINK} target="_blank" rel="noopener noreferrer"><MessageCircle/> WhatsApp à¤µà¤° à¤µà¤¿à¤šà¤¾à¤°à¤¾</a></div>
+        <div className="v2-notice-list">
+          {notices.length ? notices.map(n=><article key={n.id}><time>{new Date(n.created_at).toLocaleDateString('mr-IN')}</time><div><h3>{n.title}</h3>{n.content&&<p>{n.content}</p>}</div><ArrowRight/></article>) : <article><time>à¤†à¤œ</time><div><h3>à¤¨à¤µà¥€à¤¨ Batch à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤¸à¥à¤°à¥‚</h3><p>à¤¸à¤§à¥à¤¯à¤¾à¤šà¥à¤¯à¤¾ batch, à¤«à¥€ à¤†à¤£à¤¿ à¤µà¥‡à¤³à¤¾à¤ªà¤¤à¥à¤°à¤•à¤¾à¤¸à¤¾à¤ à¥€ à¤…à¤•à¥…à¤¡à¤®à¥€à¤¶à¥€ à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¾.</p></div><ArrowRight/></article>}
         </div>
       </section>
 
-      {/* ══ WHY US ══ */}
-      <section id="about" className="section tactical-bg">
-        <div className="section-inner">
-          <div className="section-head">
-            <div className="eyebrow">WHY CHOOSE US</div>
-            <h2 className="section-title">आम्ही का वेगळे?</h2>
-            <p className="section-sub">इतर अकॅडमीपेक्षा शिवरक्षक निवडण्याची ६ कारणे</p>
-          </div>
-          <div className="grid-features">
-            {FEATURES.map(f => (
-              <div key={f.title} className="card">
-                <div style={{ fontSize: 36, marginBottom: 15, lineHeight: 1 }}>{f.icon}</div>
-                <div style={{ fontWeight: 800, fontSize: 16.5, marginBottom: 9, color: '#f1f5f9' }}>{f.title}</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: 13.5, lineHeight: 1.7 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <section className="v2-section v2-faq"><div><span>à¤¤à¥à¤®à¤šà¥‡ à¤ªà¥à¤°à¤¶à¥à¤¨, à¤¸à¥à¤ªà¤·à¥à¤Ÿ à¤‰à¤¤à¥à¤¤à¤°à¥‡</span><h2>à¤µà¤¾à¤°à¤‚à¤µà¤¾à¤° à¤µà¤¿à¤šà¤¾à¤°à¤²à¥‡ à¤œà¤¾à¤£à¤¾à¤°à¥‡ à¤ªà¥à¤°à¤¶à¥à¤¨</h2><p>à¤…à¤œà¥‚à¤¨ à¤•à¤¾à¤¹à¥€ à¤µà¤¿à¤šà¤¾à¤°à¤¾à¤¯à¤šà¥‡ à¤†à¤¹à¥‡? à¤†à¤®à¤šà¥à¤¯à¤¾ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤•à¤¾à¤¶à¥€ à¤¥à¥‡à¤Ÿ à¤«à¥‹à¤¨ à¤•à¤¿à¤‚à¤µà¤¾ WhatsApp à¤µà¤° à¤¬à¥‹à¤²à¤¾.</p><a href="tel:9284842177"><Phone/> 9284842177</a></div><div>{faq.map(([q,a])=><details key={q}><summary>{q}<ChevronDown/></summary><p>{a}</p></details>)}</div></section>
+
+      <section id="contact" className="v2-contact">
+        <div><span>à¤†à¤œà¤š à¤¸à¥à¤°à¥à¤µà¤¾à¤¤ à¤•à¤°à¤¾</span><h2>à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤µà¤°à¥à¤¦à¥€à¤šà¥à¤¯à¤¾ à¤¸à¥à¤µà¤ªà¥à¤¨à¤¾à¤²à¤¾<br/>à¤¯à¥‹à¤—à¥à¤¯ à¤¦à¤¿à¤¶à¤¾ à¤¦à¥à¤¯à¤¾.</h2><p>à¤ªà¥à¤°à¤µà¥‡à¤¶, batch timing, à¤«à¥€ à¤•à¤¿à¤‚à¤µà¤¾ à¤¨à¤¿à¤µà¤¾à¤¸ à¤¸à¥à¤µà¤¿à¤§à¥‡à¤¸à¤¾à¤ à¥€ à¤†à¤®à¤šà¥à¤¯à¤¾à¤¶à¥€ à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¾.</p><div className="v2-contact-links"><a href="tel:9284842177"><Phone/> <span><small>à¤•à¥‰à¤² à¤•à¤°à¤¾</small><b>9284842177</b></span></a><a href={WA_LINK} target="_blank" rel="noopener noreferrer"><MessageCircle/><span><small>WhatsApp</small><b>7720991375</b></span></a></div></div>
+        <aside><MapPin/><h3>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€</h3><p>à¤¨à¥à¤¯à¥‚ à¤†à¤°à¥à¤Ÿà¤¸à¥ à¤•à¥‰à¤²à¥‡à¤œà¤šà¥à¤¯à¤¾ à¤ªà¤¾à¤ à¥€à¤®à¤¾à¤—à¥‡, à¤—à¥Œà¤°à¤µ à¤¸à¥à¤ªà¥‹à¤°à¥à¤Ÿà¥à¤¸ à¤œà¤µà¤³, à¤¬à¤¾à¤²à¤¿à¤•à¤¾à¤¶à¥à¤°à¤® à¤°à¥‹à¤¡, à¤…à¤¹à¤®à¤¦à¤¨à¤—à¤° â€” 414001</p><a href="https://maps.google.com/?q=New+Arts+College+Ahmednagar" target="_blank" rel="noopener noreferrer">Google Maps à¤µà¤° à¤ªà¤¹à¤¾ <ArrowRight/></a></aside>
       </section>
 
-      {/* ══ NOTICES ══ */}
-      <section id="notices" className="section" style={{ background: 'var(--navy-950)' }}>
-        <div style={{ maxWidth: 880, margin: '0 auto' }}>
-          <div className="section-head">
-            <div className="eyebrow">LIVE UPDATES</div>
-            <h2 className="section-title">📢 ताज्या सूचना</h2>
-          </div>
-          {notices.length === 0 ? (
-            <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '48px 24px', background: 'var(--surface)', borderRadius: 15, border: '1px solid var(--border)', fontSize: 14.5 }}>
-              सध्या कोणत्याही सूचना नाहीत. लवकरच update होतील.
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {notices.map(n => (
-                <div key={n.id} className="notice-row">
-                  <span style={{ fontSize: 21, flexShrink: 0, marginTop: 1 }}>
-                    {n.category === 'exam' ? '📝' : n.category === 'result' ? '🏆' : n.category === 'holiday' ? '🎉' : n.category === 'important' ? '❗' : '📢'}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="notice-title">{n.title}</div>
-                    {n.content && <div className="notice-body">{n.content}</div>}
-                  </div>
-                  <div className="notice-date">{new Date(n.created_at).toLocaleDateString('mr-IN')}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ══ CONTACT ══ */}
-      <section id="contact" className="section tactical-bg">
-        <div className="section-inner">
-          <div className="section-head">
-            <div className="eyebrow">CONTACT US</div>
-            <h2 className="section-title">संपर्क करा</h2>
-          </div>
-
-          <div className="grid-contact">
-            <div className="card">
-              <div style={{ fontSize: 27, marginBottom: 16 }}>📍</div>
-              <div style={{ fontWeight: 700, fontSize: 16.5, marginBottom: 10, color: '#f1f5f9' }}>पत्ता</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: 13.5, lineHeight: 1.85 }}>
-                न्यू आर्टस् कॉलेजच्या पाठीमागे,<br />
-                गौरव स्पोट्स जवळ,<br />
-                बालिकाश्रम रोड, अहमदनगर,<br />
-                महाराष्ट्र — 414001
-              </div>
-            </div>
-
-            <div className="card">
-              <div style={{ fontSize: 27, marginBottom: 16 }}>📞</div>
-              <div style={{ fontWeight: 700, fontSize: 16.5, marginBottom: 14, color: '#f1f5f9' }}>संपर्क क्रमांक</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-                <div>
-                  <a href="tel:9284842177" style={{ color: 'var(--saffron)', textDecoration: 'none', fontWeight: 700, fontSize: 19 }}>📱 9284842177</a>
-                  <div style={{ color: 'var(--text-dim)', fontSize: 12, marginTop: 3 }}>मेजर महाडिक सर — संचालक</div>
-                </div>
-                <div>
-                  <a href="tel:9011887714" style={{ color: 'var(--saffron)', textDecoration: 'none', fontWeight: 700, fontSize: 19 }}>📱 9011887714</a>
-                  <div style={{ color: 'var(--text-dim)', fontSize: 12, marginTop: 3 }}>मेजर पवार सर — संचालक</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="card" style={{ background: 'rgba(37,211,102,0.05)', borderColor: 'rgba(37,211,102,0.16)' }}>
-              <div style={{ fontSize: 27, marginBottom: 16 }}>💬</div>
-              <div style={{ fontWeight: 700, fontSize: 16.5, marginBottom: 10, color: '#f1f5f9' }}>WhatsApp</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: 13.5, marginBottom: 20, lineHeight: 1.65 }}>
-                प्रवेश, Batch, फी — कोणत्याही प्रश्नासाठी तात्काळ WhatsApp करा
-              </div>
-              <a href={WA_LINK} target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#25d366', color: '#fff', padding: '13px 22px', borderRadius: 10, fontWeight: 700, fontSize: 14.5, textDecoration: 'none', boxShadow: '0 4px 16px rgba(37,211,102,0.28)' }}>
-                💬 7720991375
-              </a>
-            </div>
-          </div>
-
-          {/* Registration */}
-          <div style={{ marginTop: 26, textAlign: 'center', padding: '18px 16px', background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)' }}>
-            <div style={{ color: 'var(--text-dim)', fontSize: 12.5, lineHeight: 1.9 }}>
-              <span style={{ color: 'var(--saffron)', fontWeight: 700 }}>शिवमुद्रा रजि. नं. ५२७/ए</span>
-              <span style={{ opacity: 0.4 }}> &nbsp;|&nbsp; </span>
-              <span style={{ color: 'var(--saffron)', fontWeight: 700 }}>रक्षक रजि. नं. ०००००१३२०२४</span>
-              <span style={{ opacity: 0.4 }}> &nbsp;|&nbsp; </span>
-              महाराष्ट्र शासन मान्यताप्राप्त संस्था
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ FINAL CTA ══ */}
-      <section style={{ background: 'linear-gradient(135deg, var(--navy-800), var(--navy-950))', padding: '64px 20px', textAlign: 'center', borderTop: '1px solid var(--border-saffron)' }}>
-        <div style={{ maxWidth: 620, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 29, fontWeight: 800, color: '#fff', margin: '0 0 12px', letterSpacing: '-0.6px' }}>
-            आजच आपले भविष्य घडवा
-          </h2>
-          <p style={{ color: 'var(--text-dim)', fontSize: 14.5, margin: '0 0 30px', lineHeight: 1.7 }}>
-            online प्रवेश अर्ज भरा — २ मिनिटांत. लगेच प्रवेश क्रमांक आणि PDF पावती मिळेल.
-          </p>
-          <Link href="/admission" className="btn-hero" style={{ fontSize: 16, padding: '17px 40px' }}>
-            📋 आत्ताच प्रवेश अर्ज भरा
-          </Link>
-        </div>
-      </section>
-
-      {/* ══ FOOTER ══ */}
-      <footer className="site-footer no-print">
-        <div className="footer-inner">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <Logo size={34} />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 800, fontSize: 13.5, color: '#e2e8f0' }}>शिवरक्षक करियर अकॅडमी</div>
-              <div style={{ color: '#334155', fontSize: 11, marginTop: 2 }}>© 2024 • अहमदनगर, महाराष्ट्र</div>
-            </div>
-          </div>
-          <div className="footer-links">
-            <Link href="/admission">प्रवेश अर्ज</Link>
-            <a href="#courses">कोर्सेस</a>
-            <a href="#contact">संपर्क</a>
-            <a href={WA_LINK} target="_blank" rel="noopener" style={{ color: '#25d366', fontWeight: 600 }}>💬 WhatsApp</a>
-            <Link href="/admin" style={{ color: 'var(--saffron)', fontWeight: 600 }}>🔐 Admin Panel</Link>
-          </div>
-        </div>
-      </footer>
-
-      {/* ══ FLOATING WHATSAPP ══ */}
-      <a href={WA_LINK} target="_blank" rel="noopener" className="fab-wa no-print" aria-label="WhatsApp">💬</a>
-    </div>
+      <footer className="v2-footer"><div className="v2-brand"><Logo size={46}/><span><b>à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤•</b><small>à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€</small></span></div><p>à¤¶à¤¿à¤¸à¥à¤¤ Â· à¤¸à¤¾à¤¹à¤¸ Â· à¤¸à¥à¤µà¤ªà¥à¤¨à¤ªà¥‚à¤°à¥à¤¤à¥€</p><nav><a href="#courses">à¤•à¥‹à¤°à¥à¤¸à¥‡à¤¸</a><a href="#notices">à¤¸à¥‚à¤šà¤¨à¤¾</a><Link href="/admission">à¤ªà¥à¤°à¤µà¥‡à¤¶ à¤…à¤°à¥à¤œ</Link><Link href="/admin">Admin</Link></nav><small>Â© 2026 à¤¶à¤¿à¤µà¤°à¤•à¥à¤·à¤• à¤•à¤°à¤¿à¤¯à¤° à¤…à¤•à¥…à¤¡à¤®à¥€, à¤…à¤¹à¤®à¤¦à¤¨à¤—à¤°.</small></footer>
+      <a className="v2-fab" href={WA_LINK} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp à¤µà¤° à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¾"><MessageCircle/></a>
+      <style>{css}</style>
+    </main>
   )
 }
+
+const css = String.raw`
+.landing-v2{--ink:#0b1f33;--navy:#071827;--orange:#ef650f;--olive:#53662e;--paper:#f7f5ef;background:var(--paper);color:var(--ink);font-family:'Noto Sans Devanagari','Segoe UI',sans-serif;overflow:hidden}.landing-v2 *{box-sizing:border-box}.landing-v2 a{text-decoration:none}.v2-header{height:86px;display:flex;align-items:center;justify-content:space-between;padding:0 max(4vw,24px);background:#fff;position:relative;z-index:10;border-bottom:1px solid #e6e1d7}.v2-brand{display:flex;align-items:center;gap:10px;color:var(--ink)}.v2-brand span{display:grid}.v2-brand b{font-size:22px;line-height:1;font-weight:900}.v2-brand small{color:var(--orange);font-size:12px;font-weight:800;margin-top:5px}.v2-nav{display:flex;gap:30px}.v2-nav a{color:#243444;font-weight:700;font-size:14px}.v2-nav a:hover{color:var(--orange)}.v2-top-cta,.v2-primary{display:inline-flex;align-items:center;gap:9px;background:var(--orange);color:#fff;padding:13px 20px;border-radius:8px;font-weight:800;box-shadow:0 12px 26px rgba(239,101,15,.18)}.v2-hero{min-height:640px;display:grid;grid-template-columns:48% 52%;background:#fff}.v2-hero-copy{padding:80px 5vw 50px 6vw;display:flex;flex-direction:column;justify-content:center}.v2-kicker,.v2-section-title span,.v2-method-copy>span,.v2-result-intro>span,.v2-notice-head span,.v2-faq>div>span,.v2-contact>div>span{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--olive);font-weight:900}.v2-kicker{display:flex;align-items:center;gap:9px}.v2-kicker span{width:28px;height:2px;background:var(--orange)}.v2-hero h1{font-size:clamp(48px,5.4vw,78px);line-height:1.08;letter-spacing:-.045em;margin:24px 0 22px;font-weight:950}.v2-hero h1 em{font-style:normal;color:var(--orange)}.v2-hero-copy>p{max-width:620px;font-size:18px;line-height:1.8;color:#405164;margin:0}.v2-actions{display:flex;gap:12px;margin:32px 0}.v2-secondary{display:inline-flex;align-items:center;gap:9px;color:var(--ink);padding:12px 18px;border:1px solid #a9b0b6;border-radius:8px;font-weight:800}.v2-trust{display:flex;gap:22px;margin-top:14px;padding-top:24px;border-top:1px solid #e9e4da;flex-wrap:wrap}.v2-trust span{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#435349}.v2-trust svg{width:19px;color:var(--olive)}.v2-hero-photo{min-height:640px;background:linear-gradient(90deg,rgba(255,255,255,.12),transparent 25%),linear-gradient(0deg,rgba(7,24,39,.5),transparent 46%),url('https://images.pexels.com/photos/3764014/pexels-photo-3764014.jpeg?auto=compress&cs=tinysrgb&w=1600') center/cover;position:relative}.v2-photo-note{position:absolute;right:32px;bottom:30px;background:rgba(7,24,39,.92);color:white;padding:18px 22px;border-radius:8px;display:grid;border-top:3px solid var(--orange)}.v2-photo-note b{font-size:17px}.v2-photo-note span{font-size:11px;color:#cbd5df;margin-top:4px}.v2-numbers{background:var(--navy);color:white;margin:-1px 4vw 0;display:grid;grid-template-columns:repeat(4,1fr);position:relative;z-index:2;border-radius:8px;padding:30px 0;box-shadow:0 18px 44px rgba(7,24,39,.16)}.v2-numbers div{text-align:center;border-right:1px solid rgba(255,255,255,.16)}.v2-numbers div:last-child{border:0}.v2-numbers strong{display:block;font-size:34px;color:#e5a339}.v2-numbers span{font-size:12px;color:#d9e0e6}.v2-section{padding:110px 6vw}.v2-section-title{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:48px}.v2-section-title h2,.v2-method-copy h2,.v2-result-intro h2,.v2-notice-head h2,.v2-faq h2,.v2-contact h2{font-size:clamp(34px,4vw,54px);line-height:1.2;letter-spacing:-.035em;margin:12px 0 0}.v2-section-title>p{max-width:440px;color:#66717b;line-height:1.75}.v2-course-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.v2-course{background:#fff;border:1px solid #e4dfd4;border-radius:10px;overflow:hidden;transition:.25s}.v2-course:hover{transform:translateY(-6px);box-shadow:0 24px 46px rgba(11,31,51,.1)}.v2-course-image{height:150px;padding:20px;display:flex;align-items:flex-end;justify-content:space-between;color:white}.v2-course-image span{font-size:13px;font-weight:900;opacity:.7}.v2-course-image svg{width:48px;height:48px}.v2-course:nth-child(1) .v2-img{background:#17394a}.v2-course:nth-child(2) .v2-img{background:#596932}.v2-course:nth-child(3) .v2-img{background:#9a4a21}.v2-course:nth-child(4) .v2-img{background:#253650}.v2-course-body{padding:25px}.v2-course h3{font-size:20px;margin:0}.v2-course p{color:#6b737a;font-size:13px;line-height:1.7;min-height:68px}.v2-course ul{padding:0;margin:18px 0;list-style:none;display:grid;gap:8px}.v2-course li{font-size:12px;font-weight:700;color:#46564a;display:flex;gap:7px}.v2-course li svg{width:15px;color:var(--olive)}.v2-course a{color:var(--ink);font-weight:900;font-size:13px;display:flex;justify-content:space-between;border-top:1px solid #ece7de;padding-top:16px}.v2-course a svg{width:17px}.v2-method{display:grid;grid-template-columns:48% 52%;background:#fff}.v2-method-photo{min-height:650px;background:linear-gradient(0deg,rgba(7,24,39,.65),transparent),url('https://images.pexels.com/photos/3912944/pexels-photo-3912944.jpeg?auto=compress&cs=tinysrgb&w=1400') center/cover;position:relative}.v2-method-photo>div{position:absolute;bottom:44px;left:44px;color:#fff;display:flex;gap:16px;align-items:center}.v2-method-photo svg{width:44px;height:44px;color:#f5a12a}.v2-method-photo b{font-size:20px;line-height:1.5}.v2-method-copy{padding:76px 7vw}.v2-method-copy>p{color:#65717a;line-height:1.8}.v2-method ol{list-style:none;padding:10px 0 22px;counter-reset:method}.v2-method li{counter-increment:method;padding:17px 0 17px 55px;position:relative;border-bottom:1px solid #ece7de}.v2-method li:before{content:'0' counter(method);position:absolute;left:0;color:var(--orange);font-weight:900}.v2-method li b,.v2-method li small{display:block}.v2-method li small{color:#747e86;margin-top:5px;line-height:1.5}.v2-results{background:var(--navy);color:#fff;display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:24px}.v2-result-intro{padding-right:30px}.v2-result-intro>span{color:#e5a339}.v2-result-intro p{color:#aebbc5;line-height:1.75}.v2-rating{margin-top:30px}.v2-rating svg{width:18px;fill:#e5a339;color:#e5a339}.v2-rating b{display:block;margin-top:8px;font-size:13px}.v2-quote{background:#102b3e;padding:34px;border-radius:10px;display:flex;flex-direction:column;justify-content:center}.v2-quote>svg{color:var(--orange);width:34px;height:34px}.v2-quote blockquote{font-size:18px;line-height:1.8;margin:24px 0;color:#edf2f5}.v2-quote p{font-size:12px;color:#93a5b2}.v2-notices{padding:100px 12vw;background:#fff}.v2-notice-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:32px}.v2-notice-head h2{margin-top:5px}.v2-notice-head>a,.v2-faq>div>a{display:flex;gap:8px;align-items:center;color:#15803d;font-weight:900}.v2-notice-list article{display:grid;grid-template-columns:110px 1fr 30px;gap:20px;align-items:center;border-top:1px solid #ded9cf;padding:22px 4px}.v2-notice-list time{color:var(--orange);font-weight:900}.v2-notice-list h3{margin:0;font-size:17px}.v2-notice-list p{color:#737d85;margin:7px 0 0}.v2-notice-list svg{width:20px}.v2-faq{display:grid;grid-template-columns:1fr 1.2fr;gap:9vw;background:#f1eee5}.v2-faq>div:first-child p{color:#68727a;line-height:1.8;max-width:450px}.v2-faq>div>a{margin-top:25px;color:var(--orange)}.v2-faq details{border-bottom:1px solid #d7d1c5;padding:21px 0}.v2-faq summary{font-weight:900;cursor:pointer;display:flex;justify-content:space-between;list-style:none}.v2-faq summary svg{width:20px}.v2-faq details p{color:#68727a;line-height:1.7;font-size:14px}.v2-contact{padding:90px 8vw;display:grid;grid-template-columns:1.3fr .8fr;gap:8vw;background:var(--orange);color:#fff}.v2-contact>div>span{color:#ffe0c8}.v2-contact h2{font-size:clamp(38px,5vw,64px)}.v2-contact>div>p{color:#fff3ea}.v2-contact-links{display:flex;gap:12px;margin-top:28px}.v2-contact-links>a{display:flex;align-items:center;gap:11px;padding:14px 18px;background:#fff;color:var(--ink);border-radius:8px}.v2-contact-links svg{width:24px}.v2-contact-links span{display:grid}.v2-contact-links small{font-size:10px;color:#68727a}.v2-contact aside{background:var(--navy);padding:36px;border-radius:10px}.v2-contact aside>svg{color:#e5a339;width:34px;height:34px}.v2-contact aside p{color:#bcc7cf;line-height:1.8}.v2-contact aside a{color:#fff;font-weight:900;display:flex;justify-content:space-between}.v2-contact aside a svg{width:18px}.v2-footer{padding:44px 6vw 28px;background:#06131f;color:#fff;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:35px}.v2-footer .v2-brand{color:#fff}.v2-footer>p{color:#788b99}.v2-footer nav{display:flex;gap:20px}.v2-footer nav a{color:#b8c4cc;font-size:13px}.v2-footer>small{grid-column:1/-1;border-top:1px solid #183042;padding-top:20px;color:#597080}.v2-fab{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:#20b95a;color:#fff;display:grid;place-items:center;z-index:50;box-shadow:0 12px 28px rgba(32,185,90,.35)}.v2-fab svg{width:27px}
+@media(max-width:980px){.v2-nav{display:none}.v2-hero{grid-template-columns:1fr}.v2-hero-copy{padding:70px 7vw}.v2-hero-photo{min-height:480px}.v2-course-grid{grid-template-columns:repeat(2,1fr)}.v2-results{grid-template-columns:1fr 1fr}.v2-result-intro{grid-column:1/-1}.v2-method{grid-template-columns:1fr}.v2-method-photo{min-height:500px}.v2-faq,.v2-contact{grid-template-columns:1fr}.v2-footer{grid-template-columns:1fr}.v2-footer>small{grid-column:auto}}
+@media(max-width:640px){.v2-header{height:72px;padding:0 16px}.v2-brand b{font-size:17px}.v2-brand small{font-size:9px}.v2-top-cta{font-size:0;padding:12px}.v2-top-cta svg{margin:0}.v2-hero{min-height:auto}.v2-hero-copy{padding:54px 20px 42px}.v2-hero h1{font-size:43px}.v2-hero-copy>p{font-size:15px}.v2-actions{flex-direction:column}.v2-actions a{justify-content:center}.v2-trust{gap:12px}.v2-hero-photo{min-height:390px}.v2-photo-note{left:18px;right:18px;bottom:18px}.v2-numbers{margin:0;border-radius:0;grid-template-columns:1fr 1fr;padding:10px 0}.v2-numbers div{padding:18px 5px;border-bottom:1px solid rgba(255,255,255,.13)}.v2-numbers strong{font-size:28px}.v2-section{padding:72px 18px}.v2-section-title{display:block}.v2-section-title h2,.v2-method-copy h2,.v2-result-intro h2,.v2-notice-head h2,.v2-faq h2,.v2-contact h2{font-size:34px}.v2-course-grid{grid-template-columns:1fr}.v2-course p{min-height:auto}.v2-method-photo{min-height:380px}.v2-method-photo>div{left:20px;bottom:24px}.v2-method-copy{padding:60px 20px}.v2-results{grid-template-columns:1fr}.v2-notices{padding:70px 18px}.v2-notice-head{display:block}.v2-notice-head>a{margin-top:20px}.v2-notice-list article{grid-template-columns:70px 1fr}.v2-notice-list article>svg{display:none}.v2-faq{gap:30px}.v2-contact{padding:70px 20px}.v2-contact-links{flex-direction:column}.v2-footer{padding:40px 20px}.v2-footer nav{flex-wrap:wrap}.v2-fab{width:52px;height:52px}}
+@media(prefers-reduced-motion:reduce){.landing-v2 *{scroll-behavior:auto!important;transition:none!important}}
+`
+
