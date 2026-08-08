@@ -1,27 +1,63 @@
--- Phase 1 security hardening (review before applying in Supabase SQL Editor).
--- This migration changes access policies only. It does not delete application data.
+-- Phase 1 schema and access-control hardening.
+-- Review the preflight and Dashboard steps in README.md before applying this file.
+-- This migration preserves application rows and contains no DELETE, TRUNCATE, or DROP TABLE.
+-- Duplicate documents(student_id, doc_type) must be reconciled manually; this file
+-- intentionally does not delete duplicates or add a uniqueness constraint.
 
 begin;
 
-create sequence if not exists public.admission_code_seq;
-
+-- Fail before making changes when the expected baseline schema is incomplete.
 do $$
 declare
-  current_max bigint;
-  sequence_value bigint;
-  sequence_called boolean;
+  required_table text;
+  required_view text;
 begin
-  select coalesce(max(substring(roll_number from '^S-([0-9]+)$')::bigint), 0)
-    into current_max
-    from public.students
-    where roll_number ~ '^S-[0-9]+$';
-  select last_value, is_called into sequence_value, sequence_called from public.admission_code_seq;
-  perform setval(
-    'public.admission_code_seq',
-    greatest(current_max, sequence_value, 1),
-    current_max > 0 or sequence_called
-  );
+  foreach required_table in array array[
+    'students', 'fee_payments', 'documents', 'mess_subscriptions',
+    'notices', 'whatsapp_logs'
+  ] loop
+    if not exists (
+      select 1 from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relname = required_table
+        and c.relkind in ('r', 'p')
+    ) then
+      raise exception 'Required table public.% is missing or is not a table', required_table;
+    end if;
+  end loop;
+
+  foreach required_view in array array[
+    'student_fee_summary', 'mess_expiry_reminders'
+  ] loop
+    if not exists (
+      select 1 from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relname = required_view
+        and c.relkind = 'v'
+    ) then
+      raise exception 'Required view public.% is missing or is not a view', required_view;
+    end if;
+  end loop;
+
+  -- These names were used by the legacy setup script on the global
+  -- storage.objects table. Their predicates may cover unrelated buckets, so
+  -- this migration will not drop them blindly. Inventory pg_policies, replace
+  -- only the academy-owned legacy policies manually, then rerun this migration.
+  if exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname in (
+        'public_read', 'public_upload', 'public_update', 'public_delete',
+        'admin_storage_all', 'admin_manage_student_documents'
+      )
+  ) then
+    raise exception using
+      message = 'Legacy generic storage policies require manual review',
+      hint = 'Inventory storage.objects policies and remove only confirmed academy-owned legacy policies; do not remove policies used by other buckets.';
+  end if;
 end $$;
+
+create sequence if not exists public.admission_code_seq;
 
 create or replace function public.next_admission_code()
 returns text
@@ -31,7 +67,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if auth.role() <> 'service_role'
+  if coalesce(auth.role(), '') <> 'service_role'
      and coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin' then
     raise exception 'not authorized';
   end if;
@@ -123,20 +159,12 @@ create policy "public_read_published_notices" on public.notices
 alter view public.student_fee_summary set (security_invoker = true);
 alter view public.mess_expiry_reminders set (security_invoker = true);
 
--- Student identity documents must never be public.
-update storage.buckets set public = false where id = 'student-documents';
-insert into storage.buckets (id, name, public)
-values ('notice-attachments', 'notice-attachments', true)
-on conflict (id) do update set public = excluded.public;
-
-drop policy if exists "public_read" on storage.objects;
-drop policy if exists "public_upload" on storage.objects;
-drop policy if exists "public_update" on storage.objects;
-drop policy if exists "public_delete" on storage.objects;
-drop policy if exists "admin_manage_student_documents" on storage.objects;
+-- Bucket creation, privacy, MIME types, and size limits are managed through the
+-- Supabase Dashboard/Storage API. Do not modify storage.buckets directly here.
+-- Only replace policies owned by this migration. Other storage.objects policies
+-- are preserved because they may serve unrelated buckets in the same project.
 drop policy if exists "public_read_public_academy_files" on storage.objects;
 drop policy if exists "admin_manage_academy_files" on storage.objects;
-drop policy if exists "admin_storage_all" on storage.objects;
 
 create policy "public_read_public_academy_files" on storage.objects
   for select to anon, authenticated
@@ -146,5 +174,27 @@ create policy "admin_manage_academy_files" on storage.objects
   for all to authenticated
   using (bucket_id in ('student-photos', 'student-documents', 'notice-attachments') and public.is_admin())
   with check (bucket_id in ('student-photos', 'student-documents', 'notice-attachments') and public.is_admin());
+
+-- Initialize only after all compatibility checks and failure-prone DDL. Sequence
+-- changes are not rolled back like ordinary table changes, so keep this last.
+do $$
+declare
+  current_max bigint;
+  sequence_value bigint;
+  sequence_called boolean;
+begin
+  select coalesce(max(substring(roll_number from '^S-([0-9]+)$')::bigint), 0)
+    into current_max
+    from public.students
+    where roll_number ~ '^S-[0-9]+$';
+  select last_value, is_called
+    into sequence_value, sequence_called
+    from public.admission_code_seq;
+  perform setval(
+    'public.admission_code_seq',
+    greatest(current_max, sequence_value, 1),
+    current_max > 0 or sequence_called
+  );
+end $$;
 
 commit;

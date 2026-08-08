@@ -5,9 +5,21 @@ Next.js application backed by Supabase Auth, Postgres, and private Storage.
 ## Security setup
 
 1. Create the initial schema with `SUPABASE-SETUP.sql`.
-2. Review and apply `supabase/security-hardening.sql` before entering real student data.
-3. Create the admin in Supabase Authentication with email/password.
-4. In the Supabase SQL Editor, assign the role using the user's UUID:
+2. Review the production preflight, back up the database and Storage objects, and
+   reconcile duplicate `documents(student_id, doc_type)` records manually. Do not
+   rerun `SUPABASE-SETUP.sql` against an existing database.
+3. In **Supabase Dashboard → Storage → Buckets**, prepare these buckets before the
+   migration. Create a missing bucket with **New bucket**; do not rename or delete
+   an existing bucket or object:
+
+   | Bucket | Public setting | File limit | Allowed MIME types |
+   | --- | --- | --- | --- |
+   | `student-documents` | Leave unchanged until the SQL succeeds; then turn **Public bucket OFF** | 10 MB | `image/jpeg`, `image/png`, `image/webp`, `application/pdf` |
+   | `student-photos` | **Public bucket ON** | 10 MB | `image/jpeg`, `image/png`, `image/webp`, `application/pdf` |
+   | `notice-attachments` | **Public bucket ON** | 10 MB | `image/jpeg`, `image/png`, `image/webp`, `application/pdf` |
+
+4. Create the admin in Supabase Authentication with email/password.
+5. In the Supabase SQL Editor, assign the role using the user's UUID:
 
 ```sql
 update auth.users
@@ -16,6 +28,17 @@ where id = '<ADMIN_USER_UUID>';
 ```
 
 Sign out and sign in again after assigning the role so the JWT contains the new claim. Never put an admin password or the service-role key in a `NEXT_PUBLIC_` variable.
+
+6. In the SQL Editor, inventory `pg_policies` for `storage.objects`. If the
+   migration reports legacy generic policies, inspect their bucket predicates and
+   remove only policies confirmed to belong exclusively to this academy. Preserve
+   every policy used by another bucket or application.
+7. Apply the complete `supabase/security-hardening.sql` transaction. Do not run
+   selected fragments.
+8. After the SQL succeeds, return to **Storage → Buckets → student-documents →
+   Configuration**, turn **Public bucket OFF**, save, and verify that an old public
+   URL fails while an authenticated admin signed URL works. The migration does not
+   modify `storage.buckets` directly.
 
 ## Getting Started
 
