@@ -6,6 +6,42 @@ import { DOCUMENT_MIME_TYPE_SET, DOCUMENT_TYPE_SET, MAX_ADMISSION_DOCUMENT_BYTES
 const optionalNumber = (schema: z.ZodNumber) =>
   z.preprocess((value) => value === '' ? undefined : value, schema.optional())
 
+const admissionDetailsSchema = z.object({
+  firstName: z.string().trim().min(1).max(80),
+  middleName: z.string().trim().max(80),
+  lastName: z.string().trim().min(1).max(80),
+  fatherFirst: z.string().trim().min(1).max(80),
+  fatherMiddle: z.string().trim().max(80),
+  fatherLast: z.string().trim().max(80),
+  address: z.string().trim().min(1).max(500),
+  village: z.string().trim().max(120),
+  taluka: z.string().trim().max(120),
+  district: z.string().trim().max(120),
+  pincode: z.string().trim().regex(/^\d{6}$/).optional().or(z.literal('')),
+  studentPhone: z.string().trim().regex(/^\d{10}$/),
+  studentWhatsapp: z.string().trim().regex(/^\d{10}$/).optional().or(z.literal('')),
+  parentPhone: z.string().trim().regex(/^\d{10}$/),
+  parentWhatsapp: z.string().trim().regex(/^\d{10}$/).optional().or(z.literal('')),
+  email: z.string().trim().email().max(254).optional().or(z.literal('')),
+  aadhaar: z.string().trim().regex(/^\d{12}$/).optional().or(z.literal('')),
+  guaranteeNo: z.string().trim().max(80),
+  dob: z.string().max(10),
+  age: z.string().max(3),
+  gender: z.enum(['male', 'female']),
+  courses: z.array(z.enum(['police', 'army', 'navy', 'mpsc', 'railway', 'staff', 'saral', 'other'])).min(1).max(8),
+  admissionDate: z.string().max(10),
+  durationMonths: z.string().max(3),
+  endDate: z.string().max(10),
+  totalDays: z.string().max(5),
+  height: z.string().max(8),
+  weight: z.string().max(8),
+  chest: z.string().max(8),
+  totalFee: z.string().max(12),
+  paidAmount: z.string().max(12),
+  paymentDate: z.string().max(10),
+  paymentMode: z.enum(['cash', 'upi', 'bank_transfer', 'cheque']),
+})
+
 const admissionSchema = z.object({
   name: z.string().trim().min(2).max(120),
   parent_name: z.string().trim().min(2).max(120),
@@ -24,6 +60,10 @@ const admissionSchema = z.object({
   weight: optionalNumber(z.coerce.number().min(25).max(250)),
   chest: optionalNumber(z.coerce.number().min(40).max(200)),
   total_fee: z.coerce.number().min(0).max(10_000_000).default(0),
+  paid_amount: z.coerce.number().min(0).max(10_000_000).default(0),
+  payment_date: z.string().optional().default(''),
+  payment_mode: z.enum(['cash', 'upi', 'bank_transfer', 'cheque']).default('cash'),
+  admission_details: z.string().max(20_000),
   agreed: z.literal('true'),
 })
 
@@ -52,6 +92,17 @@ export async function POST(request: Request) {
     const parsed = admissionSchema.safeParse(raw)
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid admission details', issues: parsed.error.flatten() }, { status: 400 })
+    }
+
+    let rawAdmissionDetails: unknown
+    try {
+      rawAdmissionDetails = JSON.parse(parsed.data.admission_details)
+    } catch {
+      return NextResponse.json({ error: 'Invalid admission details' }, { status: 400 })
+    }
+    const admissionDetails = admissionDetailsSchema.safeParse(rawAdmissionDetails)
+    if (!admissionDetails.success) {
+      return NextResponse.json({ error: 'Invalid admission details', issues: admissionDetails.error.flatten() }, { status: 400 })
     }
 
     const { data: phoneAllowed, error: phoneLimitError } = await supabase.rpc('consume_admission_rate_limit', { p_key: `phone:${parsed.data.parent_phone}` })
@@ -97,10 +148,28 @@ export async function POST(request: Request) {
       weight: data.weight || null,
       chest: data.chest || null,
       total_fee: data.total_fee,
+      admission_details: admissionDetails.data,
     }).select('id, roll_number').single()
 
     if (studentError || !student) {
+      console.error('Admission student insert failed', { code: studentError?.code })
       return NextResponse.json({ error: 'Admission could not be saved' }, { status: 500 })
+    }
+
+    if (data.paid_amount > 0) {
+      const { error: paymentError } = await supabase.from('fee_payments').insert({
+        student_id: student.id,
+        amount_paid: data.paid_amount,
+        payment_date: data.payment_date || data.admission_date || new Date().toISOString().slice(0, 10),
+        payment_mode: data.payment_mode,
+        receipt_no: `ADM-${student.roll_number}`,
+        notes: 'Digital admission form payment',
+      })
+      if (paymentError) {
+        console.error('Admission fee payment insert failed', { studentId: student.id, code: paymentError.code })
+        await supabase.from('students').delete().eq('id', student.id)
+        return NextResponse.json({ error: 'Admission payment details could not be saved' }, { status: 500 })
+      }
     }
 
     const uploadedPaths: string[] = []
