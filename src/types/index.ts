@@ -1,3 +1,39 @@
+export interface AdmissionFormDetails {
+  firstName: string
+  middleName: string
+  lastName: string
+  fatherFirst: string
+  fatherMiddle: string
+  fatherLast: string
+  address: string
+  village: string
+  taluka: string
+  district: string
+  pincode: string
+  studentPhone: string
+  studentWhatsapp: string
+  parentPhone: string
+  parentWhatsapp: string
+  email: string
+  aadhaar: string
+  guaranteeNo: string
+  dob: string
+  age: string
+  gender: 'male' | 'female'
+  courses: string[]
+  admissionDate: string
+  durationMonths: string
+  endDate: string
+  totalDays: string
+  height: string
+  weight: string
+  chest: string
+  totalFee: string
+  paidAmount: string
+  paymentDate: string
+  paymentMode: 'cash' | 'upi' | 'bank_transfer' | 'cheque'
+}
+
 export interface Student {
   id: string
   roll_number: string
@@ -19,6 +55,7 @@ export interface Student {
   gender: 'male' | 'female'
   total_fee: number
   photo_url?: string
+  admission_details?: Partial<AdmissionFormDetails>
   created_at: string
 }
 
@@ -114,3 +151,4 @@ export interface Course {
   is_published: boolean
   sort_order: number
 }
+
