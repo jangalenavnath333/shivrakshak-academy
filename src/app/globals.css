@@ -491,9 +491,10 @@ img { max-width: 100%; height: auto; }
 }
 
 
-/* ═══════════════════════════════════════════
-   🖨️ PRINT — प्रवेश अर्ज PDF
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   प्रवेश अर्ज — PRINT STYLES
+   हे globals.css च्या शेवटी paste करा
+   ═══════════════════════════════════════════════════════════ */
 
 .print-only { display: none; }
 
@@ -509,7 +510,7 @@ img { max-width: 100%; height: auto; }
     print-color-adjust: exact !important;
   }
 
-  /* Hide everything, then reveal only the printable form */
+  /* सर्व लपवा, फक्त अर्ज दाखवा */
   body * { visibility: hidden !important; }
   .print-root, .print-root * { visibility: visible !important; }
 
@@ -525,7 +526,7 @@ img { max-width: 100%; height: auto; }
     color: #000 !important;
   }
 
-  .no-print, .fab-wa, .site-header, .nav-mobile, .ticker { display: none !important; }
+  .no-print { display: none !important; }
 
   .pdf-page {
     page-break-after: always !important;
@@ -535,5 +536,9 @@ img { max-width: 100%; height: auto; }
     border: none !important;
     overflow: hidden !important;
   }
-  .pdf-page:last-child { page-break-after: auto !important; break-after: auto !important; }
+  .pdf-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
 }
+
