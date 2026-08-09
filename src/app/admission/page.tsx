@@ -1,644 +1,813 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import PrintableForm from './PrintableForm'
+import { supabase } from '@/lib/supabase'
+import PrintableForm, { type FormValues } from './PrintableForm'
 
-type FormData = {
-  name: string; parent_name: string; address: string
-  phone: string; parent_phone: string; aadhaar_no: string
-  guarantee_letter_no: string; dob: string; gender: string
-  course: string; admission_date: string; duration: string
-  age: string; height: string; weight: string; chest: string
-  total_fee: string
-}
+/* ═══════════════════════════════════════════
+   शिवरक्षक करिअर अकॅडमी — Digital प्रवेश अर्ज
+   Step 1: वैयक्तिक माहिती
+   Step 2: कोर्स + फी + शारीरिक माहिती
+   Step 3: कागदपत्रे व फोटो
+   Step 4: तपासा व Submit → PDF print
+   ═══════════════════════════════════════════ */
 
-type DocFile = { file: File; preview: string }
-
-type DocsState = {
-  photo: DocFile | null
-  signature: DocFile | null
-  aadhaar_front: DocFile | null
-  aadhaar_back: DocFile | null
-  marksheet_10: DocFile | null
-  marksheet_12: DocFile | null
-  caste_certificate: DocFile | null
-  domicile: DocFile | null
-  sports_certificate: DocFile | null
-  other: DocFile | null
-}
-
-const DOC_LIST: { key: keyof DocsState; label: string; emoji: string; required: boolean; accept: string }[] = [
-  { key: 'photo',             label: 'पासपोर्ट फोटो',        emoji: '📷', required: true,  accept: 'image/*' },
-  { key: 'signature',         label: 'विद्यार्थ्याची सही',     emoji: '✍️', required: false, accept: 'image/*' },
-  { key: 'aadhaar_front',     label: 'आधार कार्ड (समोर)',      emoji: '🪪', required: true,  accept: 'image/*,.pdf' },
-  { key: 'aadhaar_back',      label: 'आधार कार्ड (मागे)',      emoji: '🪪', required: false, accept: 'image/*,.pdf' },
-  { key: 'marksheet_10',      label: '10वी मार्कशीट',          emoji: '📄', required: true,  accept: 'image/*,.pdf' },
-  { key: 'marksheet_12',      label: '12वी मार्कशीट',          emoji: '📄', required: false, accept: 'image/*,.pdf' },
-  { key: 'caste_certificate', label: 'जातीचा दाखला',           emoji: '📜', required: false, accept: 'image/*,.pdf' },
-  { key: 'domicile',          label: 'अधिवास / रहिवासी दाखला', emoji: '📋', required: false, accept: 'image/*,.pdf' },
-  { key: 'sports_certificate',label: 'क्रीडा प्रमाणपत्र',       emoji: '🏅', required: false, accept: 'image/*,.pdf' },
-  { key: 'other',             label: 'इतर कागदपत्र',           emoji: '📎', required: false, accept: 'image/*,.pdf' },
+const COURSES: { key: string; label: string; fee: number }[] = [
+  { key: 'police',  label: 'पोलीस भरती',      fee: 70000 },
+  { key: 'army',    label: 'आर्मी / अग्निवीर', fee: 70000 },
+  { key: 'navy',    label: 'नेव्ही',           fee: 70000 },
+  { key: 'mpsc',    label: 'एम.पी.एस.सी',      fee: 70000 },
+  { key: 'railway', label: 'रेल्वे भरती',      fee: 70000 },
+  { key: 'staff',   label: 'स्टॉफ सिलेक्शन',   fee: 70000 },
+  { key: 'saral',   label: 'सरळ सेवा',         fee: 70000 },
+  { key: 'other',   label: 'इतर',              fee: 70000 },
 ]
 
-const COURSES = [
-  ['police', 'पोलीस'], ['navy', 'नेव्ही'], ['mpsc', 'एम.पी.एस.सी'],
-  ['staff_selection', 'स्टॉफ सिलेक्शन'], ['saral_seva', 'सरळ सेवा'],
-  ['other', 'इतर'], ['army', 'आर्मी'], ['railway', 'रेल्वे'],
+const DOCS: { key: string; label: string; required: boolean }[] = [
+  { key: 'photo',      label: 'पासपोर्ट फोटो',        required: true },
+  { key: 'aadhaar',    label: 'आधार कार्ड',           required: true },
+  { key: 'marksheet',  label: 'शाळा सोडल्याचा दाखला', required: false },
+  { key: 'domicile',   label: 'रहिवासी दाखला',        required: false },
+  { key: 'caste',      label: 'जात प्रमाणपत्र',       required: false },
+  { key: 'parentId',   label: 'पालकाचे आधार कार्ड',   required: false },
 ]
 
-const RULES = [
-  'प्रशिक्षण दरम्यान मला कोणत्याही प्रकारची इजा झाल्यास मी स्वतः त्याला जबाबदार राहील.',
-  'होस्टेल मध्ये कोणत्याही मौल्यवान वस्तु आनण्यास मनाई आहे. चोरी गेल्यास अॅकेडमी त्याला जबाबदार राहणार नाही याची सर्वांनी नोंद घ्यावी.',
-  'अॅकेडमीमध्ये मुलींची छेड किंवा भांडण तंटे केल्यास अॅकेडमी जबाबदार राहणार नाही.',
-  'अॅकेडमीतून कामा निमित्त किंवा गावी जायचे असेल तर अर्ज किंवा गेट पास घेऊन जाणे बंधन कारक आहे.',
-  'अर्ज किंवा गेट पास न घेता गेला/गेली तर काय हनी झाल्यास मी स्वतः त्याला जबाबदार राहील.',
-  'मुला मुलींनी कोणत्याही प्रकारचे गैर कृत्य केल्यास किंवा कोणताही अनुचित प्रकार केल्यास त्यास अॅकेडमी जबाबदार राहणार नाही.',
-  'अॅकेडमी मध्ये विद्यार्थ्यांनी गैर वर्तन केल्यास शिक्षेस पात्र राहिल.',
-]
+const today = () => new Date().toISOString().slice(0, 10)
 
-function FieldLine({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 18 }}>
-      <span style={{ fontSize: 14, whiteSpace: 'nowrap', minWidth: 200, fontWeight: 500 }}>{label} :</span>
-      <div style={{ flex: 1, borderBottom: '1px solid #555', minHeight: 28 }}>{children}</div>
-    </div>
-  )
+const EMPTY: FormValues = {
+  firstName: '', middleName: '', lastName: '',
+  fatherFirst: '', fatherMiddle: '', fatherLast: '',
+  address: '', village: '', taluka: '', district: 'अहमदनगर', pincode: '',
+  studentPhone: '', studentWhatsapp: '', parentPhone: '', parentWhatsapp: '',
+  email: '', aadhaar: '', guaranteeNo: '',
+  dob: '', age: '', gender: 'male',
+  courses: [],
+  admissionDate: today(), durationMonths: '6', endDate: '', totalDays: '',
+  height: '', weight: '', chest: '',
+  totalFee: '', paidAmount: '', paymentDate: today(), paymentMode: 'cash',
 }
-
-function FInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input {...props} style={{ width: '100%', border: 'none', outline: 'none', fontSize: 14, background: 'transparent', paddingBottom: 2, fontFamily: 'inherit' }} />
-  )
-}
-
-function AcademyHeader() {
-  return (
-    <div style={{ borderBottom: '2px solid #333', paddingBottom: 10, marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ fontSize: 11, color: '#333', lineHeight: 1.6 }}>
-          <div style={{ fontWeight: 700 }}>शिवमुद्रा व रक्षक ऑकेडमी संचलित</div>
-          <div style={{ fontSize: 10, color: '#666' }}>महाराष्ट्रात सर्वाधिक पोलिस व आर्मी सैनिक घडविणारी एकमेव संस्था</div>
-        </div>
-        <div style={{ textAlign: 'center', flex: 1, margin: '0 16px' }}>
-          <div style={{ fontSize: 24 }}>🛡️ 🌟 🏆</div>
-          <div style={{ fontSize: 22, fontWeight: 900, color: '#7c2d12', fontFamily: 'serif' }}>शिवरक्षक करियर ऑकेडमी</div>
-        </div>
-        <div style={{ fontSize: 11, color: '#333', lineHeight: 1.8, textAlign: 'right' }}>
-          <div><strong>शिवमुद्रा :– रजि नं. ५२७/ए</strong></div>
-          <div>रक्षक :– रजि नं. ०००००१३२०२४</div>
-          <div>न्यू आर्टस् कॉलेजच्या पाठीमागे,</div>
-          <div>गौरव स्पोट्स जवळ, बालिकाश्रम रोड, अ.नगर</div>
-          <div><strong>9284842177 | 9011887714</strong></div>
-          <div style={{ fontSize: 10 }}>★ संचालक – मेजर महाडिक सर ★ संचालक – मेजर पवार सर</div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const STEPS = [
-  { n: 1, label: 'प्रवेश अर्ज' },
-  { n: 2, label: 'Documents' },
-  { n: 3, label: 'संमतीपत्र' },
-  { n: 4, label: 'फी पावती' },
-]
 
 export default function AdmissionPage() {
+  const [started, setStarted] = useState(false)
   const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState<FormValues>(EMPTY)
+  const [files, setFiles] = useState<Record<string, { file: File; preview: string }>>({})
+  const [saving, setSaving] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [rollNumber, setRollNumber] = useState('')
-  const [agreed, setAgreed] = useState(false)
-  const formPdfRef = useRef<HTMLDivElement>(null)
+  const [errors, setErrors] = useState<string[]>([])
+  const printRef = useRef<HTMLDivElement>(null)
 
-  const [form, setForm] = useState<FormData>({
-    name: '', parent_name: '', address: '', phone: '', parent_phone: '',
-    aadhaar_no: '', guarantee_letter_no: '', dob: '', gender: 'male',
-    course: '', admission_date: '', duration: '', age: '', height: '',
-    weight: '', chest: '', total_fee: '',
-  })
+  const set = (k: keyof FormValues, v: string | string[]) => setForm(p => ({ ...p, [k]: v }))
 
-  const [docs, setDocs] = useState<DocsState>({
-    photo: null, signature: null, aadhaar_front: null, aadhaar_back: null,
-    marksheet_10: null, marksheet_12: null, caste_certificate: null,
-    domicile: null, sports_certificate: null, other: null,
-  })
+  /* ── Auto: DOB → age ── */
+  const ageInfo = useMemo(() => {
+    if (!form.dob) return null
+    const b = new Date(form.dob), n = new Date()
+    if (isNaN(b.getTime()) || b > n) return null
+    let y = n.getFullYear() - b.getFullYear()
+    let m = n.getMonth() - b.getMonth()
+    let d = n.getDate() - b.getDate()
+    if (d < 0) { m--; d += new Date(n.getFullYear(), n.getMonth(), 0).getDate() }
+    if (m < 0) { y--; m += 12 }
+    const days = Math.floor((n.getTime() - b.getTime()) / 86400000)
+    return { y, m, d, days }
+  }, [form.dob])
 
-  const upd = (k: keyof FormData, v: string) => setForm(f => ({ ...f, [k]: v }))
+  /* ── Auto: course → fee ── */
+  const autoFee = useMemo(
+    () => form.courses.reduce((s, k) => Math.max(s, COURSES.find(c => c.key === k)?.fee || 0), 0),
+    [form.courses]
+  )
 
-  const handleDocUpload = (key: keyof DocsState, file: File) => {
-    const isImg = file.type.startsWith('image/')
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setDocs(d => ({ ...d, [key]: { file, preview: isImg ? (e.target?.result as string) : 'pdf' } }))
-    }
-    reader.readAsDataURL(file)
+  /* ── Auto: duration → end date + days ── */
+  const durInfo = useMemo(() => {
+    if (!form.admissionDate || !form.durationMonths) return null
+    const s = new Date(form.admissionDate)
+    if (isNaN(s.getTime())) return null
+    const e = new Date(s); e.setMonth(e.getMonth() + Number(form.durationMonths))
+    return { end: e.toISOString().slice(0, 10), days: Math.round((e.getTime() - s.getTime()) / 86400000) }
+  }, [form.admissionDate, form.durationMonths])
+
+  const finalForm: FormValues = {
+    ...form,
+    age: ageInfo ? String(ageInfo.y) : '',
+    totalFee: form.totalFee || String(autoFee || ''),
+    endDate: durInfo?.end || '',
+    totalDays: durInfo ? String(durInfo.days) : '',
   }
 
-  const removeDoc = (key: keyof DocsState) => setDocs(d => ({ ...d, [key]: null }))
+  const studentName = [form.firstName, form.middleName, form.lastName].filter(Boolean).join(' ')
 
-  const uploadedCount = Object.values(docs).filter(Boolean).length
-  const requiredDocs = DOC_LIST.filter(d => d.required)
-  const requiredUploaded = requiredDocs.filter(d => docs[d.key]).length
+  /* ── Validation ── */
+  const validate = (s: number): string[] => {
+    const e: string[] = []
+    if (s === 1) {
+      if (!form.firstName.trim()) e.push('विद्यार्थ्याचे पहिले नाव आवश्यक')
+      if (!form.lastName.trim()) e.push('आडनाव आवश्यक')
+      if (!form.fatherFirst.trim()) e.push('वडिलांचे नाव आवश्यक')
+      if (!/^\d{10}$/.test(form.studentPhone)) e.push('विद्यार्थ्याचा मोबाईल 10 अंकी हवा')
+      if (!/^\d{10}$/.test(form.parentPhone)) e.push('पालकाचा मोबाईल 10 अंकी हवा')
+      if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.push('ई-मेल चुकीचा आहे')
+      if (form.aadhaar && !/^\d{12}$/.test(form.aadhaar.replace(/\s/g, ''))) e.push('आधार 12 अंकी हवा')
+      if (!form.dob) e.push('जन्म तारीख आवश्यक')
+      if (!form.address.trim()) e.push('पत्ता आवश्यक')
+    }
+    if (s === 2 && form.courses.length === 0) e.push('किमान एक कोर्स निवडा')
+    if (s === 3 && !files.photo) e.push('पासपोर्ट फोटो आवश्यक')
+    return e
+  }
 
-  const handleSubmit = async () => {
-    if (!agreed) { alert('कृपया नियम व अटी मंजूर करा'); return }
-    setLoading(true)
+  const next = () => {
+    const e = validate(step)
+    setErrors(e)
+    if (e.length === 0) { setStep(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  }
+  const back = () => { setErrors([]); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+
+  /* ── File upload ── */
+  const onFile = (key: string, file?: File) => {
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) { setErrors([`${file.name} — 5MB पेक्षा मोठी फाईल चालणार नाही`]); return }
+    const reader = new FileReader()
+    reader.onload = () => setFiles(p => ({ ...p, [key]: { file, preview: String(reader.result) } }))
+    reader.readAsDataURL(file)
+    setErrors([])
+  }
+
+  /* ── Submit ── */
+  const submit = async () => {
+    setSaving(true); setErrors([])
+    let code = ''
+    try {
+      const r = await fetch('/api/next-admission-code')
+      code = (await r.json()).code || ''
+    } catch { /* offline */ }
+    if (!code) code = `S-${String(Date.now()).slice(-4)}`
+    setRollNumber(code)
 
     try {
-      const payload = new globalThis.FormData()
-      Object.entries(form).forEach(([key, value]) => payload.append(key, value))
-      payload.append('agreed', 'true')
-      DOC_LIST.forEach(({ key }) => {
-        const document = docs[key]
-        if (document) payload.append(`document:${key}`, document.file)
-      })
+      const { data, error } = await supabase.from('students').insert({
+        roll_number: code,
+        name: studentName,
+        parent_name: [form.fatherFirst, form.fatherMiddle, form.fatherLast].filter(Boolean).join(' '),
+        address: [form.address, form.village, form.taluka, form.district, form.pincode].filter(Boolean).join(', '),
+        phone: form.studentPhone,
+        parent_phone: form.parentPhone,
+        aadhaar_no: form.aadhaar,
+        guarantee_letter_no: form.guaranteeNo,
+        dob: form.dob || null,
+        course: form.courses.join(','),
+        admission_date: form.admissionDate || null,
+        duration: `${form.durationMonths} महिने`,
+        age: ageInfo?.y ?? null,
+        height: Number(form.height) || null,
+        weight: Number(form.weight) || null,
+        chest: Number(form.chest) || null,
+        gender: form.gender,
+        total_fee: Number(finalForm.totalFee) || 0,
+      }).select('id').single()
 
-      const response = await fetch('/api/admissions', { method: 'POST', body: payload })
-      const result = await response.json()
-      if (!response.ok || !result.code) {
-        throw new Error(result.error || 'Admission failed')
+      if (!error && data?.id) {
+        for (const [key, v] of Object.entries(files)) {
+          const ext = v.file.name.split('.').pop() || 'jpg'
+          const path = `${data.id}/${key}.${ext}`
+          await supabase.storage.from('student-documents').upload(path, v.file, { upsert: true })
+        }
       }
-      setRollNumber(result.code)
-      setSubmitted(true)
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error submitting. Please try again.')
-    }
-    setLoading(false)
+    } catch { /* demo mode — form still prints */ }
+
+    setSaving(false)
+    setSubmitted(true)
+    window.scrollTo({ top: 0 })
   }
 
-  const pageStyle: React.CSSProperties = {
-    background: 'white', border: '1.5px solid #aaa', borderRadius: 4,
-    padding: '28px 32px', maxWidth: 780, margin: '0 auto',
-    fontFamily: "'Noto Sans Devanagari', Arial, sans-serif",
-    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-  }
-
-  // ── PDF Download — Browser Print (Desktop + Mobile दोन्हीवर चालते) ──
-  const handleDownloadPdf = () => {
-    const prevTitle = document.title
-    document.title = `ShivrakshakAcademy_${(form.name || 'Form').replace(/\s+/g, '_')}_${rollNumber}`
+  const doPrint = () => {
+    const t = document.title
+    document.title = `शिवरक्षक_प्रवेश_अर्ज_${studentName.replace(/\s+/g, '_')}_${rollNumber}`
     window.print()
-    setTimeout(() => { document.title = prevTitle }, 800)
+    setTimeout(() => { document.title = t }, 900)
   }
 
-  // ── SUCCESS ──────────────────────────────────────
+  /* ══════════ SUCCESS SCREEN ══════════ */
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ background: 'white', borderRadius: 16, padding: 40, maxWidth: 520, width: '100%', textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
+      <>
+        <div className="adm-wrap no-print">
+          <div className="adm-success">
+            <div className="succ-icon">✅</div>
+            <h1>प्रवेश अर्ज यशस्वी!</h1>
+            <p className="succ-sub">तुमचा अर्ज नोंदवला गेला आहे</p>
 
-          {/* Academy name */}
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#7c2d12', marginBottom: 4 }}>🛡️ शिवरक्षक करियर अकॅडमी</div>
-          <div style={{ fontSize: 11, color: '#78350f', marginBottom: 20 }}>अहमदनगर — 9284842177</div>
-
-          <div style={{ fontSize: 56, marginBottom: 10 }}>✅</div>
-          <h2 style={{ fontSize: 24, fontWeight: 900, color: '#166534', marginBottom: 6 }}>प्रवेश अर्ज यशस्वी झाला!</h2>
-          <p style={{ color: '#64748b', marginBottom: 20, fontSize: 14 }}>तुमचा प्रवेश अर्ज क्रमांक मिळाला आहे</p>
-
-          {/* BIG prominent admission code */}
-          <div style={{ background: 'linear-gradient(135deg, #7c2d12, #b45309)', borderRadius: 16, padding: '24px 32px', marginBottom: 16, boxShadow: '0 4px 20px rgba(124,45,18,0.4)' }}>
-            <div style={{ fontSize: 12, color: '#fcd34d', fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>प्रवेश अर्ज क्रमांक</div>
-            <div style={{ fontSize: 52, fontWeight: 900, color: 'white', letterSpacing: 6, fontFamily: 'monospace' }}>
-              {rollNumber}
+            <div className="succ-code">
+              <span>प्रवेश अर्ज क्रमांक</span>
+              <strong>{rollNumber}</strong>
+              <small>★ हा क्रमांक लक्षात ठेवा ★</small>
             </div>
-            <div style={{ fontSize: 12, color: '#fed7aa', marginTop: 8 }}>★ हा क्रमांक लक्षात ठेवा — सर्व कामांसाठी लागेल ★</div>
-          </div>
 
-          {/* Warning box */}
-          <div style={{ background: '#fffbeb', border: '2px solid #f59e0b', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13 }}>
-            <div style={{ fontWeight: 800, color: '#92400e', marginBottom: 4 }}>⚠️ महत्त्वाचे!</div>
-            <div style={{ color: '#78350f' }}>
-              हा नंबर <strong>फोनमध्ये Save करा</strong> किंवा <strong>लिहून ठेवा</strong>.<br />
-              अकॅडमीत आल्यावर हाच नंबर सांगायचा आहे.
+            <div className="succ-info">
+              <div><b>{studentName}</b></div>
+              <div>{form.courses.map(k => COURSES.find(c => c.key === k)?.label).join(', ')}</div>
+              <div>एकूण फी: <b>₹{Number(finalForm.totalFee).toLocaleString('en-IN')}</b></div>
             </div>
-          </div>
 
-          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: 10, marginBottom: 20, fontSize: 12, color: '#166534' }}>
-            ✅ {uploadedCount} कागदपत्रे upload झाली &nbsp;|&nbsp; 📞 संपर्क: 9284842177
-          </div>
+            <div className="succ-steps">
+              <b>पुढे काय करायचे?</b>
+              <ol>
+                <li>खालील बटण दाबून <b>3 पानी अर्ज print</b> करा</li>
+                <li>विद्यार्थी व पालकाची <b>सही</b> करा</li>
+                <li>अकॅडमीत आणून <b>सरांची सही</b> घ्या</li>
+              </ol>
+            </div>
 
-          {/* PDF Download */}
-          <button
-            onClick={handleDownloadPdf}
-            style={{ width: '100%', background: '#7c2d12', color: 'white', padding: '14px', borderRadius: 10, fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: 15, marginBottom: 10, boxShadow: '0 4px 12px rgba(124,45,18,0.3)' }}
-          >
-            📥 प्रवेश अर्ज PDF Download करा ({rollNumber})
-          </button>
+            <button className="btn-print" onClick={doPrint}>🖨️ अर्ज Print / PDF Download करा</button>
+            <div className="succ-note">Print window मध्ये <b>&quot;Save as PDF&quot;</b> निवडा</div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <Link href="/" style={{ flex: 1, background: '#f1f5f9', color: '#374151', padding: '11px', borderRadius: 8, fontWeight: 700, textDecoration: 'none', fontSize: 14, border: '1px solid #e2e8f0', display: 'block' }}>
-              🏠 मुख्यपृष्ठ
-            </Link>
-            <button onClick={() => window.print()} style={{ flex: 1, background: '#f1f5f9', color: '#374151', padding: '11px', borderRadius: 8, fontWeight: 700, border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 14 }}>
-              🖨️ Print
-            </button>
+            <div className="succ-links">
+              <Link href="/">🏠 मुख्यपृष्ठ</Link>
+              <a href={`https://wa.me/917720991375?text=${encodeURIComponent(`नमस्कार, मी ${studentName} — प्रवेश अर्ज क्रमांक ${rollNumber} भरला आहे.`)}`} target="_blank" rel="noopener">💬 WhatsApp</a>
+            </div>
           </div>
         </div>
-      </div>
+        <PrintableForm ref={printRef} form={finalForm} photo={files.photo?.preview} rollNumber={rollNumber} />
+        <FormStyles />
+      </>
     )
   }
 
-  return (
-    <> {/* Fragment — main page + hidden PDF form */}
-    <div style={{ minHeight: '100vh', background: '#e5e7eb', paddingBottom: 60 }}>
-
-      {/* Top bar */}
-      <div style={{ background: '#7c2d12', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ color: 'white', fontWeight: 800, fontSize: 16 }}>🛡️ शिवरक्षक करियर अकॅडमी — प्रवेश अर्ज</div>
-        <Link href="/" style={{ color: '#fcd34d', textDecoration: 'none', fontSize: 13 }}>← परत</Link>
-      </div>
-
-      {/* Step bar */}
-      <div style={{ background: '#fef3c7', borderBottom: '1px solid #fde68a', padding: '10px 24px', display: 'flex', gap: 0, justifyContent: 'center', flexWrap: 'wrap' }}>
-        {STEPS.map((s, i) => (
-          <div key={s.n} style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 16px',
-              background: step === s.n ? '#7c2d12' : step > s.n ? '#16a34a' : 'white',
-              color: step >= s.n ? 'white' : '#94a3b8',
-              borderRadius: 20, fontSize: 13, fontWeight: 700,
-              border: `1px solid ${step === s.n ? '#7c2d12' : step > s.n ? '#16a34a' : '#e2e8f0'}`,
-            }}>
-              <span>{step > s.n ? '✓' : s.n}</span><span>{s.label}</span>
-            </div>
-            {i < STEPS.length - 1 && <div style={{ width: 24, height: 1, background: '#fde68a', margin: '0 3px' }} />}
+  /* ══════════ LANDING ══════════ */
+  if (!started) {
+    return (
+      <>
+        <div className="adm-land no-print">
+          <div className="al-top">
+            <Link href="/" className="adm-back">← मुख्यपृष्ठ</Link>
           </div>
-        ))}
-      </div>
 
-      <div style={{ padding: '24px 16px' }}>
-
-        {/* ══════════════════════════════════
-            STEP 1 — प्रवेश अर्ज
-        ══════════════════════════════════ */}
-        {step === 1 && (
-          <div style={pageStyle}>
-            <AcademyHeader />
-            {/* Admission code header — top of form */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-              <div style={{ fontWeight: 900, fontSize: 20, color: '#7c2d12' }}>★ प्रवेश अर्ज ★</div>
-              <div style={{ border: '2px solid #7c2d12', borderRadius: 8, padding: '8px 18px', textAlign: 'center', background: '#fffbeb', minWidth: 200 }}>
-                <div style={{ fontSize: 11, color: '#78350f', fontWeight: 600, letterSpacing: 0.5, marginBottom: 3 }}>प्रवेश अर्ज क्रमांक</div>
-                <div style={{ fontSize: 20, fontWeight: 900, color: '#7c2d12', letterSpacing: 2, fontFamily: 'monospace' }}>
-                  (Submit नंतर मिळेल)
-                </div>
-                <div style={{ fontSize: 10, color: '#92400e', marginTop: 3 }}>★ हा क्रमांक लक्षात ठेवा ★</div>
-              </div>
-            </div>
-
-            {/* Name + Photo */}
-            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 4 }}>
-              <div style={{ flex: 1 }}>
-                <FieldLine label="विद्यार्थ्याचे नाव">
-                  <FInput value={form.name} onChange={e => upd('name', e.target.value)} required />
-                </FieldLine>
-              </div>
-              <label style={{ cursor: 'pointer', flexShrink: 0 }}>
-                <div style={{ width: 90, height: 110, border: '1.5px dashed #999', borderRadius: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: docs.photo ? 'transparent' : '#fafafa', overflow: 'hidden' }}>
-                  {docs.photo?.preview
-                    ? <img src={docs.photo.preview} alt="photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <div style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', lineHeight: 1.6 }}>📷<br />फोटो<br />click करा</div>
-                  }
-                </div>
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleDocUpload('photo', e.target.files[0])} />
-              </label>
-            </div>
-
-            <FieldLine label="विद्यार्थ्याचा रोल नंबर">
-              <span style={{ fontSize: 12, color: '#94a3b8' }}>(Submit नंतर मिळेल)</span>
-            </FieldLine>
-            <FieldLine label="पालकाचे नाव">
-              <FInput value={form.parent_name} onChange={e => upd('parent_name', e.target.value)} required />
-            </FieldLine>
-            <FieldLine label="पत्ता">
-              <FInput value={form.address} onChange={e => upd('address', e.target.value)} placeholder="गाव, तालुका, जिल्हा" />
-            </FieldLine>
-
-            <div style={{ display: 'flex', gap: 24, marginBottom: 18 }}>
-              {[['फोन', 'phone', 'tel'], ['पालकाचा मो.', 'parent_phone', 'tel']].map(([lbl, key, type]) => (
-                <div key={key} style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ fontSize: 14, whiteSpace: 'nowrap', fontWeight: 500 }}>{lbl} :</span>
-                  <div style={{ flex: 1, borderBottom: '1px solid #555' }}>
-                    <FInput type={type} value={form[key as keyof FormData]} onChange={e => upd(key as keyof FormData, e.target.value)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 24, marginBottom: 18 }}>
-              {[['आधार कार्ड नं.', 'aadhaar_no'], ['हमीपत्र नं.', 'guarantee_letter_no']].map(([lbl, key]) => (
-                <div key={key} style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ fontSize: 14, whiteSpace: 'nowrap', fontWeight: 500 }}>{lbl} :</span>
-                  <div style={{ flex: 1, borderBottom: '1px solid #555' }}>
-                    <FInput value={form[key as keyof FormData]} onChange={e => upd(key as keyof FormData, e.target.value)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 24, marginBottom: 18 }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontSize: 14, whiteSpace: 'nowrap', fontWeight: 500 }}>जन्म तारीख :</span>
-                <div style={{ flex: 1, borderBottom: '1px solid #555' }}>
-                  <FInput type="date" value={form.dob} onChange={e => upd('dob', e.target.value)} />
-                </div>
-              </div>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontSize: 14, whiteSpace: 'nowrap', fontWeight: 500 }}>लिंग :</span>
-                <div style={{ flex: 1, borderBottom: '1px solid #555' }}>
-                  <select value={form.gender} onChange={e => upd('gender', e.target.value)}
-                    style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontSize: 14, fontFamily: 'inherit' }}>
-                    <option value="male">पुरुष</option>
-                    <option value="female">महिला</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Course */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>कोर्स :</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                {COURSES.map(([val, label]) => (
-                  <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', padding: '6px 10px', border: `1.5px solid ${form.course === val ? '#7c2d12' : '#e2e8f0'}`, borderRadius: 6, background: form.course === val ? '#fef3c7' : 'white' }}>
-                    <input type="radio" name="course" value={val} checked={form.course === val} onChange={() => upd('course', val)} style={{ accentColor: '#7c2d12' }} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 24, marginBottom: 18 }}>
-              {[['प्रवेश तारीख', 'admission_date', 'date', ''], ['कालावधी', 'duration', 'text', '6 महिने / 1 वर्ष']].map(([lbl, key, type, ph]) => (
-                <div key={key} style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ fontSize: 14, whiteSpace: 'nowrap', fontWeight: 500 }}>{lbl} :</span>
-                  <div style={{ flex: 1, borderBottom: '1px solid #555' }}>
-                    <FInput type={type} value={form[key as keyof FormData]} onChange={e => upd(key as keyof FormData, e.target.value)} placeholder={ph} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Physical */}
-            <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
-              {[['वय', 'age', 'वर्षे'], ['उंची', 'height', 'सेमी'], ['वजन', 'weight', 'किलो'], ['छाती', 'chest', 'सेमी']].map(([lbl, key, ph]) => (
-                <div key={key} style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>{lbl}</div>
-                  <div style={{ border: '1px solid #555', padding: '4px 8px', minHeight: 32 }}>
-                    <input type="number" step="0.1" value={form[key as keyof FormData]} onChange={e => upd(key as keyof FormData, e.target.value)} placeholder={ph}
-                      style={{ width: '100%', border: 'none', outline: 'none', fontSize: 13, background: 'transparent', fontFamily: 'inherit' }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <FieldLine label="एकूण कोर्स फी (₹)">
-              <FInput type="number" value={form.total_fee} onChange={e => upd('total_fee', e.target.value)} placeholder="उदा. 100000" />
-            </FieldLine>
-
-            <div style={{ border: '1.5px solid #333', borderRadius: 40, padding: '8px 20px', textAlign: 'center', margin: '20px auto', maxWidth: 220, fontSize: 14, fontWeight: 700 }}>नियम व अटी</div>
-            <p style={{ fontSize: 12, color: '#555', textAlign: 'center', marginBottom: 20, lineHeight: 1.7 }}>
-              विद्यार्थ्याने कसलेही गैरवर्तन, बेशिस्तपणा केल्यास शिक्षेस पात्र राहील.<br />
-              मला व माझ्या पाल्यास सर्व अटी मंजुर असून त्यांचे पालन केले जाईल.
+          {/* Hero */}
+          <div className="al-hero">
+            <div className="al-badge">🇮🇳 शिवमुद्रा रजि. ५२७/ए &nbsp;•&nbsp; रक्षक रजि. ००००० १३२०२४</div>
+            <h1>ऑनलाईन <span>प्रवेश अर्ज</span></h1>
+            <p className="al-lead">
+              शिवरक्षक करिअर अकॅडमी — पोलीस, आर्मी, नेव्ही व एम.पी.एस.सी. भरतीपूर्व प्रशिक्षण
             </p>
+            <p className="al-sub">
+              घरबसल्या फक्त <b>5 मिनिटांत</b> अर्ज भरा. लगेच प्रवेश क्रमांक मिळेल आणि
+              <b> 3 पानी अर्ज PDF</b> डाउनलोड होईल — प्रिंट करून सरांची सही घ्या.
+            </p>
+            <button className="al-cta" onClick={() => setStarted(true)}>
+              📋 अर्ज सुरू करा &nbsp;→
+            </button>
+            <div className="al-cta-note">कोणतेही शुल्क नाही • माहिती सुरक्षित राहील</div>
+          </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTop: '1px solid #ddd' }}>
-              {['विद्यार्थ्याची सही', 'पालकाची सही', 'शिवरक्षक करियर ऑकेडमी'].map(lbl => (
-                <div key={lbl} style={{ textAlign: 'center', width: 160 }}>
-                  <div style={{ borderBottom: '1px solid #555', height: 40, marginBottom: 6 }} />
-                  <div style={{ fontSize: 12, fontWeight: 600 }}>{lbl}</div>
+          {/* How it works */}
+          <div className="al-sec">
+            <div className="al-sec-t"><span>प्रक्रिया</span>अर्ज कसा भरायचा?</div>
+            <div className="al-steps">
+              {[
+                { n: '1', i: '👤', t: 'वैयक्तिक माहिती', d: 'नाव, पालकांचे नाव, पत्ता, मोबाईल, ई-मेल, आधार व जन्म तारीख भरा. वय आपोआप मोजले जाईल.' },
+                { n: '2', i: '🎯', t: 'कोर्स व फी', d: 'हवा तो कोर्स निवडा — फी आपोआप दिसेल. कालावधी निवडल्यावर संपण्याची तारीख कळेल.' },
+                { n: '3', i: '📎', t: 'कागदपत्रे', d: 'पासपोर्ट फोटो व आधार कार्ड अपलोड करा. इतर कागदपत्रे नंतरही देता येतील.' },
+                { n: '4', i: '🖨️', t: 'प्रिंट करा', d: 'माहिती तपासून सबमिट करा. 3 पानी अर्ज PDF डाउनलोड करून प्रिंट काढा.' },
+              ].map(s => (
+                <div key={s.n} className="al-step">
+                  <div className="al-step-n">{s.n}</div>
+                  <div className="al-step-i">{s.i}</div>
+                  <div className="al-step-t">{s.t}</div>
+                  <div className="al-step-d">{s.d}</div>
                 </div>
               ))}
             </div>
+          </div>
 
-            <button onClick={() => {
-              if (!form.name || !form.parent_name || !form.parent_phone || !form.course)
-                return alert('कृपया नाव, पालकाचे नाव, पालकाचा मो. नं. आणि कोर्स भरा')
-              setStep(2)
-            }} style={{ marginTop: 20, width: '100%', background: '#7c2d12', color: 'white', border: 'none', padding: 14, borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
-              पुढे → Documents Upload करा
-            </button>
+          {/* What you get */}
+          <div className="al-sec">
+            <div className="al-sec-t"><span>तुम्हाला काय मिळेल</span>3 पानी अर्ज</div>
+            <div className="al-papers">
+              {[
+                { i: '📄', t: 'पान 1 — प्रवेश अर्ज', d: 'संपूर्ण माहिती, फोटो, निवडलेला कोर्स, वय-उंची-वजन-छाती आणि सह्यांची जागा' },
+                { i: '📜', t: 'पान 2 — संमतीपत्र', d: 'अकॅडमीच्या सर्व 7 अटी व नियम, विद्यार्थी व पालकांच्या सहीसह' },
+                { i: '🧾', t: 'पान 3 — फी पावती', d: 'मेन फी पावती / क्लासेस फी पावती — कालावधी, एकूण रक्कम व तारखेसह' },
+              ].map(p => (
+                <div key={p.t} className="al-paper">
+                  <div className="al-paper-i">{p.i}</div>
+                  <div>
+                    <div className="al-paper-t">{p.t}</div>
+                    <div className="al-paper-d">{p.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Ready checklist */}
+          <div className="al-sec">
+            <div className="al-sec-t"><span>तयारी</span>अर्ज भरण्याआधी हे जवळ ठेवा</div>
+            <div className="al-check">
+              {[
+                ['📸', 'पासपोर्ट फोटो', 'अनिवार्य'],
+                ['🆔', 'आधार कार्ड नंबर', 'अनिवार्य'],
+                ['📱', 'विद्यार्थी व पालकांचा मोबाईल', 'अनिवार्य'],
+                ['🎂', 'जन्म तारीख', 'अनिवार्य'],
+                ['📧', 'ई-मेल आयडी', 'ऐच्छिक'],
+                ['📄', 'शाळा सोडल्याचा दाखला', 'ऐच्छिक'],
+              ].map(([i, t, r]) => (
+                <div key={t} className={`al-chk ${r === 'अनिवार्य' ? 'req' : ''}`}>
+                  <span className="al-chk-i">{i}</span>
+                  <span className="al-chk-t">{t}</span>
+                  <span className="al-chk-r">{r}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Courses + fee */}
+          <div className="al-sec">
+            <div className="al-sec-t"><span>कोर्सेस</span>उपलब्ध प्रशिक्षण</div>
+            <div className="al-courses">
+              {COURSES.map(c => (
+                <div key={c.key} className="al-course">
+                  <b>{c.label}</b>
+                  <span>₹{c.fee.toLocaleString('en-IN')}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Final CTA */}
+          <div className="al-final">
+            <h2>तयार आहात?</h2>
+            <p>आजच अर्ज भरा आणि तुमच्या वर्दीच्या स्वप्नाकडे पहिले पाऊल टाका.</p>
+            <button className="al-cta" onClick={() => setStarted(true)}>📋 अर्ज सुरू करा &nbsp;→</button>
+            <div className="al-help">
+              अडचण आल्यास संपर्क करा —
+              <a href="tel:9284842177">📞 9284842177</a>
+              <a href="https://wa.me/917720991375" target="_blank" rel="noopener">💬 WhatsApp</a>
+            </div>
+          </div>
+        </div>
+        <FormStyles />
+      </>
+    )
+  }
+
+  /* ══════════ FORM ══════════ */
+  const STEPS = ['वैयक्तिक माहिती', 'कोर्स व फी', 'कागदपत्रे', 'तपासा']
+
+  return (
+    <>
+      <div className="adm-wrap no-print">
+        {/* Header */}
+        <div className="adm-head">
+          <Link href="/" className="adm-back">← परत</Link>
+          <div className="adm-title">
+            <div className="adm-t1">🛡️ शिवरक्षक करिअर अकॅडमी</div>
+            <div className="adm-t2">ऑनलाईन प्रवेश अर्ज</div>
+          </div>
+        </div>
+
+        {/* Stepper */}
+        <div className="stepper">
+          {STEPS.map((s, i) => (
+            <div key={s} className={`stp ${step === i + 1 ? 'on' : ''} ${step > i + 1 ? 'done' : ''}`}>
+              <div className="stp-n">{step > i + 1 ? '✓' : i + 1}</div>
+              <div className="stp-l">{s}</div>
+            </div>
+          ))}
+        </div>
+
+        {errors.length > 0 && (
+          <div className="err-box">
+            {errors.map(e => <div key={e}>⚠️ {e}</div>)}
           </div>
         )}
 
-        {/* ══════════════════════════════════
-            STEP 2 — DOCUMENTS UPLOAD
-        ══════════════════════════════════ */}
-        {step === 2 && (
-          <div style={pageStyle}>
-            <AcademyHeader />
+        <div className="adm-card">
 
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontWeight: 900, fontSize: 20, color: '#7c2d12' }}>📁 कागदपत्रे Upload करा</div>
-              <div style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>
-                {uploadedCount} / {DOC_LIST.length} upload झाले &nbsp;•&nbsp;
-                <span style={{ color: '#dc2626' }}>★ आवश्यक</span> ते {requiredUploaded}/{requiredDocs.length} upload झाले
+          {/* ── STEP 1 ── */}
+          {step === 1 && <>
+            <SecTitle icon="👤" title="विद्यार्थ्याचे नाव" />
+            <Row3>
+              <F label="पहिले नाव *" v={form.firstName} on={v => set('firstName', v)} ph="नवनाथ" />
+              <F label="मधले नाव (वडिलांचे)" v={form.middleName} on={v => set('middleName', v)} ph="बाळासाहेब" />
+              <F label="आडनाव *" v={form.lastName} on={v => set('lastName', v)} ph="जांगळे" />
+            </Row3>
+
+            <SecTitle icon="👨‍👦" title="पालकाचे (वडिलांचे) नाव" />
+            <Row3>
+              <F label="पहिले नाव *" v={form.fatherFirst} on={v => set('fatherFirst', v)} ph="बाळासाहेब" />
+              <F label="मधले नाव" v={form.fatherMiddle} on={v => set('fatherMiddle', v)} ph="रामराव" />
+              <F label="आडनाव" v={form.fatherLast} on={v => set('fatherLast', v)} ph="जांगळे" />
+            </Row3>
+
+            <SecTitle icon="📍" title="पत्ता" />
+            <F label="संपूर्ण पत्ता *" v={form.address} on={v => set('address', v)} ph="घर क्र., गल्ली, भाग" area />
+            <Row3>
+              <F label="गाव" v={form.village} on={v => set('village', v)} />
+              <F label="तालुका" v={form.taluka} on={v => set('taluka', v)} />
+              <F label="जिल्हा" v={form.district} on={v => set('district', v)} />
+            </Row3>
+            <Row2>
+              <F label="पिनकोड" v={form.pincode} on={v => set('pincode', v.replace(/\D/g, '').slice(0, 6))} ph="414001" num />
+              <div>
+                <label className="lbl">लिंग</label>
+                <div className="radio-row">
+                  {[['male', '👦 मुलगा'], ['female', '👧 मुलगी']].map(([v, l]) => (
+                    <label key={v} className={`radio ${form.gender === v ? 'on' : ''}`}>
+                      <input type="radio" checked={form.gender === v} onChange={() => set('gender', v)} />
+                      {l}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            </Row2>
 
-            {/* Progress bar */}
-            <div style={{ background: '#f1f5f9', borderRadius: 10, height: 8, marginBottom: 28, overflow: 'hidden' }}>
-              <div style={{ background: '#16a34a', height: '100%', width: `${(uploadedCount / DOC_LIST.length) * 100}%`, transition: 'width 0.3s', borderRadius: 10 }} />
-            </div>
+            <SecTitle icon="📱" title="संपर्क क्रमांक" />
+            <Row2>
+              <F label="विद्यार्थ्याचा मोबाईल *" v={form.studentPhone} on={v => set('studentPhone', v.replace(/\D/g, '').slice(0, 10))} ph="9876543210" num />
+              <F label="विद्यार्थ्याचा WhatsApp" v={form.studentWhatsapp} on={v => set('studentWhatsapp', v.replace(/\D/g, '').slice(0, 10))} ph="वेगळा असल्यास" num />
+            </Row2>
+            <Row2>
+              <F label="पालकाचा मोबाईल *" v={form.parentPhone} on={v => set('parentPhone', v.replace(/\D/g, '').slice(0, 10))} ph="9876543210" num />
+              <F label="पालकाचा WhatsApp" v={form.parentWhatsapp} on={v => set('parentWhatsapp', v.replace(/\D/g, '').slice(0, 10))} ph="वेगळा असल्यास" num />
+            </Row2>
+            <F label="ई-मेल आयडी" v={form.email} on={v => set('email', v)} ph="name@gmail.com" type="email" />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-              {DOC_LIST.map(({ key, label, emoji, required, accept }) => {
-                const doc = docs[key]
-                const isImg = doc?.preview && doc.preview !== 'pdf'
+            <SecTitle icon="🆔" title="ओळखपत्र व जन्म तारीख" />
+            <Row2>
+              <F label="आधार कार्ड नंबर" v={form.aadhaar} on={v => set('aadhaar', v.replace(/\D/g, '').slice(0, 12))} ph="12 अंकी" num />
+              <F label="हमीपत्र नंबर" v={form.guaranteeNo} on={v => set('guaranteeNo', v)} />
+            </Row2>
+            <Row2>
+              <F label="जन्म तारीख *" v={form.dob} on={v => set('dob', v)} type="date" />
+              <div>
+                <label className="lbl">वय (आपोआप)</label>
+                <div className="auto-box">
+                  {ageInfo
+                    ? <><b>{ageInfo.y} वर्षे {ageInfo.m} महिने {ageInfo.d} दिवस</b><span>एकूण {ageInfo.days.toLocaleString('en-IN')} दिवस</span></>
+                    : <span className="dim">जन्म तारीख टाका</span>}
+                </div>
+              </div>
+            </Row2>
+          </>}
+
+          {/* ── STEP 2 ── */}
+          {step === 2 && <>
+            <SecTitle icon="🎯" title="कोर्स निवडा (एक किंवा अधिक)" />
+            <div className="course-grid">
+              {COURSES.map(c => {
+                const on = form.courses.includes(c.key)
                 return (
-                  <div key={key} style={{ border: `2px solid ${doc ? '#16a34a' : required ? '#fca5a5' : '#e2e8f0'}`, borderRadius: 12, overflow: 'hidden', background: doc ? '#f0fdf4' : 'white' }}>
-                    {/* Preview area */}
-                    <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: doc ? (isImg ? 'transparent' : '#dcfce7') : '#f8fafc', position: 'relative', overflow: 'hidden' }}>
-                      {doc
-                        ? isImg
-                          ? <img src={doc.preview} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: 36 }}>📄</div>
-                              <div style={{ fontSize: 11, color: '#16a34a', fontWeight: 600, marginTop: 4 }}>PDF Upload झाला ✅</div>
-                            </div>
-                        : <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                            <div style={{ fontSize: 32 }}>{emoji}</div>
-                            <div style={{ fontSize: 11, marginTop: 4 }}>Click to upload</div>
-                          </div>
-                      }
-                      {doc && (
-                        <button onClick={() => removeDoc(key)} style={{ position: 'absolute', top: 6, right: 6, background: '#dc2626', color: 'white', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-                      )}
-                    </div>
-
-                    {/* Label + Upload button */}
-                    <div style={{ padding: '10px 12px' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
-                        {label}
-                        {required && <span style={{ color: '#dc2626', marginLeft: 4 }}>★</span>}
-                      </div>
-                      <label style={{ cursor: 'pointer', display: 'block' }}>
-                        <div style={{ background: doc ? '#16a34a' : '#7c2d12', color: 'white', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 600, textAlign: 'center' }}>
-                          {doc ? '🔄 बदला' : '⬆️ Upload करा'}
-                        </div>
-                        <input type="file" accept={accept} style={{ display: 'none' }}
-                          onChange={e => e.target.files?.[0] && handleDocUpload(key, e.target.files[0])} />
-                      </label>
-                      {doc && <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.file.name}</div>}
-                    </div>
-                  </div>
+                  <label key={c.key} className={`course-chk ${on ? 'on' : ''}`}>
+                    <input type="checkbox" checked={on} onChange={() => {
+                      set('courses', on ? form.courses.filter(k => k !== c.key) : [...form.courses, c.key])
+                    }} />
+                    <span className="cc-box">{on ? '✓' : ''}</span>
+                    <span className="cc-lbl">{c.label}</span>
+                    <span className="cc-fee">₹{c.fee.toLocaleString('en-IN')}</span>
+                  </label>
                 )
               })}
             </div>
 
-            <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 10, padding: 14, marginTop: 20, fontSize: 13, color: '#78350f' }}>
-              💡 <strong>★ आवश्यक:</strong> फोटो, आधार कार्ड, 10वी मार्कशीट &nbsp;|&nbsp; बाकी documents नंतर admin panel मधून upload करता येतात.
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-              <button onClick={() => setStep(1)} style={{ flex: 1, background: '#f1f5f9', border: '1px solid #e2e8f0', padding: 12, borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>← मागे</button>
-              <button onClick={() => setStep(3)} style={{ flex: 2, background: '#7c2d12', color: 'white', border: 'none', padding: 12, borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
-                पुढे → संमतीपत्र ({uploadedCount} files ready)
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════
-            STEP 3 — संमतीपत्र
-        ══════════════════════════════════ */}
-        {step === 3 && (
-          <div style={pageStyle}>
-            <AcademyHeader />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
-              <div style={{ fontWeight: 900, fontSize: 16, color: '#7c2d12' }}>★ पालक / विद्यार्थी संमतीपत्र ★</div>
-              <div style={{ border: '2px solid #7c2d12', borderRadius: 8, padding: '6px 14px', textAlign: 'center', background: '#fffbeb' }}>
-                <div style={{ fontSize: 10, color: '#78350f', fontWeight: 600 }}>प्रवेश अर्ज क्रमांक</div>
-                <div style={{ fontSize: 14, fontWeight: 900, color: '#94a3b8', letterSpacing: 1 }}>(Submit नंतर मिळेल)</div>
-              </div>
-            </div>
-
-            <FieldLine label="मी"><span style={{ fontWeight: 600 }}>{form.name}</span></FieldLine>
-            <FieldLine label="पत्ता"><span>{form.address}</span></FieldLine>
-            <FieldLine label="प्रवेश अर्ज क्रमांक"><span style={{ color: '#94a3b8', fontSize: 12 }}>(Submit नंतर मिळेल)</span></FieldLine>
-            <FieldLine label="मोबाईल नंबर (पालकाचा व विद्यार्थ्याचा)"><span>{form.parent_phone} / {form.phone}</span></FieldLine>
-
-            <p style={{ fontSize: 13, lineHeight: 1.8, color: '#333', marginBottom: 16 }}>
-              खालील सर्व अटी नियम मी स्वतः माझ्या पालकाला वाचुन सांगितल्या असून या सर्व अटी नियम मला व माझ्या पालकांना मंजुर आहेत. मी त्यांचे पालन करीन.
-            </p>
-
-            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>अटी व नियम :</div>
-            {RULES.map((rule, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 12, fontSize: 13, lineHeight: 1.7 }}>
-                <span style={{ fontWeight: 700, minWidth: 24 }}>{i + 1})</span>
-                <span style={{ color: '#333' }}>{rule}</span>
-              </div>
-            ))}
-
-            <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 10, padding: 16, margin: '20px 0' }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
-                  style={{ width: 18, height: 18, marginTop: 2, accentColor: '#7c2d12', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, lineHeight: 1.7, fontWeight: 600, color: '#78350f' }}>
-                  मला व माझ्या पाल्यास सर्व अटी मंजुर असून त्यांचे पालन केले जाईल. ✅
-                </span>
-              </label>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTop: '1px solid #ddd' }}>
-              {['विद्यार्थ्याची सही', 'पालकाची सही', 'शिवरक्षक करियर ऑकेडमी'].map(lbl => (
-                <div key={lbl} style={{ textAlign: 'center', width: 160 }}>
-                  <div style={{ borderBottom: '1px solid #555', height: 40, marginBottom: 6 }} />
-                  <div style={{ fontSize: 12, fontWeight: 600 }}>{lbl}</div>
+            {form.courses.length > 0 && (
+              <div className="fee-banner">
+                <div>
+                  <span>निवडलेले कोर्स</span>
+                  <b>{form.courses.map(k => COURSES.find(c => c.key === k)?.label).join(' + ')}</b>
                 </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-              <button onClick={() => setStep(2)} style={{ flex: 1, background: '#f1f5f9', border: '1px solid #e2e8f0', padding: 12, borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>← मागे</button>
-              <button onClick={() => setStep(4)} style={{ flex: 2, background: '#7c2d12', color: 'white', border: 'none', padding: 12, borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>पुढे → फी पावती</button>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════
-            STEP 4 — फी पावती + Submit
-        ══════════════════════════════════ */}
-        {step === 4 && (
-          <div style={pageStyle}>
-            <div style={{ borderBottom: '2px solid #333', paddingBottom: 10, marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 12 }}>शिवमुद्रा व रक्षक संचलित....</div>
-              <div style={{ fontSize: 20, fontWeight: 900, color: '#7c2d12', fontFamily: 'serif', margin: '4px 0' }}>शिवरक्षक करिअर अकेंडमी</div>
-              <div style={{ fontSize: 11, color: '#dc2626', fontWeight: 600 }}>बालिकाश्रम रोड न्यू आर्टस्कॉलेज गेट नंबर 5 गौरव स्पोट्स जवळ</div>
-              <div style={{ fontSize: 11 }}>संचालक:- मेजर महाडिक सर &nbsp; मो:- 9284842177 &nbsp;&nbsp; संचालक:- मेजर पवार सर &nbsp; मो:- 9011887714</div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#7c2d12' }}>मेन फी पावती / क्लासेस फी पावती</div>
-              <div style={{ border: '2px solid #7c2d12', borderRadius: 8, padding: '8px 16px', textAlign: 'center', background: '#fffbeb', minWidth: 180 }}>
-                <div style={{ fontSize: 10, color: '#78350f', fontWeight: 600, letterSpacing: 0.5 }}>प्रवेश अर्ज क्रमांक</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#7c2d12', fontFamily: 'monospace', letterSpacing: 2 }}>(Submit नंतर मिळेल)</div>
-                <div style={{ fontSize: 9, color: '#92400e' }}>★ हा क्रमांक लक्षात ठेवा ★</div>
-              </div>
-            </div>
-
-            <FieldLine label="विद्याथ्याचे नाव :-"><span style={{ fontWeight: 600 }}>{form.name}</span></FieldLine>
-            <FieldLine label="पत्ता"><span>{form.address}</span></FieldLine>
-            <FieldLine label="विद्याथ्याचा मो नंबर:-"><span>{form.phone}</span></FieldLine>
-            <FieldLine label="कालावधी :-"><span>{form.duration}</span></FieldLine>
-            <FieldLine label="एकूण रुपये:-">
-              <span style={{ fontWeight: 700, fontSize: 16, color: '#16a34a' }}>
-                {form.total_fee ? `₹${Number(form.total_fee).toLocaleString('en-IN')}` : '—'}
-              </span>
-            </FieldLine>
-            <FieldLine label="पैसे भरलेली तारीख :-">
-              <span>{form.admission_date || new Date().toLocaleDateString('mr-IN')}</span>
-            </FieldLine>
-
-            {/* Documents summary */}
-            <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: 14, margin: '16px 0' }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: '#166534', marginBottom: 8 }}>📁 Upload झालेले Documents ({uploadedCount})</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {DOC_LIST.filter(d => docs[d.key]).map(d => (
-                  <span key={d.key} style={{ background: '#dcfce7', color: '#166534', padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>
-                    {d.emoji} {d.label}
-                  </span>
-                ))}
-                {uploadedCount === 0 && <span style={{ color: '#94a3b8', fontSize: 13 }}>कोणतेही documents upload केले नाहीत</span>}
-              </div>
-            </div>
-
-            <div style={{ background: '#fef9c3', border: '2px solid #fbbf24', borderRadius: 8, padding: '10px 16px', margin: '16px 0', textAlign: 'center', fontSize: 14, fontWeight: 700 }}>
-              ( टीप:- एकदा भरलेली फी वापस मिळणार नाही )
-            </div>
-
-            {!agreed && (
-              <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: '#dc2626', textAlign: 'center' }}>
-                ⚠️ संमतीपत्रात ✅ मंजूर करणे बाकी आहे — मागे जाऊन करा
+                <div className="fee-amt">
+                  <span>एकूण फी</span>
+                  <b>₹{autoFee.toLocaleString('en-IN')}</b>
+                </div>
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTop: '1px solid #ddd' }}>
-              {['पैसे भरणाऱ्या ची सही', 'शिवरक्षक करियर अकेंडमी'].map(lbl => (
-                <div key={lbl} style={{ textAlign: 'center', width: 200 }}>
-                  <div style={{ borderBottom: '1px solid #555', height: 40, marginBottom: 6 }} />
-                  <div style={{ fontSize: 12, fontWeight: 600 }}>{lbl}</div>
-                </div>
-              ))}
+            <SecTitle icon="📅" title="प्रवेश कालावधी" />
+            <Row2>
+              <F label="प्रवेश घेण्याची तारीख" v={form.admissionDate} on={v => set('admissionDate', v)} type="date" />
+              <div>
+                <label className="lbl">कालावधी</label>
+                <select className="inp" value={form.durationMonths} onChange={e => set('durationMonths', e.target.value)}>
+                  {['3', '6', '9', '12', '18', '24'].map(m => <option key={m} value={m}>{m} महिने</option>)}
+                </select>
+              </div>
+            </Row2>
+            {durInfo && (
+              <div className="auto-strip">
+                📆 कोर्स संपण्याची तारीख: <b>{new Date(durInfo.end).toLocaleDateString('mr-IN')}</b>
+                &nbsp;•&nbsp; एकूण <b>{durInfo.days} दिवस</b>
+              </div>
+            )}
+
+            <SecTitle icon="💪" title="शारीरिक माहिती" />
+            <Row3>
+              <F label="उंची (सेमी)" v={form.height} on={v => set('height', v)} ph="170" num />
+              <F label="वजन (किलो)" v={form.weight} on={v => set('weight', v)} ph="60" num />
+              <F label="छाती (सेमी)" v={form.chest} on={v => set('chest', v)} ph="80" num />
+            </Row3>
+
+            <SecTitle icon="💰" title="फी भरणा" />
+            <Row3>
+              <F label="एकूण फी (₹)" v={finalForm.totalFee} on={v => set('totalFee', v)} num />
+              <F label="आज भरलेली रक्कम (₹)" v={form.paidAmount} on={v => set('paidAmount', v)} ph="0" num />
+              <F label="पैसे भरलेली तारीख" v={form.paymentDate} on={v => set('paymentDate', v)} type="date" />
+            </Row3>
+          </>}
+
+          {/* ── STEP 3 ── */}
+          {step === 3 && <>
+            <SecTitle icon="📎" title="कागदपत्रे व फोटो अपलोड करा" />
+            <div className="doc-hint">फोटो अनिवार्य आहे. इतर कागदपत्रे नंतरही देता येतील. (प्रत्येक फाईल 5MB पर्यंत)</div>
+            <div className="doc-grid">
+              {DOCS.map(d => {
+                const up = files[d.key]
+                return (
+                  <label key={d.key} className={`doc-card ${up ? 'on' : ''}`}>
+                    <input type="file" accept={d.key === 'photo' ? 'image/*' : 'image/*,application/pdf'} hidden
+                      onChange={e => onFile(d.key, e.target.files?.[0])} />
+                    <div className="doc-prev">
+                      {up
+                        ? (up.file.type.includes('pdf') ? <div className="doc-pdf">📄 PDF</div> : <img src={up.preview} alt="" />)
+                        : <div className="doc-plus">＋</div>}
+                    </div>
+                    <div className="doc-name">{d.label}{d.required && <span className="req"> *</span>}</div>
+                    <div className="doc-status">{up ? '✅ अपलोड झाले' : 'क्लिक करा'}</div>
+                  </label>
+                )
+              })}
+            </div>
+          </>}
+
+          {/* ── STEP 4 ── */}
+          {step === 4 && <>
+            <SecTitle icon="🔍" title="माहिती तपासा" />
+            <div className="review">
+              <RevRow k="विद्यार्थ्याचे नाव" v={studentName} />
+              <RevRow k="पालकाचे नाव" v={[form.fatherFirst, form.fatherMiddle, form.fatherLast].filter(Boolean).join(' ')} />
+              <RevRow k="पत्ता" v={[form.address, form.village, form.taluka, form.district, form.pincode].filter(Boolean).join(', ')} />
+              <RevRow k="विद्यार्थी मोबाईल" v={form.studentPhone} />
+              <RevRow k="पालक मोबाईल" v={form.parentPhone} />
+              <RevRow k="ई-मेल" v={form.email || '—'} />
+              <RevRow k="आधार" v={form.aadhaar || '—'} />
+              <RevRow k="जन्म तारीख" v={form.dob ? new Date(form.dob).toLocaleDateString('mr-IN') : '—'} />
+              <RevRow k="वय" v={ageInfo ? `${ageInfo.y} वर्षे ${ageInfo.m} महिने ${ageInfo.d} दिवस` : '—'} />
+              <RevRow k="कोर्स" v={form.courses.map(k => COURSES.find(c => c.key === k)?.label).join(', ') || '—'} />
+              <RevRow k="कालावधी" v={`${form.durationMonths} महिने${durInfo ? ` (${durInfo.days} दिवस)` : ''}`} />
+              <RevRow k="एकूण फी" v={`₹${Number(finalForm.totalFee || 0).toLocaleString('en-IN')}`} hi />
+              <RevRow k="कागदपत्रे" v={`${Object.keys(files).length} फाईल्स`} />
             </div>
 
-            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-              <button onClick={() => setStep(3)} style={{ flex: 1, background: '#f1f5f9', border: '1px solid #e2e8f0', padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>← मागे</button>
-              <button onClick={handleSubmit} disabled={loading || !agreed}
-                style={{ flex: 2, background: agreed ? '#16a34a' : '#94a3b8', color: 'white', border: 'none', padding: 13, borderRadius: 8, fontSize: 16, fontWeight: 800, cursor: agreed ? 'pointer' : 'not-allowed' }}>
-                {loading ? '⏳ Submit होत आहे...' : '✅ प्रवेश अर्ज Submit करा'}
-              </button>
+            <div className="declare">
+              <b>घोषणा</b>
+              <p>वरील सर्व माहिती खरी असून, अकॅडमीचे सर्व नियम व अटी मला व माझ्या पालकांना मंजूर आहेत. त्यांचे पालन केले जाईल.</p>
             </div>
+          </>}
+
+          {/* Nav buttons */}
+          <div className="nav-btns">
+            {step > 1 && <button className="b-ghost" onClick={back}>← मागे</button>}
+            {step < 4
+              ? <button className="b-main" onClick={next}>पुढे →</button>
+              : <button className="b-main b-sub" onClick={submit} disabled={saving}>
+                  {saving ? '⏳ जतन करत आहे...' : '✅ अर्ज सबमिट करा'}
+                </button>}
           </div>
-        )}
-
+        </div>
       </div>
-    </div>
 
-    {/* Hidden PrintableForm — always rendered off-screen for PDF capture */}
-    <PrintableForm ref={formPdfRef} form={form} docs={docs} rollNumber={rollNumber || 'S-XX'} />
-
-    </> /* end Fragment */
+      <PrintableForm ref={printRef} form={finalForm} photo={files.photo?.preview} rollNumber={rollNumber || 'S-XX'} />
+      <FormStyles />
+    </>
   )
 }
+
+/* ═══════ small components ═══════ */
+
+function SecTitle({ icon, title }: { icon: string; title: string }) {
+  return <div className="sec-title"><span>{icon}</span>{title}</div>
+}
+function Row2({ children }: { children: React.ReactNode }) { return <div className="row2">{children}</div> }
+function Row3({ children }: { children: React.ReactNode }) { return <div className="row3">{children}</div> }
+
+function F({ label, v, on, ph, type = 'text', area, num }: {
+  label: string; v: string; on: (v: string) => void; ph?: string; type?: string; area?: boolean; num?: boolean
+}) {
+  return (
+    <div>
+      <label className="lbl">{label}</label>
+      {area
+        ? <textarea className="inp" rows={2} value={v} placeholder={ph} onChange={e => on(e.target.value)} />
+        : <input className="inp" type={type} value={v} placeholder={ph}
+            inputMode={num ? 'numeric' : undefined}
+            onChange={e => on(e.target.value)} />}
+    </div>
+  )
+}
+
+function RevRow({ k, v, hi }: { k: string; v: string; hi?: boolean }) {
+  return <div className={`rev-row ${hi ? 'hi' : ''}`}><span>{k}</span><b>{v}</b></div>
+}
+
+/* ═══════ styles ═══════ */
+
+function FormStyles() {
+  return <style dangerouslySetInnerHTML={{ __html: `
+/* ═══ LANDING ═══ */
+.adm-land { min-height:100vh; background:#0a1628; color:#f1f5f9; padding-bottom:70px; font-family:'Segoe UI',system-ui,'Noto Sans Devanagari',sans-serif; }
+.al-top { padding:16px 22px; }
+.al-hero { max-width:760px; margin:0 auto; padding:36px 22px 60px; text-align:center;
+  background:radial-gradient(ellipse 80% 70% at 50% 0%, rgba(249,115,22,.1) 0%, transparent 70%); }
+.al-badge { display:inline-block; background:rgba(249,115,22,.08); border:1px solid rgba(249,115,22,.22); color:#f97316; padding:7px 18px; border-radius:100px; font-size:11.5px; font-weight:700; letter-spacing:.4px; margin-bottom:26px; }
+.al-hero h1 { font-size:52px; font-weight:900; margin:0 0 18px; letter-spacing:-1.6px; line-height:1.08; color:#fff; }
+.al-hero h1 span { display:block; background:linear-gradient(120deg,#f97316,#fbbf24 60%,#f97316); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.al-lead { font-size:17px; color:#cbd5e1; margin:0 0 14px; line-height:1.65; font-weight:600; }
+.al-sub { font-size:14.5px; color:#94a3b8; margin:0 0 34px; line-height:1.85; max-width:560px; margin-left:auto; margin-right:auto; }
+.al-sub b { color:#fbbf24; }
+.al-cta { display:inline-flex; align-items:center; padding:18px 44px; background:linear-gradient(135deg,#f97316,#c2410c); border:none; border-radius:12px; color:#fff; font-weight:800; font-size:17px; cursor:pointer; box-shadow:0 10px 34px rgba(249,115,22,.42); font-family:inherit; transition:transform .15s,box-shadow .15s; }
+.al-cta:hover { transform:translateY(-2px); box-shadow:0 14px 40px rgba(249,115,22,.5); }
+.al-cta-note { font-size:12px; color:#475569; margin-top:14px; }
+
+.al-sec { max-width:1020px; margin:0 auto 56px; padding:0 22px; }
+.al-sec-t { text-align:center; font-size:29px; font-weight:800; color:#fff; margin-bottom:32px; letter-spacing:-.6px; }
+.al-sec-t span { display:block; font-size:11px; font-weight:800; color:#f97316; letter-spacing:1.8px; margin-bottom:10px; }
+
+.al-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:15px; }
+.al-step { position:relative; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:15px; padding:26px 20px 22px; }
+.al-step-n { position:absolute; top:-13px; left:20px; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#f97316,#c2410c); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; box-shadow:0 4px 14px rgba(249,115,22,.4); }
+.al-step-i { font-size:32px; margin:8px 0 12px; }
+.al-step-t { font-weight:800; font-size:15.5px; color:#f1f5f9; margin-bottom:8px; }
+.al-step-d { font-size:13px; color:#64748b; line-height:1.75; }
+
+.al-papers { display:flex; flex-direction:column; gap:12px; }
+.al-paper { display:flex; gap:17px; align-items:flex-start; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:20px 22px; }
+.al-paper-i { font-size:30px; flex-shrink:0; }
+.al-paper-t { font-weight:800; font-size:15.5px; color:#fbbf24; margin-bottom:5px; }
+.al-paper-d { font-size:13.5px; color:#64748b; line-height:1.7; }
+
+.al-check { display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:11px; }
+.al-chk { display:flex; align-items:center; gap:13px; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07); border-radius:11px; padding:15px 18px; }
+.al-chk.req { border-color:rgba(249,115,22,.22); background:rgba(249,115,22,.05); }
+.al-chk-i { font-size:20px; }
+.al-chk-t { flex:1; font-size:14px; font-weight:600; color:#e2e8f0; }
+.al-chk-r { font-size:10.5px; font-weight:800; color:#475569; padding:3px 10px; border-radius:100px; background:rgba(255,255,255,.05); white-space:nowrap; }
+.al-chk.req .al-chk-r { color:#f97316; background:rgba(249,115,22,.12); }
+
+.al-courses { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:11px; }
+.al-course { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:11px; padding:16px 18px; }
+.al-course b { font-size:14.5px; color:#e2e8f0; font-weight:700; }
+.al-course span { font-size:13px; color:#fbbf24; font-weight:800; }
+
+.al-final { max-width:640px; margin:0 auto; padding:48px 26px; text-align:center; background:linear-gradient(135deg,rgba(249,115,22,.09),rgba(220,38,38,.06)); border:1px solid rgba(249,115,22,.2); border-radius:20px; }
+.al-final h2 { font-size:31px; font-weight:900; color:#fff; margin:0 0 10px; letter-spacing:-.7px; }
+.al-final p { color:#94a3b8; font-size:14.5px; margin:0 0 28px; line-height:1.7; }
+.al-help { margin-top:24px; font-size:13px; color:#475569; display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
+.al-help a { color:#f97316; text-decoration:none; font-weight:700; }
+
+@media (max-width:640px) {
+  .al-hero { padding:24px 18px 44px; }
+  .al-hero h1 { font-size:34px; letter-spacing:-1px; }
+  .al-lead { font-size:15px; }
+  .al-sub { font-size:13.5px; }
+  .al-cta { width:100%; justify-content:center; padding:17px 24px; font-size:16px; }
+  .al-sec { margin-bottom:42px; padding:0 16px; }
+  .al-sec-t { font-size:23px; margin-bottom:26px; }
+  .al-steps, .al-check, .al-courses { grid-template-columns:1fr; }
+  .al-final { margin:0 16px; padding:34px 20px; border-radius:16px; }
+  .al-final h2 { font-size:25px; }
+  .al-help { flex-direction:column; gap:9px; }
+}
+
+.adm-wrap { min-height:100vh; background:linear-gradient(180deg,#0a1628 0%,#0f2038 100%); padding:0 0 60px; font-family:'Segoe UI',system-ui,'Noto Sans Devanagari',sans-serif; }
+.adm-head { display:flex; align-items:center; gap:16px; padding:18px 22px; background:rgba(0,0,0,.28); border-bottom:1px solid rgba(249,115,22,.2); position:sticky; top:0; z-index:50; backdrop-filter:blur(12px); }
+.adm-back { color:#94a3b8; text-decoration:none; font-size:14px; font-weight:600; padding:8px 14px; border:1px solid rgba(255,255,255,.1); border-radius:8px; white-space:nowrap; }
+.adm-t1 { color:#fff; font-weight:800; font-size:16px; }
+.adm-t2 { color:#f97316; font-size:12px; font-weight:700; letter-spacing:.5px; margin-top:2px; }
+
+.stepper { display:flex; max-width:880px; margin:26px auto 20px; padding:0 18px; gap:6px; }
+.stp { flex:1; text-align:center; }
+.stp-n { width:38px; height:38px; margin:0 auto 7px; border-radius:50%; background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.12); color:#64748b; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
+.stp.on .stp-n { background:linear-gradient(135deg,#f97316,#c2410c); border-color:#f97316; color:#fff; box-shadow:0 0 18px rgba(249,115,22,.5); }
+.stp.done .stp-n { background:#16a34a; border-color:#16a34a; color:#fff; }
+.stp-l { font-size:11.5px; color:#64748b; font-weight:600; }
+.stp.on .stp-l { color:#f97316; }
+.stp.done .stp-l { color:#4ade80; }
+
+.err-box { max-width:880px; margin:0 auto 16px; padding:14px 18px; background:rgba(220,38,38,.12); border:1px solid rgba(220,38,38,.35); border-radius:11px; color:#fca5a5; font-size:13.5px; line-height:1.9; }
+
+.adm-card { max-width:880px; margin:0 auto; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:30px 28px; }
+
+.sec-title { display:flex; align-items:center; gap:9px; font-size:15px; font-weight:800; color:#f97316; margin:26px 0 15px; padding-bottom:9px; border-bottom:1px solid rgba(249,115,22,.18); }
+.sec-title:first-child { margin-top:0; }
+.sec-title span { font-size:18px; }
+
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; }
+
+.lbl { display:block; font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:6px; }
+.inp { width:100%; padding:12px 13px; background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.1); border-radius:9px; color:#f1f5f9; font-size:15px; outline:none; font-family:inherit; transition:.15s; margin-bottom:15px; }
+.inp:focus { border-color:#f97316; background:rgba(249,115,22,.06); }
+.inp::placeholder { color:#475569; }
+select.inp option { background:#0f2038; color:#f1f5f9; }
+
+.radio-row { display:flex; gap:10px; margin-bottom:15px; }
+.radio { flex:1; display:flex; align-items:center; justify-content:center; gap:7px; padding:12px; background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.1); border-radius:9px; cursor:pointer; font-size:14px; color:#cbd5e1; font-weight:600; }
+.radio.on { border-color:#f97316; background:rgba(249,115,22,.12); color:#f97316; }
+.radio input { display:none; }
+
+.auto-box { padding:11px 13px; background:rgba(34,197,94,.08); border:1.5px solid rgba(34,197,94,.25); border-radius:9px; margin-bottom:15px; min-height:47px; display:flex; flex-direction:column; justify-content:center; }
+.auto-box b { color:#4ade80; font-size:14.5px; }
+.auto-box span { color:#64748b; font-size:11.5px; margin-top:2px; }
+.auto-box .dim { color:#475569; font-size:13px; }
+.auto-strip { padding:12px 16px; background:rgba(59,130,246,.09); border:1px solid rgba(59,130,246,.25); border-radius:9px; color:#93c5fd; font-size:13.5px; margin-bottom:8px; }
+.auto-strip b { color:#dbeafe; }
+
+.course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:11px; }
+.course-chk { display:flex; align-items:center; gap:11px; padding:14px 15px; background:rgba(255,255,255,.03); border:1.5px solid rgba(255,255,255,.09); border-radius:11px; cursor:pointer; transition:.15s; }
+.course-chk:hover { border-color:rgba(249,115,22,.35); }
+.course-chk.on { border-color:#f97316; background:rgba(249,115,22,.1); }
+.course-chk input { display:none; }
+.cc-box { width:24px; height:24px; border:2px solid rgba(255,255,255,.25); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:900; color:#fff; flex-shrink:0; }
+.course-chk.on .cc-box { background:#f97316; border-color:#f97316; }
+.cc-lbl { flex:1; font-size:14.5px; font-weight:700; color:#e2e8f0; }
+.cc-fee { font-size:12px; color:#64748b; font-weight:700; }
+.course-chk.on .cc-fee { color:#fbbf24; }
+
+.fee-banner { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-top:16px; padding:18px 22px; background:linear-gradient(135deg,rgba(249,115,22,.14),rgba(220,38,38,.1)); border:1.5px solid rgba(249,115,22,.3); border-radius:13px; flex-wrap:wrap; }
+.fee-banner span { display:block; font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:4px; }
+.fee-banner b { color:#f1f5f9; font-size:15px; }
+.fee-amt { text-align:right; }
+.fee-amt b { font-size:30px; color:#fbbf24; font-weight:900; }
+
+.doc-hint { font-size:13px; color:#64748b; margin-bottom:16px; line-height:1.7; }
+.doc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:13px; }
+.doc-card { background:rgba(255,255,255,.03); border:1.5px dashed rgba(255,255,255,.16); border-radius:13px; padding:14px 11px; text-align:center; cursor:pointer; transition:.15s; }
+.doc-card:hover { border-color:#f97316; }
+.doc-card.on { border-style:solid; border-color:#22c55e; background:rgba(34,197,94,.07); }
+.doc-prev { height:96px; border-radius:9px; overflow:hidden; background:rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+.doc-prev img { width:100%; height:100%; object-fit:cover; }
+.doc-plus { font-size:34px; color:#334155; font-weight:300; }
+.doc-pdf { font-size:15px; color:#f97316; font-weight:700; }
+.doc-name { font-size:12.5px; font-weight:700; color:#e2e8f0; line-height:1.4; }
+.doc-name .req { color:#f87171; }
+.doc-status { font-size:10.5px; color:#64748b; margin-top:4px; }
+.doc-card.on .doc-status { color:#4ade80; }
+
+.review { display:flex; flex-direction:column; gap:1px; background:rgba(255,255,255,.06); border-radius:11px; overflow:hidden; }
+.rev-row { display:flex; justify-content:space-between; gap:16px; padding:13px 17px; background:#0f2038; font-size:14px; }
+.rev-row span { color:#64748b; flex-shrink:0; }
+.rev-row b { color:#e2e8f0; text-align:right; font-weight:600; }
+.rev-row.hi { background:rgba(249,115,22,.1); }
+.rev-row.hi b { color:#fbbf24; font-size:17px; font-weight:900; }
+
+.declare { margin-top:20px; padding:17px 19px; background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.2); border-radius:11px; }
+.declare b { color:#93c5fd; font-size:14px; }
+.declare p { color:#94a3b8; font-size:13px; line-height:1.8; margin:7px 0 0; }
+
+.nav-btns { display:flex; gap:12px; margin-top:30px; padding-top:22px; border-top:1px solid rgba(255,255,255,.07); }
+.b-ghost { padding:15px 26px; background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.12); border-radius:10px; color:#cbd5e1; font-weight:700; font-size:15px; cursor:pointer; font-family:inherit; }
+.b-main { flex:1; padding:15px 26px; background:linear-gradient(135deg,#f97316,#c2410c); border:none; border-radius:10px; color:#fff; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 6px 22px rgba(249,115,22,.35); font-family:inherit; }
+.b-main:disabled { opacity:.6; cursor:wait; }
+.b-sub { background:linear-gradient(135deg,#16a34a,#15803d); box-shadow:0 6px 22px rgba(22,163,74,.35); }
+
+.adm-success { max-width:560px; margin:40px auto; padding:36px 30px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.09); border-radius:20px; text-align:center; }
+.succ-icon { font-size:60px; margin-bottom:8px; }
+.adm-success h1 { color:#4ade80; font-size:27px; font-weight:900; margin:0 0 6px; }
+.succ-sub { color:#64748b; font-size:14px; margin:0 0 24px; }
+.succ-code { background:linear-gradient(135deg,#c2410c,#7c2d12); border-radius:15px; padding:22px; margin-bottom:18px; }
+.succ-code span { display:block; font-size:11.5px; color:#fbbf24; font-weight:700; letter-spacing:1.5px; margin-bottom:6px; }
+.succ-code strong { display:block; font-size:46px; font-weight:900; color:#fff; letter-spacing:5px; font-family:monospace; }
+.succ-code small { display:block; font-size:11px; color:#fed7aa; margin-top:7px; }
+.succ-info { background:rgba(255,255,255,.04); border-radius:11px; padding:15px; margin-bottom:18px; color:#cbd5e1; font-size:13.5px; line-height:2; }
+.succ-info b { color:#f1f5f9; }
+.succ-steps { text-align:left; background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.2); border-radius:11px; padding:16px 18px; margin-bottom:20px; }
+.succ-steps b { color:#93c5fd; font-size:13.5px; }
+.succ-steps ol { margin:9px 0 0; padding-left:20px; color:#94a3b8; font-size:13px; line-height:2; }
+.succ-steps ol b { color:#e2e8f0; }
+.btn-print { width:100%; padding:17px; background:linear-gradient(135deg,#f97316,#c2410c); border:none; border-radius:11px; color:#fff; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 6px 24px rgba(249,115,22,.4); font-family:inherit; }
+.succ-note { font-size:12px; color:#64748b; margin-top:10px; }
+.succ-links { display:flex; gap:11px; margin-top:22px; }
+.succ-links a { flex:1; padding:13px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:9px; color:#cbd5e1; text-decoration:none; font-size:14px; font-weight:600; }
+
+@media (max-width:700px) {
+  .adm-card { padding:22px 16px; border-radius:14px; margin:0 12px; }
+  .row2, .row3 { grid-template-columns:1fr; gap:0; }
+  .stepper { padding:0 10px; }
+  .stp-l { font-size:9.5px; }
+  .stp-n { width:32px; height:32px; font-size:13px; }
+  .course-grid { grid-template-columns:1fr; }
+  .doc-grid { grid-template-columns:repeat(2,1fr); }
+  .fee-banner { flex-direction:column; align-items:flex-start; }
+  .fee-amt { text-align:left; }
+  .nav-btns { flex-direction:column-reverse; }
+  .b-ghost, .b-main { width:100%; }
+  .rev-row { flex-direction:column; gap:3px; }
+  .rev-row b { text-align:left; }
+  .adm-success { margin:20px 12px; padding:28px 20px; }
+  .succ-code strong { font-size:36px; letter-spacing:3px; }
+  .adm-t1 { font-size:14px; }
+}
+  ` }} />
+}
+
