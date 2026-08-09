@@ -3,6 +3,18 @@ import { COURSES, DOC_TYPES, formatDate, formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import type { Student, FeePayment, Document } from '@/types'
 
+const FORM_COURSE_KEYS: Record<string, string> = {
+  staff: 'staff_selection',
+  saral: 'saral_seva',
+}
+
+const PAYMENT_MODES: Record<string, string> = {
+  cash: 'रोख',
+  upi: 'UPI',
+  bank_transfer: 'बँक ट्रान्सफर',
+  cheque: 'चेक',
+}
+
 async function getStudentData(id: string) {
   const supabase = await createSupabaseServerClient()
   const [studentRes, feesRes, docsRes] = await Promise.all([
@@ -27,6 +39,11 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
 
   const totalPaid = fees.reduce((sum, f) => sum + Number(f.amount_paid), 0)
   const pending = student.total_fee - totalPaid
+  const details = student.admission_details
+  const hasDigitalDetails = Boolean(details && Object.keys(details).length > 0)
+  const selectedCourses = details?.courses
+    ?.map((course) => COURSES[FORM_COURSE_KEYS[course] || course] || course)
+    .join(', ')
 
   return (
     <div style={{ padding: 28 }}>
@@ -110,6 +127,39 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
           </Link>
         </div>
 
+        {/* Complete digital admission form snapshot */}
+        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+          <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
+            🧾 डिजिटल प्रवेश अर्जाची संपूर्ण माहिती
+          </h3>
+          {!hasDigitalDetails ? (
+            <p style={{ color: '#94a3b8', fontSize: 14 }}>हा विद्यार्थी admin panel मधून नोंदवला आहे; digital form snapshot उपलब्ध नाही.</p>
+          ) : (
+            [
+              ['विद्यार्थी WhatsApp', details?.studentWhatsapp],
+              ['पालक WhatsApp', details?.parentWhatsapp],
+              ['ई-मेल', details?.email],
+              ['पत्ता', details?.address],
+              ['गाव', details?.village],
+              ['तालुका', details?.taluka],
+              ['जिल्हा', details?.district],
+              ['पिनकोड', details?.pincode],
+              ['निवडलेले सर्व कोर्स', selectedCourses],
+              ['कालावधी (महिने)', details?.durationMonths],
+              ['प्रवेश समाप्ती तारीख', details?.endDate ? formatDate(details.endDate) : '—'],
+              ['एकूण दिवस', details?.totalDays],
+              ['अर्जात भरलेली फी', details?.paidAmount ? formatCurrency(Number(details.paidAmount)) : formatCurrency(0)],
+              ['फी भरल्याची तारीख', details?.paymentDate ? formatDate(details.paymentDate) : '—'],
+              ['फी माध्यम', details?.paymentMode ? PAYMENT_MODES[details.paymentMode] || details.paymentMode : '—'],
+            ].map(([label, value]) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '7px 0', borderBottom: '1px solid #f8fafc', fontSize: 14 }}>
+                <span style={{ color: '#64748b', fontWeight: 500 }}>{label}</span>
+                <span style={{ color: '#0f172a', fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>{value || '—'}</span>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Documents */}
         <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
@@ -160,3 +210,4 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
     </div>
   )
 }
+
