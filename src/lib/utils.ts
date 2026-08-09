@@ -35,6 +35,10 @@ export const COURSES: Record<string, string> = {
 
 export const DOC_TYPES: Record<string, string> = {
   photo: '📷 फोटो',
+  aadhaar: '🪪 आधार कार्ड',
+  school_leaving: '📄 शाळा सोडल्याचा दाखला',
+  caste: '📜 जात प्रमाणपत्र',
+  parent_aadhaar: '🪪 पालकाचे आधार कार्ड',
   signature: '✍️ सही',
   aadhaar_front: '🪪 आधार (समोर)',
   aadhaar_back: '🪪 आधार (मागे)',
@@ -51,3 +55,4 @@ export function generateRollNumber() {
   const random = Math.floor(Math.random() * 9000) + 1000
   return `SKA${year}${random}`
 }
+
