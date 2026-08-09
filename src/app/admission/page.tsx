@@ -1,7 +1,6 @@
 'use client'
 import { useState, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import PrintableForm, { type FormValues } from './PrintableForm'
 
 /* ═══════════════════════════════════════════
@@ -33,6 +32,20 @@ const DOCS: { key: string; label: string; required: boolean }[] = [
 ]
 
 const today = () => new Date().toISOString().slice(0, 10)
+
+const COURSE_API_KEYS: Record<string, string> = {
+  staff: 'staff_selection',
+  saral: 'saral_seva',
+}
+
+const DOCUMENT_API_KEYS: Record<string, string> = {
+  photo: 'photo',
+  aadhaar: 'aadhaar',
+  marksheet: 'school_leaving',
+  domicile: 'domicile',
+  caste: 'caste',
+  parentId: 'parent_aadhaar',
+}
 
 const EMPTY: FormValues = {
   firstName: '', middleName: '', lastName: '',
@@ -138,48 +151,60 @@ export default function AdmissionPage() {
   /* ── Submit ── */
   const submit = async () => {
     setSaving(true); setErrors([])
-    let code = ''
     try {
-      const r = await fetch('/api/next-admission-code')
-      code = (await r.json()).code || ''
-    } catch { /* offline */ }
-    if (!code) code = `S-${String(Date.now()).slice(-4)}`
-    setRollNumber(code)
+      const payload = new globalThis.FormData()
+      const primaryCourse = COURSE_API_KEYS[form.courses[0]] || form.courses[0] || 'other'
+      const parentName = [form.fatherFirst, form.fatherMiddle, form.fatherLast].filter(Boolean).join(' ')
+      const fullAddress = [form.address, form.village, form.taluka, form.district, form.pincode].filter(Boolean).join(', ')
+      const admissionDetails = { ...finalForm, aadhaar: form.aadhaar.replace(/\s/g, '') }
 
-    try {
-      const { data, error } = await supabase.from('students').insert({
-        roll_number: code,
+      const values: Record<string, string> = {
         name: studentName,
-        parent_name: [form.fatherFirst, form.fatherMiddle, form.fatherLast].filter(Boolean).join(' '),
-        address: [form.address, form.village, form.taluka, form.district, form.pincode].filter(Boolean).join(', '),
+        parent_name: parentName,
+        address: fullAddress,
         phone: form.studentPhone,
         parent_phone: form.parentPhone,
-        aadhaar_no: form.aadhaar,
+        aadhaar_no: form.aadhaar.replace(/\s/g, ''),
         guarantee_letter_no: form.guaranteeNo,
-        dob: form.dob || null,
-        course: form.courses.join(','),
-        admission_date: form.admissionDate || null,
-        duration: `${form.durationMonths} महिने`,
-        age: ageInfo?.y ?? null,
-        height: Number(form.height) || null,
-        weight: Number(form.weight) || null,
-        chest: Number(form.chest) || null,
+        dob: form.dob,
         gender: form.gender,
-        total_fee: Number(finalForm.totalFee) || 0,
-      }).select('id').single()
-
-      if (!error && data?.id) {
-        for (const [key, v] of Object.entries(files)) {
-          const ext = v.file.name.split('.').pop() || 'jpg'
-          const path = `${data.id}/${key}.${ext}`
-          await supabase.storage.from('student-documents').upload(path, v.file, { upsert: true })
-        }
+        course: primaryCourse,
+        admission_date: form.admissionDate,
+        duration: `${form.durationMonths} महिने`,
+        age: finalForm.age,
+        height: form.height,
+        weight: form.weight,
+        chest: form.chest,
+        total_fee: finalForm.totalFee || '0',
+        paid_amount: form.paidAmount || '0',
+        payment_date: form.paymentDate,
+        payment_mode: form.paymentMode,
+        admission_details: JSON.stringify(admissionDetails),
+        agreed: 'true',
       }
-    } catch { /* demo mode — form still prints */ }
+      Object.entries(values).forEach(([key, value]) => payload.append(key, value))
+      Object.entries(files).forEach(([key, value]) => {
+        payload.append(`document:${DOCUMENT_API_KEYS[key] || key}`, value.file)
+      })
 
-    setSaving(false)
-    setSubmitted(true)
-    window.scrollTo({ top: 0 })
+      const response = await fetch('/api/admissions', { method: 'POST', body: payload })
+      const result = await response.json().catch(() => ({})) as { code?: string; error?: string }
+      if (!response.ok || !result.code) {
+        const message = response.status === 429
+          ? 'खूप वेळा अर्ज submit करण्याचा प्रयत्न झाला. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.'
+          : result.error || 'अर्ज Supabase मध्ये save झाला नाही. कृपया पुन्हा प्रयत्न करा.'
+        throw new Error(message)
+      }
+
+      setRollNumber(result.code)
+      setSubmitted(true)
+      window.scrollTo({ top: 0 })
+    } catch (error) {
+      setErrors([error instanceof Error ? error.message : 'अर्ज submit झाला नाही. कृपया पुन्हा प्रयत्न करा.'])
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const doPrint = () => {
