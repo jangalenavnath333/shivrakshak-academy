@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS students (
   gender TEXT DEFAULT 'male' CHECK (gender IN ('male','female')),
   total_fee NUMERIC(10,2) DEFAULT 0,
   photo_url TEXT,
+  admission_details JSONB NOT NULL DEFAULT '{}'::JSONB
+    CHECK (jsonb_typeof(admission_details) = 'object'),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -45,7 +47,7 @@ CREATE TABLE IF NOT EXISTS fee_payments (
 CREATE TABLE IF NOT EXISTS documents (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   student_id UUID REFERENCES students(id) ON DELETE CASCADE,
-  doc_type TEXT NOT NULL CHECK (doc_type IN ('photo','signature','aadhaar_front','aadhaar_back','marksheet_10','marksheet_12','caste_certificate','domicile','sports_certificate','other')),
+  doc_type TEXT NOT NULL CHECK (doc_type IN ('photo','signature','aadhaar_front','aadhaar_back','marksheet_10','marksheet_12','caste_certificate','domicile','sports_certificate','other','aadhaar','school_leaving','caste','parent_aadhaar')),
   file_url TEXT NOT NULL,
   file_name TEXT,
   uploaded_at TIMESTAMPTZ DEFAULT NOW()
@@ -125,3 +127,4 @@ WHERE ms.is_active = TRUE
 -- ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE mess_subscriptions ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE notices ENABLE ROW LEVEL SECURITY;
+
