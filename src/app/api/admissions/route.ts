@@ -37,7 +37,11 @@ export async function POST(request: Request) {
     const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     const clientIp = forwardedFor || request.headers.get('x-real-ip') || 'unknown'
     const { data: ipAllowed, error: ipLimitError } = await supabase.rpc('consume_admission_rate_limit', { p_key: `ip:${clientIp}` })
-    if (ipLimitError || !ipAllowed) {
+    if (ipLimitError) {
+      console.error('Admission IP rate-limit check failed', { code: ipLimitError.code })
+      return NextResponse.json({ error: 'Admission service is temporarily unavailable. Please try again shortly.' }, { status: 503 })
+    }
+    if (!ipAllowed) {
       return NextResponse.json({ error: 'Too many admission attempts. Please try again later.' }, { status: 429 })
     }
 
@@ -51,7 +55,11 @@ export async function POST(request: Request) {
     }
 
     const { data: phoneAllowed, error: phoneLimitError } = await supabase.rpc('consume_admission_rate_limit', { p_key: `phone:${parsed.data.parent_phone}` })
-    if (phoneLimitError || !phoneAllowed) {
+    if (phoneLimitError) {
+      console.error('Admission phone rate-limit check failed', { code: phoneLimitError.code })
+      return NextResponse.json({ error: 'Admission service is temporarily unavailable. Please try again shortly.' }, { status: 503 })
+    }
+    if (!phoneAllowed) {
       return NextResponse.json({ error: 'Too many admission attempts for this phone number.' }, { status: 429 })
     }
 
@@ -132,3 +140,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid admission request' }, { status: 400 })
   }
 }
+
