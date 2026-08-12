@@ -39,3 +39,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*
+!.env.local.example
+
+# agent / tooling scratch caches
+.agent-browser/
+.codex-vercel-home/
+.npm-cache-codex/
+
+# local reference material (not part of the app source)
+ONLINE-CET-PORTEL-main/
+ADMISSION-FORM-PACKAGE/
+ADMISSION-FORM-PACKAGE.zip
+VIDEO ACADEMY/
+CODEX-PROMPT.txt
+
+# stray zero-byte shell artifacts
+\!i.complete
+({alt
+({title

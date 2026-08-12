@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Reference/source packages kept in the repository are not part of the
+    // Next.js application and use their own lint/build conventions.
+    "ONLINE-CET-PORTEL-main/**",
+    "ADMISSION-FORM-PACKAGE/**",
   ]),
 ]);
 

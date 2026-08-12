@@ -1,0 +1,486 @@
+.page {
+  --login-navy: #071b2d;
+  --login-orange: #ed6508;
+  --login-olive: #40591b;
+  --login-paper: #fffaf1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.1fr);
+  background: var(--login-paper);
+  color: var(--login-navy);
+}
+
+.brandPanel {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(32px, 5vw, 70px);
+  overflow: hidden;
+  background: var(--login-navy);
+  color: #fff;
+}
+
+.brandPanel::after {
+  content: '';
+  position: absolute;
+  width: 340px;
+  height: 340px;
+  right: -190px;
+  bottom: 8%;
+  border: 70px solid rgba(237, 101, 8, 0.11);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.brandHeader,
+.brandCopy,
+.featureList {
+  position: relative;
+  z-index: 1;
+}
+
+.brandHeader {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.brandHeader div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brandHeader strong {
+  font-size: 29px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.brandHeader span {
+  margin-top: 7px;
+  color: #ff8a3a;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.brandCopy {
+  max-width: 610px;
+  margin: 70px 0;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 22px;
+  color: #ff9b57;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 38px;
+  height: 2px;
+  background: var(--login-orange);
+}
+
+.brandCopy h1 {
+  max-width: 560px;
+  margin: 0;
+  font-size: clamp(2.25rem, 4vw, 4.2rem);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.brandCopy > p:last-child {
+  max-width: 540px;
+  margin: 24px 0 0;
+  color: #c2ced7;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.featureList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.featureList > div {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+  padding: 24px 22px 0 0;
+}
+
+.featureList > div + div {
+  padding-left: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.featureList svg {
+  width: 27px;
+  height: 27px;
+  color: #d4ce65;
+}
+
+.featureList span {
+  display: grid;
+  gap: 5px;
+}
+
+.featureList strong {
+  font-size: 15px;
+}
+
+.featureList small {
+  color: #93a5b3;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.formPanel {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 80px clamp(28px, 7vw, 110px) 54px;
+  background: var(--login-paper);
+}
+
+.backLink {
+  position: absolute;
+  top: 32px;
+  left: clamp(28px, 7vw, 110px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #526170;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--login-orange);
+}
+
+.backLink svg {
+  width: 17px;
+  height: 17px;
+}
+
+.formWrap {
+  width: 100%;
+  max-width: 510px;
+}
+
+.formHeading {
+  margin-bottom: 34px;
+}
+
+.shieldIcon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 24px;
+  border: 1px solid #f0d6c4;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--login-orange);
+  box-shadow: 0 10px 24px rgba(7, 27, 45, 0.08);
+}
+
+.shieldIcon svg {
+  width: 29px;
+  height: 29px;
+}
+
+.formHeading p {
+  margin: 0 0 9px;
+  color: var(--login-orange);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.formHeading h2 {
+  margin: 0;
+  color: var(--login-navy);
+  font-size: clamp(2rem, 3vw, 2.7rem);
+  line-height: 1.18;
+  letter-spacing: -0.04em;
+}
+
+.formHeading > span:last-child {
+  display: block;
+  margin-top: 10px;
+  color: #66737e;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.form {
+  display: grid;
+}
+
+.form > label {
+  margin: 0 0 8px;
+  color: #273c4c;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form > label:not(:first-child) {
+  margin-top: 19px;
+}
+
+.inputWrap {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 15px;
+  border: 1.5px solid #d7d4cd;
+  border-radius: 8px;
+  background: #fffefb;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.inputWrap:focus-within {
+  border-color: var(--login-orange);
+  box-shadow: 0 0 0 4px rgba(237, 101, 8, 0.1);
+}
+
+.inputWrap > svg {
+  width: 20px;
+  height: 20px;
+  color: #7a8791;
+}
+
+.inputWrap input {
+  min-width: 0;
+  height: 50px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--login-navy);
+  font: inherit;
+  font-size: 15px;
+}
+
+.inputWrap input::placeholder {
+  color: #97a0a8;
+}
+
+.passwordToggle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64727d;
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  background: #f5eee5;
+  color: var(--login-orange);
+}
+
+.passwordToggle:focus-visible,
+.backLink:focus-visible,
+.submitButton:focus-visible {
+  outline: 3px solid rgba(237, 101, 8, 0.35);
+  outline-offset: 3px;
+}
+
+.passwordToggle svg {
+  width: 19px;
+  height: 19px;
+}
+
+.error {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #efc1bc;
+  background: #fff0ed;
+  color: #8c1c13;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.submitButton {
+  min-height: 55px;
+  display: grid;
+  grid-template-columns: 22px 1fr 22px;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--login-orange);
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(190, 72, 0, 0.23);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #d95705;
+  box-shadow: 0 15px 30px rgba(190, 72, 0, 0.3);
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.submitButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.38);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+.securityNote {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 22px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid #ded8cd;
+  color: #66737e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.securityNote svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--login-olive);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 980px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .brandPanel {
+    min-height: auto;
+    padding: 28px clamp(24px, 7vw, 64px) 36px;
+  }
+
+  .brandCopy {
+    margin: 46px 0 34px;
+  }
+
+  .brandCopy h1 {
+    max-width: 720px;
+    font-size: clamp(2.1rem, 7vw, 3.5rem);
+  }
+
+  .formPanel {
+    min-height: auto;
+    padding: 92px clamp(24px, 7vw, 64px) 64px;
+  }
+
+  .backLink {
+    left: clamp(24px, 7vw, 64px);
+  }
+}
+
+@media (max-width: 620px) {
+  .brandPanel {
+    padding: 24px 20px 28px;
+  }
+
+  .brandHeader strong {
+    font-size: 23px;
+  }
+
+  .brandHeader span {
+    font-size: 15px;
+  }
+
+  .brandCopy {
+    margin: 38px 0 28px;
+  }
+
+  .brandCopy h1 {
+    font-size: 2.15rem;
+  }
+
+  .brandCopy > p:last-child {
+    font-size: 15px;
+  }
+
+  .featureList {
+    grid-template-columns: 1fr;
+  }
+
+  .featureList > div {
+    padding: 18px 0;
+  }
+
+  .featureList > div + div {
+    padding-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-left: 0;
+  }
+
+  .formPanel {
+    padding: 82px 20px 46px;
+  }
+
+  .backLink {
+    top: 28px;
+    left: 20px;
+  }
+
+  .formHeading {
+    margin-bottom: 28px;
+  }
+
+  .formHeading h2 {
+    font-size: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submitButton,
+  .inputWrap {
+    transition: none;
+  }
+
+  .spinner {
+    animation-duration: 1.4s;
+  }
+}

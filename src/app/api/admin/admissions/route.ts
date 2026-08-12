@@ -1,0 +1,210 @@
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { decryptAdmissionPassword } from '@/lib/admission-credentials'
+import { createAdmissionPrintToken, hashAdmissionPrintToken } from '@/lib/admission-print-token'
+import { getAdminUser } from '@/lib/admin-auth'
+import { sendAdmissionActivatedEmail } from '@/lib/email'
+import { getStudentLoginEmail } from '@/lib/student-auth'
+import { createSupabaseAdminClient } from '@/lib/supabase-admin'
+import { sendAdmissionActivatedWhatsapp } from '@/lib/whatsapp'
+
+type AdminClient = ReturnType<typeof createSupabaseAdminClient>
+
+const id = z.string().uuid()
+const requestSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('approve'), studentId: id }),
+  z.object({
+    action: z.literal('activate'),
+    studentId: id,
+    totalFee: z.number().positive().max(10_000_000),
+    amountPaid: z.number().positive().max(10_000_000),
+    paymentDate: z.string().date(),
+    paymentMode: z.enum(['cash', 'upi', 'bank_transfer', 'cheque']),
+  }),
+  // Retry for an admission whose fee is already recorded but whose exam login /
+  // activation did not complete on the first attempt.
+  z.object({ action: z.literal('resume'), studentId: id }),
+])
+
+/**
+ * Creates the exam login (when missing), flips the admission to active and sends the
+ * code + print link. Shared by `activate` and `resume` so a half-finished activation
+ * can always be driven to completion without recording the fee twice.
+ */
+async function finalizeActivation(input: {
+  admin: AdminClient
+  studentId: string
+  rollNumber: string
+  authUserId: string | null
+  studentName: string
+  token: string
+  origin: string
+}) {
+  const { admin, studentId, rollNumber, authUserId, studentName, token, origin } = input
+
+  if (!authUserId) {
+    const { data: credential, error: credentialError } = await admin
+      .from('pending_student_credentials')
+      .select('password_encrypted')
+      .eq('student_id', studentId)
+      .is('consumed_at', null)
+      .maybeSingle()
+    if (credentialError || !credential) {
+      return NextResponse.json({ error: 'Student Exam Login password सापडला नाही. कृपया Admin profile मधून credentials तयार करा.' }, { status: 409 })
+    }
+
+    const password = decryptAdmissionPassword(credential.password_encrypted)
+    const { data: authData, error: authError } = await admin.auth.admin.createUser({
+      email: getStudentLoginEmail(rollNumber),
+      password,
+      email_confirm: true,
+      app_metadata: { role: 'student', student_id: studentId, roll_number: rollNumber },
+      user_metadata: { name: studentName },
+    })
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: 'Fee नोंदली आहे, पण Exam Login तयार झाला नाही. "पुन्हा प्रयत्न करा" वापरा.' }, { status: 500 })
+    }
+    const { error: linkError } = await admin.from('students').update({ auth_user_id: authData.user.id }).eq('id', studentId)
+    if (linkError) {
+      await admin.auth.admin.deleteUser(authData.user.id)
+      return NextResponse.json({ error: 'Fee नोंदली आहे, पण Exam Login link झाला नाही. "पुन्हा प्रयत्न करा" वापरा.' }, { status: 500 })
+    }
+    await admin.from('pending_student_credentials').update({ consumed_at: new Date().toISOString() }).eq('student_id', studentId)
+  }
+
+  const { data: student, error: studentError } = await admin
+    .from('students')
+    .update({ admission_status: 'active', is_active: true, print_enabled_at: new Date().toISOString() })
+    .eq('id', studentId)
+    .select('id, name, roll_number, phone, parent_phone, admission_details')
+    .single()
+  if (studentError || !student) return NextResponse.json({ error: 'Student activation पूर्ण झाली नाही.' }, { status: 500 })
+
+  const printUrl = `${origin}/admission/print/${token}`
+  const details = (student.admission_details || {}) as Record<string, unknown>
+  const email = typeof details.email === 'string' ? details.email : ''
+  const whatsapp = [details.studentWhatsapp, student.phone, details.parentWhatsapp, student.parent_phone]
+    .find((value): value is string => typeof value === 'string' && value.trim().length >= 10) || ''
+
+  // The admission is already active at this point — a messaging outage must never be
+  // reported to the admin as a failed activation.
+  const notify = async <T>(job: Promise<T>, fallback: T) => {
+    try { return await job } catch { return fallback }
+  }
+  const [emailResult, whatsappResult] = await Promise.all([
+    email
+      ? notify(sendAdmissionActivatedEmail({ to: email, studentName: student.name, rollNumber, printUrl }), { sent: false as const, reason: 'provider_error' as const })
+      : Promise.resolve({ sent: false as const, reason: 'missing_email' as const }),
+    whatsapp
+      ? notify(sendAdmissionActivatedWhatsapp({ to: whatsapp, studentName: student.name, rollNumber, printUrl }), { sent: false as const, reason: 'provider_error' as const })
+      : Promise.resolve({ sent: false as const, reason: 'missing_whatsapp' as const }),
+  ])
+
+  return NextResponse.json({
+    ok: true,
+    studentId: student.id,
+    rollNumber,
+    printUrl,
+    delivery: { email: emailResult, whatsapp: whatsappResult },
+  })
+}
+
+export async function GET() {
+  if (!await getAdminUser()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const admin = createSupabaseAdminClient()
+  const { data, error } = await admin
+    .from('students')
+    .select('id, name, parent_name, phone, parent_phone, course, gender, total_fee, admission_status, approved_at, created_at, admission_details')
+    .in('admission_status', ['pending', 'approved', 'payment_recorded'])
+    .order('created_at', { ascending: false })
+    .limit(500)
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ applications: data || [] })
+}
+
+export async function POST(request: Request) {
+  const adminUser = await getAdminUser()
+  if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const parsed = requestSchema.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid admission operation' }, { status: 400 })
+  const payload = parsed.data
+  if (payload.action === 'activate' && payload.amountPaid > payload.totalFee) {
+    return NextResponse.json({ error: 'भरलेली रक्कम एकूण फीपेक्षा जास्त असू शकत नाही.' }, { status: 400 })
+  }
+
+  const admin = createSupabaseAdminClient()
+  if (payload.action === 'approve') {
+    const { data, error } = await admin
+      .from('students')
+      .update({ admission_status: 'approved', approved_at: new Date().toISOString(), approved_by: adminUser.id })
+      .eq('id', payload.studentId)
+      .eq('admission_status', 'pending')
+      .select('id')
+      .maybeSingle()
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    if (!data) return NextResponse.json({ error: 'Pending अर्ज सापडला नाही किंवा तो आधीच approve झाला आहे.' }, { status: 409 })
+    return NextResponse.json({ ok: true })
+  }
+
+  let token: string
+  try {
+    token = createAdmissionPrintToken(payload.studentId)
+  } catch {
+    return NextResponse.json({ error: 'Admission print security is not configured.' }, { status: 503 })
+  }
+  const tokenHash = hashAdmissionPrintToken(token)
+  const origin = (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, '')
+
+  if (payload.action === 'resume') {
+    const { data: student, error: studentError } = await admin
+      .from('students')
+      .select('id, name, roll_number, auth_user_id, admission_status')
+      .eq('id', payload.studentId)
+      .eq('admission_status', 'payment_recorded')
+      .maybeSingle()
+    if (studentError) return NextResponse.json({ error: studentError.message }, { status: 400 })
+    if (!student?.roll_number) {
+      return NextResponse.json({ error: 'अपूर्ण activation असलेला अर्ज सापडला नाही.' }, { status: 409 })
+    }
+    // Re-issue the (deterministic) print link so a previously revoked or missing row
+    // cannot leave the student without a printable form.
+    const { error: tokenError } = await admin
+      .from('admission_print_tokens')
+      .upsert({ student_id: student.id, token_hash: tokenHash, revoked_at: null }, { onConflict: 'token_hash' })
+    if (tokenError) return NextResponse.json({ error: 'Print link तयार झाली नाही.' }, { status: 500 })
+
+    return finalizeActivation({
+      admin,
+      studentId: student.id,
+      rollNumber: student.roll_number,
+      authUserId: student.auth_user_id,
+      studentName: student.name,
+      token,
+      origin,
+    })
+  }
+
+  const { data: activatedRows, error: activationError } = await admin.rpc('activate_paid_admission', {
+    p_student_id: payload.studentId,
+    p_total_fee: payload.totalFee,
+    p_amount_paid: payload.amountPaid,
+    p_payment_date: payload.paymentDate,
+    p_payment_mode: payload.paymentMode,
+    p_print_token_hash: tokenHash,
+  })
+  const activated = Array.isArray(activatedRows) ? activatedRows[0] : activatedRows
+  if (activationError || !activated) {
+    return NextResponse.json({ error: activationError?.message || 'Admission activate झाला नाही.' }, { status: 400 })
+  }
+
+  return finalizeActivation({
+    admin,
+    studentId: payload.studentId,
+    rollNumber: activated.roll_number,
+    authUserId: activated.auth_user_id,
+    studentName: activated.student_name,
+    token,
+    origin,
+  })
+}

@@ -1,6 +1,7 @@
 export const DOCUMENT_TYPES = [
   'photo', 'signature', 'aadhaar_front', 'aadhaar_back', 'marksheet_10',
   'marksheet_12', 'caste_certificate', 'domicile', 'sports_certificate', 'other',
+  'aadhaar', 'school_leaving', 'caste', 'parent_aadhaar',
 ] as const
 
 export const DOCUMENT_TYPE_SET = new Set<string>(DOCUMENT_TYPES)

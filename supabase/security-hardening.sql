@@ -89,21 +89,29 @@ $$;
 
 revoke all on function public.is_admin() from public;
 grant execute on function public.is_admin() to anon, authenticated;
-revoke all on function public.next_admission_code() from public, anon;
-grant execute on function public.next_admission_code() to authenticated, service_role;
+revoke all on sequence public.admission_code_seq from public, anon, authenticated;
+grant usage, select on sequence public.admission_code_seq to service_role;
+revoke all on function public.next_admission_code() from public, anon, authenticated;
+grant execute on function public.next_admission_code() to service_role;
 
 create table if not exists public.admission_rate_limits (
   rate_key text primary key,
   window_started timestamptz not null default now(),
-  attempts integer not null default 0
+  attempts integer not null default 0,
+  constraint admission_rate_limits_attempts_nonnegative check (attempts >= 0)
 );
 alter table public.admission_rate_limits enable row level security;
+revoke all on table public.admission_rate_limits from public, anon, authenticated;
 
 create or replace function public.consume_admission_rate_limit(p_key text)
 returns boolean language plpgsql security definer set search_path = public
 as $$
 declare allowed boolean;
 begin
+  if p_key is null or length(trim(p_key)) = 0 or length(p_key) > 180 then
+    return false;
+  end if;
+
   insert into public.admission_rate_limits(rate_key, window_started, attempts)
   values (p_key, now(), 1)
   on conflict (rate_key) do update set

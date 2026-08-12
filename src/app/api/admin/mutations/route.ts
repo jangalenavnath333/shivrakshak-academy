@@ -10,6 +10,12 @@ const actionSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('notice.create'), payload: z.object({ title: z.string().trim().min(2).max(200), content: z.string().trim().max(5000), category: z.enum(['general', 'exam', 'result', 'holiday', 'important']), is_published: z.boolean() }) }),
   z.object({ action: z.literal('notice.toggle'), payload: z.object({ id, is_published: z.boolean() }) }),
   z.object({ action: z.literal('notice.delete'), payload: z.object({ id }) }),
+  z.object({ action: z.literal('media.create'), payload: z.object({ title: z.string().trim().min(1).max(160), media_type: z.enum(['image', 'video', 'youtube']), placement: z.string().trim().min(1).max(80), url: z.string().url(), thumbnail_url: z.string().url().optional().or(z.literal('')), alt_text: z.string().max(240).optional(), sort_order: z.number().int().min(0).max(999), is_published: z.boolean() }) }),
+  z.object({ action: z.literal('media.delete'), payload: z.object({ id }) }),
+  z.object({ action: z.literal('settings.update'), payload: z.object({ academy_name: z.string().min(2).max(160), tagline: z.string().max(160), hero_title: z.string().max(240), hero_subtitle: z.string().max(1000), phone: z.string().max(20), whatsapp: z.string().max(20), email: z.string().email().or(z.literal('')), address: z.string().max(500), youtube_url: z.string().url().or(z.literal('')), instagram_url: z.string().url().or(z.literal('')), facebook_url: z.string().url().or(z.literal('')) }) }),
+  z.object({ action: z.literal('attendance.session.create'), payload: z.object({ title: z.string().min(2).max(160), session_date: z.string().date(), mode: z.enum(['face', 'manual', 'online']), is_open: z.boolean() }) }),
+  z.object({ action: z.literal('attendance.mark'), payload: z.object({ session_id: id, student_id: id, status: z.enum(['present', 'absent', 'late', 'excused']), method: z.enum(['face', 'manual', 'online']), confidence: z.number().min(0).max(1).nullable() }) }),
+  z.object({ action: z.literal('exam.create'), payload: z.object({ title: z.string().min(2).max(200), description: z.string().max(2000), duration_minutes: z.number().int().min(1).max(600), total_marks: z.number().min(0).max(10000), is_live: z.boolean(), is_published: z.boolean() }) }),
   z.object({ action: z.literal('student.create'), payload: z.object({
     name: z.string().trim().min(2).max(120), parent_name: z.string().trim().max(120), address: z.string().trim().max(500),
     phone: z.string().trim().max(15), parent_phone: z.string().trim().max(15), aadhaar_no: z.string().trim().max(20),
@@ -51,6 +57,35 @@ export async function POST(request: Request) {
       dob: payload.dob || null,
       admission_date: payload.admission_date || null,
     }).select('id, roll_number').single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ data })
+  } else if (action === 'media.create') {
+    if (payload.placement.startsWith('demo-')) {
+      if (payload.media_type === 'image' || !payload.thumbnail_url) {
+        return NextResponse.json({ error: 'Demo video आणि त्याचा poster photo आवश्यक आहे.' }, { status: 400 })
+      }
+      const { error: replaceError } = await supabase.from('media_assets').delete().eq('placement', payload.placement)
+      if (replaceError) return NextResponse.json({ error: replaceError.message }, { status: 400 })
+    }
+    const { data, error } = await supabase.from('media_assets').insert({ ...payload, thumbnail_url: payload.thumbnail_url || null }).select().single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ data })
+  } else if (action === 'media.delete') {
+    const { error } = await supabase.from('media_assets').delete().eq('id', payload.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  } else if (action === 'settings.update') {
+    const { error } = await supabase.from('site_settings').upsert({ id: 1, ...payload })
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  } else if (action === 'attendance.session.create') {
+    const { data, error } = await supabase.from('attendance_sessions').insert(payload).select().single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ data })
+  } else if (action === 'attendance.mark') {
+    const { data, error } = await supabase.from('attendance_records').upsert(payload, { onConflict: 'session_id,student_id' }).select().single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ data })
+  } else if (action === 'exam.create') {
+    const { data, error } = await supabase.from('exams').insert(payload).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })
   }

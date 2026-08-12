@@ -5,7 +5,7 @@ import Link from 'next/link'
 async function getDashboardStats() {
   const supabase = await createSupabaseServerClient()
   const [studentsRes, feeSummaryRes, messRes, noticesRes] = await Promise.all([
-    supabase.from('students').select('id, gender, course', { count: 'exact' }),
+    supabase.from('students').select('id, gender, course', { count: 'exact' }).eq('admission_status', 'active'),
     supabase.from('student_fee_summary').select('total_fee, total_paid, pending_amount'),
     supabase.from('mess_expiry_reminders').select('id', { count: 'exact' }),
     supabase.from('notices').select('id', { count: 'exact' }).eq('is_published', true),

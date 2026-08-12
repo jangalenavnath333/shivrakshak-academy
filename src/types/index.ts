@@ -1,5 +1,42 @@
+export interface AdmissionFormDetails {
+  firstName: string
+  middleName: string
+  lastName: string
+  fatherFirst: string
+  fatherMiddle: string
+  fatherLast: string
+  address: string
+  village: string
+  taluka: string
+  district: string
+  pincode: string
+  studentPhone: string
+  studentWhatsapp: string
+  parentPhone: string
+  parentWhatsapp: string
+  email: string
+  aadhaar: string
+  guaranteeNo: string
+  dob: string
+  age: string
+  gender: 'male' | 'female'
+  courses: string[]
+  admissionDate: string
+  durationMonths: string
+  endDate: string
+  totalDays: string
+  height: string
+  weight: string
+  chest: string
+  totalFee: string
+  paidAmount: string
+  paymentDate: string
+  paymentMode: 'cash' | 'upi' | 'bank_transfer' | 'cheque'
+}
+
 export interface Student {
   id: string
+  auth_user_id?: string | null
   roll_number: string
   name: string
   parent_name: string
@@ -18,7 +55,13 @@ export interface Student {
   chest: number
   gender: 'male' | 'female'
   total_fee: number
+  admission_status?: 'pending' | 'approved' | 'payment_recorded' | 'active'
+  approved_at?: string | null
+  code_generated_at?: string | null
+  print_enabled_at?: string | null
+  activation_fee_payment_id?: string | null
   photo_url?: string
+  admission_details?: Partial<AdmissionFormDetails>
   created_at: string
 }
 
@@ -40,6 +83,7 @@ export interface StudentFeeSummary {
   parent_phone: string
   course: string
   total_fee: number
+  admission_status?: 'approved' | 'payment_recorded' | 'active'
   total_paid: number
   pending_amount: number
 }
@@ -75,4 +119,42 @@ export interface Notice {
   attachment_url?: string
   is_published: boolean
   created_at: string
+}
+
+export interface SiteSettings {
+  id: number
+  academy_name: string
+  tagline?: string
+  hero_title?: string
+  hero_subtitle?: string
+  phone?: string
+  whatsapp?: string
+  email?: string
+  address?: string
+  youtube_url?: string
+  instagram_url?: string
+  facebook_url?: string
+}
+
+export interface MediaAsset {
+  id: string
+  title: string
+  media_type: 'image' | 'video' | 'youtube'
+  placement: string
+  url: string
+  thumbnail_url?: string
+  alt_text?: string
+  sort_order: number
+  is_published: boolean
+}
+
+export interface Course {
+  id: string
+  title: string
+  slug: string
+  description?: string
+  image_url?: string
+  duration?: string
+  is_published: boolean
+  sort_order: number
 }

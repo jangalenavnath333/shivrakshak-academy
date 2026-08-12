@@ -5,7 +5,7 @@ import type { Student } from '@/types'
 
 async function getStudents(search?: string, gender?: string, course?: string): Promise<Student[]> {
   const supabase = await createSupabaseServerClient()
-  let query = supabase.from('students').select('*').order('roll_number', { ascending: true })
+  let query = supabase.from('students').select('*').eq('admission_status', 'active').order('roll_number', { ascending: true })
   if (search) {
     // Search by name OR roll_number (S-01, S-02 style)
     query = query.or(`name.ilike.%${search}%,roll_number.ilike.%${search}%`)
