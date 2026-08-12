@@ -42,7 +42,8 @@ export default function WhatsAppPage() {
   const [mode, setMode] = useState<'parent' | 'student'>('parent')
   const [search, setSearch] = useState('')
   const [officialNotice, setOfficialNotice] = useState('')
-  const [tab, setTab] = useState<'individual' | 'bulk' | 'notice'>('individual')
+  // Direct Twilio sending is the primary flow, so it is the tab that opens first.
+  const [tab, setTab] = useState<'individual' | 'bulk' | 'notice'>('bulk')
   const [sending, setSending] = useState(false)
   const [report, setReport] = useState<SendReport | null>(null)
   const sendingRef = useRef(false)
@@ -65,14 +66,16 @@ export default function WhatsAppPage() {
   const selectAll = () => setSelected(new Set(filtered.map(s => s.id)))
   const clearAll = () => setSelected(new Set())
 
-  // Primary path: Twilio sends server-side, no WhatsApp Web / app involved.
-  const sendViaApi = async () => {
+  /**
+   * The one and only primary send path: POST to our server, which talks to Twilio.
+   * Never opens wa.me, WhatsApp Web/desktop/mobile, and never navigates the browser.
+   */
+  const postSend = async (studentIds: string[], text: string, audience: 'parent' | 'student') => {
     // Ref guard, not state: a double-click fires again before React re-renders.
     if (sendingRef.current) return
-    if (!message.trim()) { alert('Message लिहा'); return }
-    const studentIds = [...selected]
-    if (studentIds.length === 0) return
-    if (!confirm(`${studentIds.length} ${mode === 'parent' ? 'पालकांना' : 'विद्यार्थ्यांना'} WhatsApp पाठवायचा आहे का?\n\nTwilio मार्फत थेट पाठवला जाईल — हे रद्द करता येणार नाही.`)) return
+    if (!text.trim()) { alert('Message लिहा'); return }
+    if (studentIds.length === 0) { alert('किमान एक विद्यार्थी निवडा'); return }
+    if (!confirm(`${studentIds.length} ${audience === 'parent' ? 'पालकांना' : 'विद्यार्थ्यांना'} WhatsApp पाठवायचा आहे का?\n\nTwilio मार्फत थेट पाठवला जाईल — हे रद्द करता येणार नाही.`)) return
 
     sendingRef.current = true
     setSending(true)
@@ -81,7 +84,7 @@ export default function WhatsAppPage() {
       const response = await fetch('/api/admin/whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentIds, message, audience: mode }),
+        body: JSON.stringify({ studentIds, message: text, audience }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'WhatsApp पाठवता आले नाही')
@@ -94,7 +97,11 @@ export default function WhatsAppPage() {
     }
   }
 
-  const sendToSelected = () => {
+  const sendViaApi = () => postSend([...selected], message, mode)
+  const sendNoticeToAll = () => postSend(students.map(s => s.id), officialNotice, 'parent')
+
+  // Clearly-secondary fallback, only for when Twilio is unavailable.
+  const openWhatsappManually = () => {
     if (!message) { alert('Message लिहा'); return }
     const selectedStudents = students.filter(s => selected.has(s.id))
     selectedStudents.forEach((s, i) => {
@@ -103,17 +110,6 @@ export default function WhatsAppPage() {
       setTimeout(() => {
         window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(message)}`, '_blank')
       }, i * 500)
-    })
-  }
-
-  const sendNoticeToAll = () => {
-    if (!officialNotice) { alert('Notice लिहा'); return }
-    if (!confirm(`सर्व ${students.length} पालकांना notice पाठवायची आहे का?`)) return
-    students.forEach((s, i) => {
-      if (!s.parent_phone) return
-      setTimeout(() => {
-        window.open(`https://wa.me/91${s.parent_phone}?text=${encodeURIComponent(officialNotice)}`, '_blank')
-      }, i * 600)
     })
   }
 
@@ -131,7 +127,7 @@ export default function WhatsAppPage() {
         <div style={{ fontSize: 22 }}>📱</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 14, color: '#166534' }}>तुमचा Academy WhatsApp नंबर: <span style={{ fontFamily: 'monospace', fontSize: 16 }}>7720991375</span></div>
-          <div style={{ fontSize: 12, color: '#15803d', marginTop: 2 }}>खालील buttons दाबल्यावर तुमच्या phone वर WhatsApp उघडेल → पालकाला message पाठवा</div>
+          <div style={{ fontSize: 12, color: '#15803d', marginTop: 2 }}>🚀 <b>थेट पाठवा</b> मध्ये message server वरून Twilio मार्फत जातो — WhatsApp app उघडत नाही. <b>Manual</b> tab फक्त पर्याय म्हणून आहे.</div>
         </div>
         <a href={`https://wa.me/${ACADEMY_WA}?text=${encodeURIComponent('Test message from Shivrakshak Academy admin')}`}
           target="_blank"
@@ -143,9 +139,9 @@ export default function WhatsAppPage() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 24 }}>
         {([
-          { key: 'individual', label: '👤 एकट्याला' },
-          { key: 'bulk', label: '👥 निवडलेल्यांना' },
+          { key: 'bulk', label: '🚀 थेट पाठवा (Twilio)' },
           { key: 'notice', label: '📢 सर्वांना Notice' },
+          { key: 'individual', label: '👤 Manual (WhatsApp app)' },
         ] as const).map(t => (
           <button key={t.key} className="btn" onClick={() => setTab(t.key)}
             style={{ background: tab === t.key ? 'white' : 'transparent', color: tab === t.key ? '#0f172a' : '#64748b', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', border: 'none', padding: '8px 16px' }}>
@@ -154,8 +150,12 @@ export default function WhatsAppPage() {
         ))}
       </div>
 
-      {/* Individual */}
+      {/* Manual fallback — opens the WhatsApp app. Not the primary path. */}
       {tab === 'individual' && (
+        <div>
+        <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12.5, color: '#9a3412' }}>
+          ⚠️ हा <b>manual पर्याय</b> आहे — इथले button दाबल्यावर WhatsApp app/Web उघडेल आणि तुम्हाला स्वतः Send दाबावे लागेल. थेट पाठवण्यासाठी <b>🚀 थेट पाठवा (Twilio)</b> tab वापरा.
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
           <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9' }}>
@@ -174,10 +174,11 @@ export default function WhatsAppPage() {
                   <a
                     href={`https://wa.me/91${s.parent_phone}?text=${encodeURIComponent(`नमस्कार, ${s.name} (${s.roll_number}) यांच्याबद्दल एक संदेश. — शिवरक्षक अकॅडमी`)}`}
                     target="_blank"
-                    className="btn btn-whatsapp"
-                    style={{ padding: '6px 14px', fontSize: 12 }}
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 14px', fontSize: 12, whiteSpace: 'nowrap' }}
                   >
-                    📱 WhatsApp
+                    📱 Open WhatsApp Manually
                   </a>
                 </div>
               ))}
@@ -193,6 +194,7 @@ export default function WhatsAppPage() {
               </button>
             ))}
           </div>
+        </div>
         </div>
       )}
 
@@ -264,10 +266,10 @@ export default function WhatsAppPage() {
               <button
                 className="btn btn-secondary"
                 style={{ width: '100%', justifyContent: 'center' }}
-                onClick={sendToSelected}
+                onClick={openWhatsappManually}
                 disabled={selected.size === 0}
               >
-                📱 WhatsApp app मधून एक-एक पाठवा
+                📱 Open WhatsApp Manually (एक-एक)
               </button>
             </div>
 
@@ -317,9 +319,31 @@ export default function WhatsAppPage() {
                 placeholder="येथे अधिकृत सूचना लिहा...&#10;&#10;उदा: उद्या (तारीख) रोजी परीक्षा आहे. सर्व विद्यार्थ्यांनी सकाळी 7 वाजता उपस्थित रहावे." />
             </div>
 
-            <button className="btn btn-danger" style={{ width: '100%', justifyContent: 'center', padding: 14, fontSize: 16 }} onClick={sendNoticeToAll}>
-              📢 सर्व पालकांना Official Notice पाठवा
+            <button className="btn btn-danger" style={{ width: '100%', justifyContent: 'center', padding: 14, fontSize: 16, opacity: sending ? 0.6 : 1 }} onClick={sendNoticeToAll} disabled={sending}>
+              {sending ? '⏳ पाठवत आहे...' : '📢 सर्व पालकांना Official Notice पाठवा'}
             </button>
+            <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 8 }}>
+              Twilio मार्फत server वरून पाठवले जाईल — WhatsApp app उघडणार नाही
+            </div>
+
+            {report && (
+              <div style={{ marginTop: 18, borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <span style={{ background: '#f1f5f9', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>निवडले: {report.summary.totalSelected}</span>
+                  <span style={{ background: '#dcfce7', color: '#15803d', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>पाठवले: {report.summary.sent}</span>
+                  <span style={{ background: '#fee2e2', color: '#b91c1c', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>अयशस्वी: {report.summary.failed}</span>
+                  {report.summary.invalidNumber > 0 && <span style={{ background: '#fef9c3', color: '#a16207', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>नंबर नाही: {report.summary.invalidNumber}</span>}
+                </div>
+                <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f1f5f9', borderRadius: 8 }}>
+                  {report.results.map(item => (
+                    <div key={item.studentId} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 10px', borderBottom: '1px solid #f8fafc', fontSize: 12 }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.rollNumber} {item.name}</span>
+                      <span style={{ color: STATUS_LABEL[item.status].color, fontWeight: 700, whiteSpace: 'nowrap' }} title={item.reason || ''}>{STATUS_LABEL[item.status].text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -8,7 +8,7 @@ const navItems = [
   { href: '/admin', icon: '📊', label: 'Dashboard' },
   { href: '/admin/students', icon: '👥', label: 'विद्यार्थी' },
   { href: '/admin/leaves', icon: '🏠', label: 'Student Leave' },
-  { href: '/admin/fees', icon: '💰', label: 'Admission व फी' },
+  { href: '/admin/fees', icon: '💰', label: 'Admission Approval व फी' },
   { href: '/admin/mess', icon: '🍽️', label: 'मेस' },
   { href: '/admin/whatsapp', icon: '📱', label: 'WhatsApp' },
   { href: '/admin/notices', icon: '📢', label: 'नोटीस' },
