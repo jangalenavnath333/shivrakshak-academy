@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { Menu, MessageCircle, ShieldHalf, X } from 'lucide-react'
+import { Menu, MessageCircle, X } from 'lucide-react'
+import Logo from '@/components/Logo'
+import { ACADEMY_LOGO } from '@/content/landing'
 
 const LINKS = [
   { href: '#home', label: 'मुख्यपृष्ठ' },
@@ -30,7 +33,9 @@ export default function LandingNav({ academyName, waLink }: { academyName: strin
     <header className="sra-nav" id="home">
       <div className="sra-wrap sra-nav__in">
         <Link href="/" className="sra-brand">
-          <span className="sra-brand__mark" aria-hidden="true"><ShieldHalf size={22} /></span>
+          {ACADEMY_LOGO
+            ? <span className="sra-brand__logo"><Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="42px" /></span>
+            : <span className="sra-brand__mark" aria-hidden="true"><Logo size={30} /></span>}
           <span>
             <span className="sra-brand__name">{academyName}</span>
             <span className="sra-brand__sub">Army • Police • SRPF • Written Exam</span>

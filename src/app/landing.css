@@ -149,32 +149,39 @@
 .sra-stat b { display: block; font-family: var(--sra-display); font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 600; color: var(--sra-gold); line-height: 1; }
 .sra-stat span { display: block; margin-top: .5rem; font-size: .87rem; color: var(--sra-muted); }
 
-/* ---------- director ---------- */
-.sra-dir__grid { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 4rem); align-items: center; }
-.sra-dir__photo { position: relative; aspect-ratio: 4 / 5; border: 1px solid var(--sra-line); border-radius: 4px; overflow: hidden; background: var(--sra-panel); box-shadow: var(--sra-shadow); }
-.sra-dir__photo img { width: 100%; height: 100%; object-fit: cover; }
-.sra-dir__ph { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .9rem; text-align: center; padding: 2rem; background: linear-gradient(180deg, var(--sra-olive), var(--sra-black)); }
-.sra-dir__ph svg { color: rgba(212,164,55,.5); }
-.sra-dir__ph b { color: var(--sra-gold); font-size: .95rem; }
-.sra-dir__ph span { color: var(--sra-muted); font-size: .8rem; max-width: 24ch; line-height: 1.6; }
-.sra-dir__flag { position: absolute; left: 0; bottom: 0; right: 0; height: 4px; background: linear-gradient(90deg, #ff9933 33%, #ffffff 33% 66%, #138808 66%); }
-.sra-dir h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); }
-.sra-dir__name { margin-top: 1.5rem; font-size: clamp(1.35rem, 3vw, 1.9rem); color: var(--sra-gold); font-weight: 800; }
-.sra-dir__role { font-family: var(--sra-display); letter-spacing: .1em; text-transform: uppercase; font-size: .78rem; color: var(--sra-muted); margin-top: .45rem; }
-.sra-dir__intro { margin-top: 1.15rem; color: #d3d6c8; }
-.sra-dir__facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; margin-top: 1.8rem; background: var(--sra-line-solid); border: 1px solid var(--sra-line-solid); }
-.sra-dir__facts div { background: var(--sra-panel); padding: .95rem 1rem; }
-.sra-dir__facts small { display: block; font-size: .7rem; letter-spacing: .11em; text-transform: uppercase; color: var(--sra-muted); font-family: var(--sra-display); }
-.sra-dir__facts b { display: block; margin-top: .3rem; color: var(--sra-text); font-size: .97rem; }
-/* Pull-quote, not a callout: the mark carries the emphasis instead of a side rule. */
-.sra-dir__quote { position: relative; margin: 1.9rem 0 0; padding: 1.4rem 0 0; color: #e7e4d7; font-size: clamp(1.02rem, 2.2vw, 1.18rem); font-style: italic; line-height: 1.65; }
-.sra-dir__quote::before {
-  content: '\201C'; position: absolute; top: -.55rem; left: -.15rem;
-  font-family: var(--sra-display); font-size: 3.4rem; line-height: 1;
-  color: var(--sra-gold); opacity: .5;
+/* ---------- director (two founders) ---------- */
+.sra-dir__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 2.8rem); }
+.sra-dir__card {
+  display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  gap: 1.4rem; align-items: center;
+  background: linear-gradient(180deg, var(--sra-panel-2), var(--sra-panel));
+  border: 1px solid var(--sra-line-solid); border-radius: 4px; padding: 1.4rem;
+  transition: border-color .3s, box-shadow .3s, transform .3s cubic-bezier(.16,1,.3,1);
 }
-.sra-dir__quote span { position: relative; z-index: 1; display: block; padding-left: 2.1rem; }
-.sra-dir__badges { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.7rem; }
+.sra-dir__card:hover { border-color: var(--sra-gold); box-shadow: var(--sra-shadow-lift); transform: translateY(-4px); }
+.sra-dir__photo { position: relative; aspect-ratio: 4 / 5; border: 1px solid var(--sra-line); border-radius: 3px; overflow: hidden; background: var(--sra-black); }
+.sra-dir__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.sra-dir__ph { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .6rem; text-align: center; padding: 1rem; background: linear-gradient(180deg, var(--sra-olive), var(--sra-black)); }
+.sra-dir__ph svg { color: rgba(212,164,55,.45); }
+.sra-dir__ph b { color: var(--sra-gold); font-size: .84rem; }
+.sra-dir__ph span { color: var(--sra-muted); font-size: .64rem; line-height: 1.5; word-break: break-all; }
+.sra-dir__flag { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, #ff9933 33%, #ffffff 33% 66%, #138808 66%); }
+.sra-dir__name { font-size: clamp(1.05rem, 2.2vw, 1.3rem); color: var(--sra-gold); font-weight: 800; line-height: 1.3; }
+.sra-dir__role { font-family: var(--sra-display); letter-spacing: .08em; text-transform: uppercase; font-size: .68rem; color: var(--sra-muted); margin-top: .4rem; }
+.sra-dir__facts { display: grid; gap: 1px; margin-top: 1.1rem; background: var(--sra-line-solid); border: 1px solid var(--sra-line-solid); }
+.sra-dir__facts div { background: var(--sra-black); padding: .65rem .8rem; }
+.sra-dir__facts small { display: block; font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--sra-muted); font-family: var(--sra-display); }
+.sra-dir__facts b { display: block; margin-top: .2rem; color: var(--sra-text); font-size: .9rem; }
+
+.sra-dir__close { margin-top: clamp(2.2rem, 5vw, 3.4rem); text-align: center; }
+/* Pull-quote, not a callout: the mark carries the emphasis instead of a side rule. */
+.sra-dir__quote { position: relative; margin: 0 auto; max-width: 60ch; padding-top: 1.6rem; color: #e7e4d7; font-size: clamp(1.05rem, 2.4vw, 1.32rem); font-style: italic; line-height: 1.65; }
+.sra-dir__quote::before {
+  content: 'C'; position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%);
+  font-family: var(--sra-display); font-size: 3.6rem; line-height: 1; color: var(--sra-gold); opacity: .45;
+}
+.sra-dir__quote span { position: relative; z-index: 1; display: block; }
+.sra-dir__badges { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.9rem; justify-content: center; }
 .sra-dir__badges span { border: 1px solid var(--sra-line); border-radius: 999px; padding: .42rem .95rem; font-size: .79rem; color: var(--sra-gold-lt); background: rgba(212,164,55,.05); }
 
 /* ---------- why ---------- */
@@ -315,8 +322,9 @@
   .sra-gal figure:nth-child(1), .sra-gal figure:nth-child(6) { grid-column: span 1; aspect-ratio: 4 / 3; }
 }
 @media (max-width: 900px) {
-  .sra-dir__grid, .sra-train__grid, .sra-contact__grid { grid-template-columns: 1fr; }
-  .sra-dir__photo { max-width: 420px; margin-inline: auto; }
+  .sra-train__grid, .sra-contact__grid { grid-template-columns: 1fr; }
+  .sra-dir__pair { grid-template-columns: 1fr; }
+
   .sra-stats__grid, .sra-stats--five .sra-stats__grid { grid-template-columns: repeat(2, 1fr); }
   .sra-stat + .sra-stat::before { display: none; }
   .sra-stat { border-top: 1px solid var(--sra-line); }
@@ -333,3 +341,13 @@
   .sra-train__shots { grid-template-rows: auto auto; }
   .sra-gal figure { aspect-ratio: 16 / 10; }
 }
+
+/* Founder cards give the portrait full width once the card itself is narrow. */
+@media (max-width: 620px) {
+  .sra-dir__card { grid-template-columns: 1fr; gap: 1.1rem; }
+  .sra-dir__photo { max-width: 300px; margin-inline: auto; width: 100%; }
+}
+
+/* Academy logo image slot — sits where the built-in shield mark would. */
+.sra-brand__logo { width: 42px; height: 42px; flex: none; position: relative; border-radius: 3px; overflow: hidden; }
+.sra-brand__logo img { width: 100%; height: 100%; object-fit: contain; }

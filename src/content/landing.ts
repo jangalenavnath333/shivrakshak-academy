@@ -28,28 +28,50 @@ export const RESULT_STATS: Stat[] = [
   { value: '98%', label: 'Selection Rate' },
 ]
 
-export const DIRECTOR = {
-  /**
-   * Portrait photograph. Leave as null to show the authored placeholder frame.
-   * To use a real photo: save it as /public/images/director/director.jpg and set
-   *   photo: '/images/director/director.jpg'
-   */
-  photo: null as string | null,
-  name: 'Ex-Army श्री. [संचालकांचे नाव]',
-  role: 'Retired Indian Army | Founder & Director',
-  intro:
-    'भारतीय सैन्यातील शिस्त, सेवाभाव आणि प्रशिक्षणाचा प्रत्यक्ष अनुभव विद्यार्थ्यांपर्यंत पोहोचवण्याच्या उद्देशाने शिवरक्षक करिअर अकॅडमीची स्थापना करण्यात आली.',
-  quote:
-    'फक्त परीक्षा पास होणे हे ध्येय नाही; शिस्त, आत्मविश्वास आणि देशसेवेची मानसिकता घडवणे हे आमचे उद्दिष्ट आहे.',
-  /** Replace the bracketed placeholders with the director's real service record. */
-  facts: [
-    { label: 'Former Rank', value: '[रँक]' },
-    { label: 'Army Service', value: '[वर्षे] वर्षे' },
-    { label: 'Training Experience', value: '[वर्षे] वर्षे' },
-    { label: 'Academy', value: 'संस्थापक व संचालक' },
-  ],
-  badges: ['Ex-Army Experience', 'Discipline Based Training', 'Personal Guidance', 'Physical Excellence'],
-}
+/**
+ * Academy logo. Leave null to use the built-in shield mark (src/components/Logo.tsx).
+ * To use your own file: save it as /public/images/logo/academy-logo.png (square,
+ * transparent background, at least 256x256) and set:
+ *   photo: '/images/logo/academy-logo.png'
+ */
+export const ACADEMY_LOGO: string | null = null
+
+/**
+ * The two founders. Both are retired Indian Army servicemen.
+ *
+ * To add a photograph: save it in /public/images/director/ and put the path in
+ * `photo`. A standing or waist-up portrait works best — the frame is 4:5 portrait,
+ * so an upright photo (uniform, service weapon, parade ground) fills it correctly.
+ * Recommended size: at least 800x1000 pixels.
+ */
+export const DIRECTORS = [
+  {
+    photo: null as string | null, // e.g. '/images/director/director-1.jpg'
+    name: 'Ex-Army श्री. [संचालक १ यांचे नाव]',
+    role: 'Retired Indian Army | Founder & Director',
+    facts: [
+      { label: 'Former Rank', value: '[रँक]' },
+      { label: 'Army Service', value: '[वर्षे] वर्षे' },
+    ],
+  },
+  {
+    photo: null as string | null, // e.g. '/images/director/director-2.jpg'
+    name: 'Ex-Army श्री. [संचालक २ यांचे नाव]',
+    role: 'Retired Indian Army | Founder & Director',
+    facts: [
+      { label: 'Former Rank', value: '[रँक]' },
+      { label: 'Army Service', value: '[वर्षे] वर्षे' },
+    ],
+  },
+]
+
+export const FOUNDER_INTRO =
+  'भारतीय सैन्यातील शिस्त, सेवाभाव आणि प्रशिक्षणाचा प्रत्यक्ष अनुभव विद्यार्थ्यांपर्यंत पोहोचवण्याच्या उद्देशाने शिवरक्षक करिअर अकॅडमीची स्थापना दोन माजी सैनिकांनी केली.'
+
+export const FOUNDER_QUOTE =
+  'फक्त परीक्षा पास होणे हे ध्येय नाही; शिस्त, आत्मविश्वास आणि देशसेवेची मानसिकता घडवणे हे आमचे उद्दिष्ट आहे.'
+
+export const FOUNDER_BADGES = ['Ex-Army Experience', 'Discipline Based Training', 'Personal Guidance', 'Physical Excellence']
 
 export const WHY_CHOOSE = [
   { title: 'मैदानी प्रशिक्षण', icon: 'run', points: ['1600m Running', '100m Sprint', 'Long Jump', 'Shot Put', 'Ground Practice'] },

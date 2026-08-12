@@ -1,6 +1,8 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone, Send, ShieldHalf, Youtube } from 'lucide-react'
-import { COURSES, MAP_EMBED } from '@/content/landing'
+import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone, Send, Youtube } from 'lucide-react'
+import Logo from '@/components/Logo'
+import { ACADEMY_LOGO, COURSES, MAP_EMBED } from '@/content/landing'
 
 const QUICK_LINKS = [
   { href: '#home', label: 'मुख्यपृष्ठ' },
@@ -26,7 +28,9 @@ export default function LandingFooter({ academyName, tagline, phone, email, addr
         <div className="sra-footer__grid">
           <div>
             <Link href="/" className="sra-brand">
-              <span className="sra-brand__mark" aria-hidden="true"><ShieldHalf size={22} /></span>
+              {ACADEMY_LOGO
+                ? <span className="sra-brand__logo"><Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="42px" /></span>
+                : <span className="sra-brand__mark" aria-hidden="true"><Logo size={30} /></span>}
               <span>
                 <span className="sra-brand__name">{academyName}</span>
                 <span className="sra-brand__sub">Army • Police • SRPF • Written Exam</span>
