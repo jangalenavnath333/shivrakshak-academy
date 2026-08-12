@@ -2,6 +2,7 @@ import 'server-only'
 
 import nodemailer, { type Transporter } from 'nodemailer'
 import { Resend } from 'resend'
+import { appBaseUrl } from '@/lib/app-url'
 
 type SendEmailInput = {
   to: string | string[]
@@ -46,8 +47,12 @@ function senderAddress() {
 
 export async function sendTransactionalEmail(input: SendEmailInput) {
   const from = senderAddress()
-  if (!from) return { sent: false, reason: 'not_configured' as const }
+  if (!from) {
+    console.error('Email not configured: set EMAIL_FROM (or RESEND_FROM_EMAIL / GMAIL_USER)')
+    return { sent: false, reason: 'not_configured' as const }
+  }
   const { idempotencyKey, ...message } = input
+  const recipient = Array.isArray(message.to) ? message.to.join(', ') : message.to
 
   const resend = getEmailClient()
   if (resend) {
@@ -55,27 +60,34 @@ export async function sendTransactionalEmail(input: SendEmailInput) {
       ? await resend.emails.send({ from, ...message }, { idempotencyKey })
       : await resend.emails.send({ from, ...message })
     if (error) {
-      console.error('Transactional email failed', { name: error.name, message: error.message })
-      return { sent: false, reason: 'provider_error' as const }
+      console.error('Transactional email failed', { transport: 'resend', name: error.name, message: error.message })
+      return { sent: false, reason: 'provider_error' as const, detail: error.message }
     }
+    console.log('Transactional email sent', { transport: 'resend', id: data?.id })
     return { sent: true, id: data?.id }
   }
 
   const smtp = getSmtpTransport()
-  if (!smtp) return { sent: false, reason: 'not_configured' as const }
+  if (!smtp) {
+    console.error('Email not configured: no RESEND_API_KEY and no GMAIL_USER/GMAIL_APP_PASSWORD')
+    return { sent: false, reason: 'not_configured' as const }
+  }
   try {
     // SMTP has no idempotency key; callers that need it rely on their own de-duplication.
     const info = await smtp.sendMail({
       from,
-      to: Array.isArray(message.to) ? message.to.join(', ') : message.to,
+      to: recipient,
       subject: message.subject,
       html: message.html,
       attachments: message.attachments,
     })
+    const accepted = Array.isArray(info.accepted) ? info.accepted.length : 0
+    console.log('Transactional email sent', { transport: 'smtp', accepted, id: info.messageId })
     return { sent: true, id: info.messageId as string | undefined }
   } catch (error) {
-    console.error('Transactional email failed', { message: error instanceof Error ? error.message : 'Unknown error' })
-    return { sent: false, reason: 'provider_error' as const }
+    const detail = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Transactional email failed', { transport: 'smtp', message: detail })
+    return { sent: false, reason: 'provider_error' as const, detail }
   }
 }
 
@@ -120,7 +132,7 @@ export async function sendAdmissionEmails(input: {
   studentName: string
   rollNumber: string
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shivrakshak-academy1-kappa.vercel.app'
+  const appUrl = appBaseUrl()
   const studentName = escapeHtml(input.studentName)
   const rollNumber = escapeHtml(input.rollNumber)
   const loginUrl = `${appUrl.replace(/\/$/, '')}/student/login?roll=${encodeURIComponent(input.rollNumber)}`
@@ -152,7 +164,7 @@ export async function sendAdmissionActivatedEmail(input: {
   rollNumber: string
   printUrl: string
 }) {
-  const loginUrl = `${(process.env.NEXT_PUBLIC_APP_URL || 'https://shivrakshak-academy1-kappa.vercel.app').replace(/\/$/, '')}/student/login?roll=${encodeURIComponent(input.rollNumber)}`
+  const loginUrl = `${appBaseUrl()}/student/login?roll=${encodeURIComponent(input.rollNumber)}`
   return sendTransactionalEmail({
     to: input.to,
     subject: `प्रवेश मंजूर — विद्यार्थी ID ${input.rollNumber}`,
@@ -171,7 +183,7 @@ export async function sendExamScheduleEmails(input: {
   const recipients = [...new Set(input.recipients.filter(Boolean))].slice(0, 100)
   if (recipients.length === 0) return
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shivrakshak-academy1-kappa.vercel.app'
+  const appUrl = appBaseUrl()
   const subjectPrefix = input.isRescheduled ? 'परीक्षेचे वेळापत्रक बदलले' : 'नवीन Online परीक्षा'
   const examTitle = escapeHtml(input.examTitle)
   const schedule = [input.startsAt, input.endsAt]

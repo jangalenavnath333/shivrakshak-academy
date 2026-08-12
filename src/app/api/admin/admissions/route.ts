@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { appBaseUrl } from '@/lib/app-url'
 import { decryptAdmissionPassword } from '@/lib/admission-credentials'
 import { createAdmissionPrintToken, hashAdmissionPrintToken } from '@/lib/admission-print-token'
 import { getAdminUser } from '@/lib/admin-auth'
@@ -93,11 +94,11 @@ async function finalizeActivation(input: {
   }
   const [emailResult, whatsappResult] = await Promise.all([
     email
-      ? notify(sendAdmissionActivatedEmail({ to: email, studentName: student.name, rollNumber, printUrl }), { sent: false as const, reason: 'provider_error' as const })
-      : Promise.resolve({ sent: false as const, reason: 'missing_email' as const }),
+      ? notify(sendAdmissionActivatedEmail({ to: email, studentName: student.name, rollNumber, printUrl }), { sent: false as const, reason: 'provider_error' as const, detail: 'ई-मेल पाठवताना अनपेक्षित अडचण आली' })
+      : Promise.resolve({ sent: false as const, reason: 'missing_email' as const, detail: 'अर्जात ई-मेल दिलेला नाही' }),
     whatsapp
-      ? notify(sendAdmissionActivatedWhatsapp({ to: whatsapp, studentName: student.name, rollNumber, printUrl }), { sent: false as const, reason: 'provider_error' as const })
-      : Promise.resolve({ sent: false as const, reason: 'missing_whatsapp' as const }),
+      ? notify(sendAdmissionActivatedWhatsapp({ to: whatsapp, studentName: student.name, rollNumber, printUrl }), { sent: false as const, reason: 'provider_error' as const, detail: 'WhatsApp पाठवताना अनपेक्षित अडचण आली' })
+      : Promise.resolve({ sent: false as const, reason: 'missing_whatsapp' as const, detail: 'वैध WhatsApp नंबर नाही' }),
   ])
 
   return NextResponse.json({
@@ -154,7 +155,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Admission print security is not configured.' }, { status: 503 })
   }
   const tokenHash = hashAdmissionPrintToken(token)
-  const origin = (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, '')
+  // Must be this app's origin — the print form is a Next.js route, never a Supabase URL.
+  const origin = appBaseUrl(request)
 
   if (payload.action === 'resume') {
     const { data: student, error: studentError } = await admin

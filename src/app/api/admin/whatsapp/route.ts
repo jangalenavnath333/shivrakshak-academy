@@ -111,7 +111,8 @@ export async function POST(request: Request) {
         message,
       })
       if (result.sent) return { ...recipient, status: 'sent', messageId: result.id }
-      return { ...recipient, status: 'failed', reason: result.reason }
+      // Prefer Twilio's own explanation so the admin knows what to fix.
+      return { ...recipient, status: 'failed', reason: ('detail' in result && result.detail) || result.reason }
     } catch (sendError) {
       // One bad recipient must never abort the rest of the batch.
       console.error('WhatsApp broadcast recipient failed', {

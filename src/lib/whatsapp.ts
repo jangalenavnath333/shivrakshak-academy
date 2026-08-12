@@ -70,16 +70,31 @@ export async function sendWhatsappMessage(input: SendWhatsappInput) {
       body,
       cache: 'no-store',
     })
-    const payload = await response.json() as { sid?: string; message?: string }
+    const payload = await response.json() as { sid?: string; message?: string; code?: number }
     if (!response.ok) {
-      console.error('WhatsApp delivery failed', { status: response.status, message: payload.message })
-      return { sent: false, reason: 'provider_error' as const }
+      console.error('WhatsApp delivery failed', { status: response.status, code: payload.code, message: payload.message })
+      // Twilio's message describes the account/recipient problem and contains no
+      // credentials, so it is safe — and necessary — to show the admin.
+      return { sent: false, reason: 'provider_error' as const, detail: describeTwilioError(payload.code, payload.message) }
     }
     return { sent: true, id: payload.sid }
   } catch (error) {
     console.error('WhatsApp delivery failed', { message: error instanceof Error ? error.message : 'Unknown error' })
-    return { sent: false, reason: 'provider_error' as const }
+    return { sent: false, reason: 'provider_error' as const, detail: 'Twilio ला संपर्क होऊ शकला नाही' }
   }
+}
+
+/** Turns a Twilio error into something an admin can act on. Never includes credentials. */
+function describeTwilioError(code?: number, message?: string) {
+  // 21608 / 63007-style trial restrictions are by far the most common in testing.
+  if (code === 21608 || /trial/i.test(message || '')) {
+    return 'Twilio trial मध्ये हा नंबर verified/test recipient नाही. Twilio Console → Verified Caller IDs मध्ये नंबर verify करा, किंवा WhatsApp sandbox ला "join <code>" पाठवा.'
+  }
+  if (code === 63007) return 'Twilio WhatsApp sender (From नंबर) सापडला नाही — TWILIO_WHATSAPP_NUMBER तपासा.'
+  if (code === 63016) return '24-तासांची window संपली आहे. Free-form message ऐवजी approved template (ContentSid) आवश्यक आहे.'
+  if (code === 63018) return 'Twilio rate limit — थोड्या वेळाने पुन्हा प्रयत्न करा.'
+  if (code === 21211 || code === 21614) return 'हा मोबाईल नंबर WhatsApp साठी वैध नाही.'
+  return message || 'Twilio कडून message नाकारला गेला.'
 }
 
 export function sendLeaveConfirmationWhatsapp(input: {

@@ -284,9 +284,14 @@ export default function WhatsAppPage() {
                 </div>
                 <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid #f1f5f9', borderRadius: 8 }}>
                   {report.results.map(item => (
-                    <div key={item.studentId} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 10px', borderBottom: '1px solid #f8fafc', fontSize: 12 }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.rollNumber} {item.name}</span>
-                      <span style={{ color: STATUS_LABEL[item.status].color, fontWeight: 700, whiteSpace: 'nowrap' }} title={item.reason || ''}>{STATUS_LABEL[item.status].text}</span>
+                    <div key={item.studentId} style={{ padding: '7px 10px', borderBottom: '1px solid #f8fafc', fontSize: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.rollNumber} {item.name}</span>
+                        <span style={{ color: STATUS_LABEL[item.status].color, fontWeight: 700, whiteSpace: 'nowrap' }}>{STATUS_LABEL[item.status].text}</span>
+                      </div>
+                      {item.status !== 'sent' && item.reason && (
+                        <div style={{ marginTop: 3, fontSize: 11, color: '#b91c1c', lineHeight: 1.5 }}>{item.reason}</div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -336,9 +341,14 @@ export default function WhatsAppPage() {
                 </div>
                 <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #f1f5f9', borderRadius: 8 }}>
                   {report.results.map(item => (
-                    <div key={item.studentId} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 10px', borderBottom: '1px solid #f8fafc', fontSize: 12 }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.rollNumber} {item.name}</span>
-                      <span style={{ color: STATUS_LABEL[item.status].color, fontWeight: 700, whiteSpace: 'nowrap' }} title={item.reason || ''}>{STATUS_LABEL[item.status].text}</span>
+                    <div key={item.studentId} style={{ padding: '7px 10px', borderBottom: '1px solid #f8fafc', fontSize: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.rollNumber} {item.name}</span>
+                        <span style={{ color: STATUS_LABEL[item.status].color, fontWeight: 700, whiteSpace: 'nowrap' }}>{STATUS_LABEL[item.status].text}</span>
+                      </div>
+                      {item.status !== 'sent' && item.reason && (
+                        <div style={{ marginTop: 3, fontSize: 11, color: '#b91c1c', lineHeight: 1.5 }}>{item.reason}</div>
+                      )}
                     </div>
                   ))}
                 </div>

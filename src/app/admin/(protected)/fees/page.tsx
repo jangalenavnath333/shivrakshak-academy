@@ -22,7 +22,7 @@ type Application = {
 type ActivationResult = {
   rollNumber: string
   printUrl: string
-  delivery: { email: { sent: boolean; reason?: string }; whatsapp: { sent: boolean; reason?: string } }
+  delivery: { email: { sent: boolean; reason?: string; detail?: string }; whatsapp: { sent: boolean; reason?: string; detail?: string } }
 }
 
 export default function FeesPage() {
@@ -37,6 +37,7 @@ export default function FeesPage() {
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [printUrl, setPrintUrl] = useState('')
+  const [delivery, setDelivery] = useState<ActivationResult['delivery'] | null>(null)
 
   const refresh = useCallback(async () => {
     const [applicationsResponse, feeResponse] = await Promise.all([
@@ -88,7 +89,7 @@ export default function FeesPage() {
 
   const activate = async () => {
     if (!selectedApplication || !totalFee || !amount) return
-    setLoading(true); setPrintUrl('')
+    setLoading(true); setPrintUrl(''); setDelivery(null)
     try {
       const response = await fetch('/api/admin/admissions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -98,6 +99,7 @@ export default function FeesPage() {
       if (!response.ok) throw new Error(result.error || 'Activation failed')
       setSuccessMsg(`✅ Fee जमा झाली. Student Code ${result.rollNumber} तयार झाला.`)
       setPrintUrl(result.printUrl)
+      setDelivery(result.delivery)
       setSelected(null); setTotalFee(''); setAmount('')
       await refresh()
     } catch (error) { alert(error instanceof Error ? error.message : 'Activation failed') }
@@ -106,7 +108,7 @@ export default function FeesPage() {
 
   // Fee already recorded; finish the exam login + code/print delivery without charging again.
   const resume = async (studentId: string) => {
-    setLoading(true); setPrintUrl('')
+    setLoading(true); setPrintUrl(''); setDelivery(null)
     try {
       const response = await fetch('/api/admin/admissions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -116,6 +118,7 @@ export default function FeesPage() {
       if (!response.ok) throw new Error(result.error || 'Retry failed')
       setSuccessMsg(`✅ Activation पूर्ण झाली. Student Code ${result.rollNumber}.`)
       setPrintUrl(result.printUrl)
+      setDelivery(result.delivery)
       await refresh()
     } catch (error) { alert(error instanceof Error ? error.message : 'Retry failed') }
     finally { setLoading(false) }
@@ -138,6 +141,14 @@ export default function FeesPage() {
     <div className="page-header"><div><div className="page-title">💰 Admission Approval व Fee</div><div className="page-subtitle">Form approval → fee entry → code व 3-page PDF</div></div></div>
     {successMsg && <div style={{ background:'#dcfce7', border:'1px solid #16a34a', borderRadius:10, padding:'12px 16px', marginBottom:16, color:'#166534', fontWeight:700 }}>{successMsg}</div>}
     {printUrl && <a href={printUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ marginBottom:20 }}>🖨️ 3 पानी Form Print / PDF</a>}
+    {delivery && <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:18 }}>
+      {([['ई-मेल', delivery.email], ['WhatsApp', delivery.whatsapp]] as const).map(([label, state]) => (
+        <div key={label} style={{ background: state.sent ? '#dcfce7' : '#fef2f2', border:`1px solid ${state.sent ? '#86efac' : '#fca5a5'}`, borderRadius:8, padding:'8px 12px', fontSize:12, maxWidth:420 }}>
+          <b style={{ color: state.sent ? '#15803d' : '#b91c1c' }}>{state.sent ? `✅ ${label} पाठवला` : `❌ ${label} गेला नाही`}</b>
+          {!state.sent && (state.detail || state.reason) && <div style={{ marginTop:3, color:'#7f1d1d', lineHeight:1.5 }}>{state.detail || state.reason}</div>}
+        </div>
+      ))}
+    </div>}
 
     <section style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:12, padding:20, marginBottom:22 }}>
       <h2 style={{ margin:'0 0 12px', fontSize:18 }}>⏳ Approval साठी आलेले अर्ज ({pendingApplications.length})</h2>
