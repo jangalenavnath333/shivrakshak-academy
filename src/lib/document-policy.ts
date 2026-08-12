@@ -15,3 +15,4 @@ export function documentStoragePath(value: string) {
   const path = value.includes(marker) ? value.split(marker)[1] : value
   return decodeURIComponent(path.split('?')[0])
 }
+
