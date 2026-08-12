@@ -1,6 +1,6 @@
 import 'server-only'
 
-type WhatsappTemplate = 'leave_confirmation' | 'leave_return' | 'admission_activated'
+type WhatsappTemplate = 'leave_confirmation' | 'leave_return' | 'admission_activated' | 'admin_broadcast'
 
 type SendWhatsappInput = {
   to: string
@@ -9,7 +9,11 @@ type SendWhatsappInput = {
   fallbackBody: string
 }
 
-function normalizeIndianPhone(value: string) {
+/**
+ * Returns E.164 for a usable Indian mobile number, or null when the value cannot be
+ * dialled. Exported so callers can report unreachable recipients without attempting a send.
+ */
+export function normalizeIndianPhone(value: string) {
   const digits = value.replace(/\D/g, '')
   if (digits.length === 10) return `+91${digits}`
   if (digits.length === 12 && digits.startsWith('91')) return `+${digits}`
@@ -17,10 +21,20 @@ function normalizeIndianPhone(value: string) {
   return null
 }
 
+const TEMPLATE_SID_ENV: Record<WhatsappTemplate, string> = {
+  leave_confirmation: 'TWILIO_LEAVE_CONFIRMATION_CONTENT_SID',
+  leave_return: 'TWILIO_LEAVE_RETURN_CONTENT_SID',
+  admission_activated: 'TWILIO_ADMISSION_ACTIVATED_CONTENT_SID',
+  admin_broadcast: 'TWILIO_ADMIN_BROADCAST_CONTENT_SID',
+}
+
 function templateSid(template: WhatsappTemplate) {
-  if (template === 'leave_confirmation') return process.env.TWILIO_LEAVE_CONFIRMATION_CONTENT_SID
-  if (template === 'leave_return') return process.env.TWILIO_LEAVE_RETURN_CONTENT_SID
-  return process.env.TWILIO_ADMISSION_ACTIVATED_CONTENT_SID
+  return process.env[TEMPLATE_SID_ENV[template]]
+}
+
+/** True when Twilio credentials are present, so callers can fail fast before a batch. */
+export function isWhatsappConfigured() {
+  return Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_WHATSAPP_NUMBER)
 }
 
 export async function sendWhatsappMessage(input: SendWhatsappInput) {
@@ -103,6 +117,27 @@ export function sendLeaveReturnWhatsapp(input: {
       '3': input.rollNumber,
     },
     fallbackBody: `नमस्कार ${input.studentName}, तुमची सुट्टी आज ${input.returnDate} रोजी संपत आहे. कृपया शिवरक्षक करिअर अकॅडमीमध्ये वेळेवर परत या. विद्यार्थी ID: ${input.rollNumber}`,
+  })
+}
+
+/**
+ * Admin-composed broadcast. Sends the composed text as a free-form Body, which is what
+ * the Twilio sandbox supports. Setting TWILIO_ADMIN_BROADCAST_CONTENT_SID switches this
+ * to an approved template, with the student name and message as variables 1 and 2.
+ */
+export function sendAdminBroadcastWhatsapp(input: {
+  to: string
+  studentName: string
+  message: string
+}) {
+  return sendWhatsappMessage({
+    to: input.to,
+    template: 'admin_broadcast',
+    variables: {
+      '1': input.studentName,
+      '2': input.message,
+    },
+    fallbackBody: input.message,
   })
 }
 

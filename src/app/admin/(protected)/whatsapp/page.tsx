@@ -1,8 +1,28 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 type Student = { id: string; name: string; roll_number: string; parent_phone: string; phone: string }
+
+type SendResult = {
+  studentId: string
+  name: string
+  rollNumber: string | null
+  status: 'sent' | 'invalid_number' | 'duplicate' | 'failed'
+  reason?: string
+}
+
+type SendReport = {
+  summary: { totalSelected: number; sent: number; failed: number; invalidNumber: number; duplicate: number }
+  results: SendResult[]
+}
+
+const STATUS_LABEL: Record<SendResult['status'], { text: string; color: string }> = {
+  sent: { text: '✅ पाठवले', color: '#15803d' },
+  failed: { text: '❌ अयशस्वी', color: '#b91c1c' },
+  invalid_number: { text: '⚠️ नंबर नाही', color: '#a16207' },
+  duplicate: { text: '↩︎ तोच नंबर', color: '#64748b' },
+}
 
 // Academy WhatsApp number — admin sends FROM this number
 const ACADEMY_WA = '917720991375'
@@ -23,6 +43,9 @@ export default function WhatsAppPage() {
   const [search, setSearch] = useState('')
   const [officialNotice, setOfficialNotice] = useState('')
   const [tab, setTab] = useState<'individual' | 'bulk' | 'notice'>('individual')
+  const [sending, setSending] = useState(false)
+  const [report, setReport] = useState<SendReport | null>(null)
+  const sendingRef = useRef(false)
 
   useEffect(() => {
     supabase.from('students').select('id, name, roll_number, parent_phone, phone').order('roll_number', { ascending: true }).then(({ data }) => setStudents(data || []))
@@ -41,6 +64,35 @@ export default function WhatsAppPage() {
 
   const selectAll = () => setSelected(new Set(filtered.map(s => s.id)))
   const clearAll = () => setSelected(new Set())
+
+  // Primary path: Twilio sends server-side, no WhatsApp Web / app involved.
+  const sendViaApi = async () => {
+    // Ref guard, not state: a double-click fires again before React re-renders.
+    if (sendingRef.current) return
+    if (!message.trim()) { alert('Message लिहा'); return }
+    const studentIds = [...selected]
+    if (studentIds.length === 0) return
+    if (!confirm(`${studentIds.length} ${mode === 'parent' ? 'पालकांना' : 'विद्यार्थ्यांना'} WhatsApp पाठवायचा आहे का?\n\nTwilio मार्फत थेट पाठवला जाईल — हे रद्द करता येणार नाही.`)) return
+
+    sendingRef.current = true
+    setSending(true)
+    setReport(null)
+    try {
+      const response = await fetch('/api/admin/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentIds, message, audience: mode }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'WhatsApp पाठवता आले नाही')
+      setReport(data as SendReport)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'WhatsApp पाठवता आले नाही')
+    } finally {
+      sendingRef.current = false
+      setSending(false)
+    }
+  }
 
   const sendToSelected = () => {
     if (!message) { alert('Message लिहा'); return }
@@ -195,9 +247,49 @@ export default function WhatsAppPage() {
               <textarea className="form-input" rows={4} value={message} onChange={e => setMessage(e.target.value)} placeholder="Message लिहा..." />
             </div>
 
-            <button className="btn btn-whatsapp" style={{ width: '100%', justifyContent: 'center', padding: 12 }} onClick={sendToSelected} disabled={selected.size === 0}>
-              📱 {selected.size} जणांना WhatsApp पाठवा
+            <button
+              className="btn btn-whatsapp"
+              style={{ width: '100%', justifyContent: 'center', padding: 12, opacity: sending || selected.size === 0 ? 0.6 : 1 }}
+              onClick={sendViaApi}
+              disabled={sending || selected.size === 0}
+            >
+              {sending ? '⏳ पाठवत आहे...' : `🚀 ${selected.size} जणांना थेट WhatsApp पाठवा`}
             </button>
+            <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', margin: '8px 0 14px' }}>
+              Twilio मार्फत server वरून पाठवले जाईल — WhatsApp app उघडणार नाही
+            </div>
+
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
+              <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>Twilio बंद असल्यास पर्याय:</div>
+              <button
+                className="btn btn-secondary"
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={sendToSelected}
+                disabled={selected.size === 0}
+              >
+                📱 WhatsApp app मधून एक-एक पाठवा
+              </button>
+            </div>
+
+            {report && (
+              <div style={{ marginTop: 18, borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <span style={{ background: '#f1f5f9', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>निवडले: {report.summary.totalSelected}</span>
+                  <span style={{ background: '#dcfce7', color: '#15803d', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>पाठवले: {report.summary.sent}</span>
+                  <span style={{ background: '#fee2e2', color: '#b91c1c', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>अयशस्वी: {report.summary.failed}</span>
+                  {report.summary.invalidNumber > 0 && <span style={{ background: '#fef9c3', color: '#a16207', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>नंबर नाही: {report.summary.invalidNumber}</span>}
+                  {report.summary.duplicate > 0 && <span style={{ background: '#f1f5f9', color: '#64748b', borderRadius: 6, padding: '4px 9px', fontSize: 12, fontWeight: 700 }}>तोच नंबर: {report.summary.duplicate}</span>}
+                </div>
+                <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid #f1f5f9', borderRadius: 8 }}>
+                  {report.results.map(item => (
+                    <div key={item.studentId} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 10px', borderBottom: '1px solid #f8fafc', fontSize: 12 }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.rollNumber} {item.name}</span>
+                      <span style={{ color: STATUS_LABEL[item.status].color, fontWeight: 700, whiteSpace: 'nowrap' }} title={item.reason || ''}>{STATUS_LABEL[item.status].text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
