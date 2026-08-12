@@ -1,5 +1,6 @@
 import 'server-only'
 
+import nodemailer, { type Transporter } from 'nodemailer'
 import { Resend } from 'resend'
 
 type SendEmailInput = {
@@ -23,21 +24,59 @@ function getEmailClient() {
   return new Resend(apiKey)
 }
 
-export async function sendTransactionalEmail(input: SendEmailInput) {
-  const resend = getEmailClient()
-  const from = process.env.RESEND_FROM_EMAIL
-  if (!resend || !from) return { sent: false, reason: 'not_configured' as const }
+let cachedSmtp: Transporter | null = null
 
+/** Gmail SMTP fallback for deployments that have no Resend account. */
+function getSmtpTransport() {
+  const user = process.env.GMAIL_USER
+  const pass = process.env.GMAIL_APP_PASSWORD
+  if (!user || !pass) return null
+  cachedSmtp ??= nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: true,
+    auth: { user, pass },
+  })
+  return cachedSmtp
+}
+
+function senderAddress() {
+  return process.env.EMAIL_FROM || process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || ''
+}
+
+export async function sendTransactionalEmail(input: SendEmailInput) {
+  const from = senderAddress()
+  if (!from) return { sent: false, reason: 'not_configured' as const }
   const { idempotencyKey, ...message } = input
-  const { data, error } = idempotencyKey
-    ? await resend.emails.send({ from, ...message }, { idempotencyKey })
-    : await resend.emails.send({ from, ...message })
-  if (error) {
-    console.error('Transactional email failed', { name: error.name, message: error.message })
-    return { sent: false, reason: 'provider_error' as const }
+
+  const resend = getEmailClient()
+  if (resend) {
+    const { data, error } = idempotencyKey
+      ? await resend.emails.send({ from, ...message }, { idempotencyKey })
+      : await resend.emails.send({ from, ...message })
+    if (error) {
+      console.error('Transactional email failed', { name: error.name, message: error.message })
+      return { sent: false, reason: 'provider_error' as const }
+    }
+    return { sent: true, id: data?.id }
   }
 
-  return { sent: true, id: data?.id }
+  const smtp = getSmtpTransport()
+  if (!smtp) return { sent: false, reason: 'not_configured' as const }
+  try {
+    // SMTP has no idempotency key; callers that need it rely on their own de-duplication.
+    const info = await smtp.sendMail({
+      from,
+      to: Array.isArray(message.to) ? message.to.join(', ') : message.to,
+      subject: message.subject,
+      html: message.html,
+      attachments: message.attachments,
+    })
+    return { sent: true, id: info.messageId as string | undefined }
+  } catch (error) {
+    console.error('Transactional email failed', { message: error instanceof Error ? error.message : 'Unknown error' })
+    return { sent: false, reason: 'provider_error' as const }
+  }
 }
 
 export async function sendLeaveConfirmationEmail(input: {
