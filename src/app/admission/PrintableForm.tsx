@@ -194,7 +194,7 @@ function PrintableForm({ form, photo, rollNumber }: Props) {
               <div key={ri} style={{ display: 'flex', gap: 26 }}>
                 {row.map(([label, key], ci) =>
                   label
-                    ? <Check key={key} label={label} on={f.courses.includes(key)} />
+                    ? <Check key={key} label={label} on={(f.courses ?? []).includes(key)} />
                     : <div key={`sp${ci}`} style={{ minWidth: 167 }} />
                 )}
               </div>

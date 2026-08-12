@@ -86,8 +86,9 @@ export async function sendWhatsappMessage(input: SendWhatsappInput) {
 
 /** Turns a Twilio error into something an admin can act on. Never includes credentials. */
 function describeTwilioError(code?: number, message?: string) {
-  // 21608 / 63007-style trial restrictions are by far the most common in testing.
-  if (code === 21608 || /trial/i.test(message || '')) {
+  // 21608 and 572002 are the trial restrictions seen in practice; match the wording too
+  // so a renumbered trial error still reads sensibly.
+  if (code === 21608 || code === 572002 || /trial/i.test(message || '')) {
     return 'Twilio trial मध्ये हा नंबर verified/test recipient नाही. Twilio Console → Verified Caller IDs मध्ये नंबर verify करा, किंवा WhatsApp sandbox ला "join <code>" पाठवा.'
   }
   if (code === 63007) return 'Twilio WhatsApp sender (From नंबर) सापडला नाही — TWILIO_WHATSAPP_NUMBER तपासा.'
