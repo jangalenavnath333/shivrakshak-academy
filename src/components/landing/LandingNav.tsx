@@ -11,6 +11,7 @@ const LINKS = [
   { href: '#facilities', label: 'सुविधा' },
   { href: '#results', label: 'निकाल' },
   { href: '#gallery', label: 'गॅलरी' },
+  { href: '/admission', label: 'प्रवेश' },
   { href: '#contact', label: 'संपर्क' },
 ]
 

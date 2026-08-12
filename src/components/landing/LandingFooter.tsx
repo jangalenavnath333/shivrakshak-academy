@@ -65,8 +65,12 @@ export default function LandingFooter({ academyName, tagline, phone, email, addr
               <li><a href={`mailto:${email}`}><Mail size={14} /> {email}</a></li>
               <li style={{ color: '#c2c6b6', fontSize: '.9rem', display: 'flex', gap: '.4rem' }}><MapPin size={14} style={{ flex: 'none', marginTop: 3 }} /> {address}</li>
             </ul>
-            <div className="sra-map" style={{ marginTop: '1.1rem', minHeight: 130 }}>
-              <iframe src={MAP_EMBED} title="अकॅडमीचे स्थान" loading="lazy" referrerPolicy="no-referrer-when-downgrade" style={{ minHeight: 130 }} />
+          </div>
+
+          <div>
+            <h4>Our Location</h4>
+            <div className="sra-map" style={{ minHeight: 150 }}>
+              <iframe src={MAP_EMBED} title="अकॅडमीचे स्थान" loading="lazy" referrerPolicy="no-referrer-when-downgrade" style={{ minHeight: 150 }} />
             </div>
           </div>
         </div>

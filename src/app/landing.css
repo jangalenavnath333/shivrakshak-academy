@@ -289,7 +289,7 @@
 
 /* ---------- footer ---------- */
 .sra-footer { background: var(--sra-black); border-top: 1px solid var(--sra-line); padding-top: clamp(3rem, 6vw, 4.5rem); }
-.sra-footer__grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 2.5rem; padding-bottom: 3rem; }
+.sra-footer__grid { display: grid; grid-template-columns: 1.4fr .8fr .8fr 1.1fr 1.1fr; gap: 2.2rem; padding-bottom: 3rem; }
 .sra-footer h4 { font-family: var(--sra-display); font-size: .8rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sra-gold); margin-bottom: 1.15rem; }
 .sra-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .65rem; }
 .sra-footer a { color: #c2c6b6; text-decoration: none; font-size: .9rem; transition: color .2s; }
