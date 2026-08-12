@@ -54,7 +54,15 @@ async function finalizeActivation(input: {
       return NextResponse.json({ error: 'Student Exam Login password सापडला नाही. कृपया Admin profile मधून credentials तयार करा.' }, { status: 409 })
     }
 
-    const password = decryptAdmissionPassword(credential.password_encrypted)
+    // A credential encrypted under a rotated ADMISSION_CREDENTIAL_SECRET cannot be read
+    // back; fail with a clear message instead of a blank 500.
+    let password: string
+    try {
+      password = decryptAdmissionPassword(credential.password_encrypted)
+    } catch {
+      console.error('Admission credential could not be decrypted', { studentId })
+      return NextResponse.json({ error: 'Exam Login password वाचता आला नाही (encryption secret बदलला असावा). Admin profile मधून नवीन password सेट करा.' }, { status: 409 })
+    }
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email: getStudentLoginEmail(rollNumber),
       password,
