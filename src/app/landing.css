@@ -611,7 +611,7 @@
   padding: 1.4rem; height: 100%;
 }
 .sra-dir__shot {
-  position: relative; width: 100%; aspect-ratio: 2 / 3; min-height: 100%; border-radius: 6px; overflow: hidden;
+  position: relative; width: 100%; aspect-ratio: 1 / 1; align-self: start; border-radius: 6px; overflow: hidden;
   border: 1px solid var(--sra-line); background: linear-gradient(180deg, var(--sra-olive), var(--sra-black));
   display: grid; place-items: center; color: rgba(212,164,55,.45);
 }
