@@ -1,8 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Medal, Phone } from 'lucide-react'
+import { ACADEMY_LOGO } from '@/content/landing'
 
-export default function Hero({ image, phone }: { image: string; phone: string }) {
+export default function Hero({ image, phone, academyName }: { image: string; phone: string; academyName: string }) {
   return (
     <section className="sra-hero">
       <div className="sra-hero__bg">
@@ -12,6 +13,18 @@ export default function Hero({ image, phone }: { image: string; phone: string })
 
       <div className="sra-wrap">
         <div className="sra-hero__in">
+          {/* The mark carries the academy's identity, so it opens the page at full size. */}
+          {ACADEMY_LOGO && (
+            <div className="sra-hero__brand">
+              <div className="sra-hero__brand-mark">
+                <Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="168px" priority />
+              </div>
+              <div className="sra-hero__brand-text">
+                <b>{academyName}</b>
+                <span>Army • Police • SRPF • Written Exam</span>
+              </div>
+            </div>
+          )}
           <p className="sra-hero__eyebrow">Join the force. Serve the nation.</p>
           <h1>
             <span>शिस्त, पराक्रम, समर्पण</span>

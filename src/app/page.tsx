@@ -102,7 +102,7 @@ export default async function HomePage() {
       */}
       <RegistrationStrip />
       <LandingNav academyName={academyName} waLink={waLink} />
-      <Hero image={heroImage} phone={phone} />
+      <Hero image={heroImage} phone={phone} academyName={academyName} />
       <StatsStrip stats={HERO_STATS} />
       <BranchNote address={address} />
       <Director />

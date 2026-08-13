@@ -87,11 +87,11 @@
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--sra-line);
 }
-.sra-nav__in { display: flex; align-items: center; gap: 1.5rem; height: 74px; }
-.sra-brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; color: inherit; margin-right: auto; }
+.sra-nav__in { display: flex; align-items: center; gap: 1.5rem; min-height: 86px; }
+.sra-brand { display: flex; align-items: center; gap: .85rem; text-decoration: none; color: inherit; margin-right: auto; }
 .sra-brand__mark { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border: 1px solid var(--sra-gold); border-radius: 3px; background: linear-gradient(180deg, var(--sra-olive-2), var(--sra-black)); color: var(--sra-gold); }
-.sra-brand__name { font-weight: 800; font-size: 1.06rem; line-height: 1.2; display: block; }
-.sra-brand__sub { font-family: var(--sra-display); font-size: .63rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sra-gold); display: block; margin-top: 2px; }
+.sra-brand__name { font-weight: 800; font-size: clamp(1.1rem, 2.1vw, 1.32rem); line-height: 1.15; display: block; color: #fff; }
+.sra-brand__sub { font-family: var(--sra-display); font-size: .66rem; letter-spacing: .17em; text-transform: uppercase; color: var(--sra-gold); display: block; margin-top: 3px; }
 
 .sra-nav__links { display: flex; align-items: center; gap: 1.45rem; }
 .sra-nav__links a { color: #ddded4; text-decoration: none; font-size: .93rem; font-weight: 500; padding: .3rem 0; position: relative; white-space: nowrap; }
@@ -361,7 +361,8 @@
 }
 
 /* Academy logo image slot — sits where the built-in shield mark would. */
-.sra-brand__logo { width: 42px; height: 42px; flex: none; position: relative; border-radius: 3px; overflow: hidden; }
+/* No frame around the mark — the eagle is its own shape. */
+.sra-brand__logo { width: 60px; height: 58px; flex: none; position: relative; filter: drop-shadow(0 3px 8px rgba(0,0,0,.6)); }
 .sra-brand__logo img { width: 100%; height: 100%; object-fit: contain; }
 
 /* ---------- registration strip + single-branch note ---------- */
@@ -401,4 +402,23 @@
   .sra-modal__grid { grid-template-columns: 1fr; }
   .sra-modal__photo { min-height: 260px; aspect-ratio: 1 / 1; }
   .sra-modal__body .sra-story__line li { grid-template-columns: 1fr; gap: .35rem; }
+}
+
+/* ---------- hero brand lockup: the mark leads the first viewport ---------- */
+.sra-hero__brand { display: flex; align-items: center; gap: clamp(.9rem, 2.4vw, 1.5rem); margin-bottom: clamp(1.4rem, 3vw, 2.1rem); }
+.sra-hero__brand-mark { position: relative; width: clamp(96px, 15vw, 168px); aspect-ratio: 1.05 / 1; flex: none; filter: drop-shadow(0 10px 26px rgba(0,0,0,.75)); }
+.sra-hero__brand-mark img { width: 100%; height: 100%; object-fit: contain; }
+.sra-hero__brand-text b {
+  display: block; font-size: clamp(1.45rem, 4.2vw, 2.5rem); font-weight: 800;
+  line-height: 1.12; color: #fff; letter-spacing: -.015em;
+}
+.sra-hero__brand-text span {
+  display: block; margin-top: .45rem; font-family: var(--sra-display);
+  font-size: clamp(.66rem, 1.7vw, .82rem); letter-spacing: .2em; text-transform: uppercase; color: var(--sra-gold);
+}
+@media (max-width: 520px) {
+  .sra-hero__brand { gap: .8rem; }
+  .sra-brand__logo { width: 48px; height: 46px; }
+  .sra-brand__name { font-size: 1rem; }
+  .sra-brand__sub { font-size: .55rem; letter-spacing: .12em; }
 }
