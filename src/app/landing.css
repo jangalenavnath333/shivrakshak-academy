@@ -424,16 +424,21 @@
 }
 
 /* ================= redesigned hero ================= */
-.sra-hero__grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 2rem; align-items: center; width: min(1220px, 100% - 2.5rem); }
-.sra-hero__bg img { object-position: center 22%; }
+.sra-hero__grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: center; width: min(1220px, 100% - 2.5rem); }
+
+/* Background is texture only: heavily darkened and blurred so it never competes
+   with the panel where the founders are actually shown. */
+.sra-hero__bg img { object-position: center 30%; filter: blur(6px) saturate(.7); transform: scale(1.06); }
 .sra-hero__scrim {
   background:
-    linear-gradient(90deg, rgba(4,7,3,.96) 0%, rgba(4,7,3,.9) 34%, rgba(4,7,3,.45) 62%, rgba(4,7,3,.55) 100%),
-    linear-gradient(180deg, rgba(4,7,3,.8) 0%, transparent 30%, rgba(4,7,3,.92) 100%);
+    linear-gradient(90deg, rgba(4,7,3,.97) 0%, rgba(4,7,3,.93) 45%, rgba(4,7,3,.86) 100%),
+    linear-gradient(180deg, rgba(4,7,3,.85) 0%, rgba(4,7,3,.6) 40%, rgba(4,7,3,.95) 100%);
 }
-.sra-hero h1 { font-family: var(--sra-display); font-weight: 600; letter-spacing: .005em; font-size: clamp(2.1rem, 6.4vw, 4.4rem); line-height: 1.02; text-transform: uppercase; }
+
+.sra-hero h1 { font-family: var(--sra-display); font-weight: 600; letter-spacing: .005em; font-size: clamp(2.1rem, 6.2vw, 4.3rem); line-height: 1.02; text-transform: uppercase; }
 .sra-hero h1 .gold { color: var(--sra-gold); }
 .sra-hero__eyebrow { letter-spacing: .26em; }
+.sra-hero__in { max-width: none; }
 
 .sra-hero__call { display: inline-flex; align-items: center; gap: .8rem; margin-top: 2rem; text-decoration: none; }
 .sra-hero__call-ico { width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--sra-gold); color: var(--sra-gold); background: rgba(212,164,55,.08); }
@@ -441,13 +446,28 @@
 .sra-hero__call small { display: block; font-size: .78rem; color: var(--sra-muted); margin-top: 1px; }
 .sra-hero__call:hover b { color: var(--sra-gold-lt); }
 
-.sra-hero__seal { position: relative; justify-self: center; text-align: center; }
-.sra-hero__seal img { position: relative !important; width: clamp(150px, 22vw, 260px) !important; height: auto !important; object-fit: contain; filter: drop-shadow(0 16px 34px rgba(0,0,0,.8)); }
-.sra-hero__seal p { margin-top: .9rem; font-weight: 800; font-size: clamp(1rem, 2vw, 1.32rem); color: #fff; line-height: 1.25; }
-.sra-hero__seal span { display: block; font-family: var(--sra-display); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--sra-gold); margin-top: .3rem; }
+/* Both founders, unobstructed, in their own framed panel. */
+.sra-hero__panel { position: relative; justify-self: center; width: 100%; max-width: 520px; }
+.sra-hero__photo {
+  position: relative; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--sra-line); background: var(--sra-black);
+  box-shadow: 0 30px 70px -28px rgba(0,0,0,.95);
+}
+.sra-hero__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.sra-hero__seal {
+  position: absolute; left: -14px; bottom: -14px; width: clamp(84px, 11vw, 124px); aspect-ratio: 1.05 / 1;
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,.85));
+}
+.sra-hero__seal img { width: 100%; height: 100%; object-fit: contain; }
+
 @media (max-width: 980px) {
   .sra-hero__grid { grid-template-columns: 1fr; }
-  .sra-hero__seal { display: none; }
+  .sra-hero__panel { order: -1; max-width: 400px; }
+  .sra-hero { min-height: 0; padding-block: clamp(1.5rem, 5vw, 3rem); }
+}
+@media (max-width: 520px) {
+  .sra-hero__panel { max-width: 100%; }
+  .sra-hero__seal { left: -8px; bottom: -8px; }
 }
 
 /* ================= strengths strip ================= */

@@ -6,10 +6,10 @@ import { ACADEMY_LOGO, FOUNDERS_PHOTO } from '@/content/landing'
 export default function Hero({ phone, academyName }: { phone: string; academyName: string }) {
   return (
     <section className="sra-hero">
-      {/* The founders' own poster is the hero image — no stock photography. */}
-      <div className="sra-hero__bg">
-        <Image src={FOUNDERS_PHOTO} alt="शिवरक्षक करिअर अकॅडमीचे माजी सैनिक संस्थापक"
-          fill priority quality={86} sizes="100vw" />
+      {/* Texture only — the founders sit in their own panel so neither face is
+          buried under the scrim the headline needs. */}
+      <div className="sra-hero__bg" aria-hidden="true">
+        <Image src={FOUNDERS_PHOTO} alt="" role="presentation" fill quality={45} sizes="100vw" />
       </div>
       <div className="sra-hero__scrim" aria-hidden="true" />
 
@@ -39,12 +39,17 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
           </a>
         </div>
 
-        {ACADEMY_LOGO && (
-          <div className="sra-hero__seal" aria-hidden="true">
-            <Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="320px" priority />
-            <p>{academyName}<span>अहिल्यानगर</span></p>
+        <div className="sra-hero__panel">
+          <div className="sra-hero__photo">
+            <Image src={FOUNDERS_PHOTO} alt={`${academyName} — दोन्ही माजी सैनिक संस्थापक`}
+              fill priority quality={90} sizes="(max-width: 980px) 92vw, 46vw" />
           </div>
-        )}
+          {ACADEMY_LOGO && (
+            <div className="sra-hero__seal" aria-hidden="true">
+              <Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="120px" />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )
