@@ -384,43 +384,41 @@
 .sra-dir__card--link:hover .sra-dir__more { color: #fff; }
 
 .sra-modal { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: clamp(.75rem, 3vw, 2rem); }
-.sra-modal__scrim { position: absolute; inset: 0; background: rgba(3, 6, 3, .82); backdrop-filter: blur(3px); border: 0; cursor: pointer; }
+.sra-modal__scrim { position: absolute; inset: 0; background: rgba(3, 6, 3, .86); backdrop-filter: blur(4px); border: 0; cursor: pointer; }
 .sra-modal__box {
-  position: relative; width: min(940px, 100%); max-height: 92vh; overflow-y: auto;
-  background: var(--sra-panel); border: 1px solid var(--sra-line); border-radius: 6px;
+  position: relative; width: min(1000px, 100%); max-height: 92vh; overflow-y: auto;
+  background: var(--sra-panel); border: 1px solid var(--sra-line); border-radius: 8px;
   box-shadow: 0 40px 90px -30px rgba(0,0,0,.95);
 }
-.sra-modal__x { position: absolute; top: .7rem; right: .7rem; z-index: 2; width: 38px; height: 38px; border-radius: 4px; display: grid; place-items: center; background: rgba(5,8,4,.75); border: 1px solid var(--sra-line); color: var(--sra-text); cursor: pointer; }
+.sra-modal__x { position: absolute; top: .8rem; right: .8rem; z-index: 3; width: 40px; height: 40px; border-radius: 6px; display: grid; place-items: center; background: rgba(5,8,4,.85); border: 1px solid var(--sra-line); color: var(--sra-text); cursor: pointer; }
 .sra-modal__x:hover { border-color: var(--sra-gold); color: var(--sra-gold); }
-.sra-modal__grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); }
-.sra-modal__photo { position: relative; min-height: 320px; background: var(--sra-black); }
-.sra-modal__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
-.sra-modal__body { padding: clamp(1.4rem, 3.5vw, 2.4rem); }
-.sra-modal__body h3 { font-size: clamp(1.3rem, 3vw, 1.9rem); color: var(--sra-gold); }
-.sra-modal__body .sra-story__line li { grid-template-columns: 130px minmax(0, 1fr); }
-@media (max-width: 800px) {
-  .sra-modal__grid { grid-template-columns: 1fr; }
-  .sra-modal__photo { min-height: 260px; aspect-ratio: 1 / 1; }
-  .sra-modal__body .sra-story__line li { grid-template-columns: 1fr; gap: .35rem; }
-}
 
-/* ---------- hero brand lockup: the mark leads the first viewport ---------- */
-.sra-hero__brand { display: flex; align-items: center; gap: clamp(.9rem, 2.4vw, 1.5rem); margin-bottom: clamp(1.4rem, 3vw, 2.1rem); }
-.sra-hero__brand-mark { position: relative; width: clamp(96px, 15vw, 168px); aspect-ratio: 1.05 / 1; flex: none; filter: drop-shadow(0 10px 26px rgba(0,0,0,.75)); }
-.sra-hero__brand-mark img { width: 100%; height: 100%; object-fit: contain; }
-.sra-hero__brand-text b {
-  display: block; font-size: clamp(1.45rem, 4.2vw, 2.5rem); font-weight: 800;
-  line-height: 1.12; color: #fff; letter-spacing: -.015em;
+.sra-modal__grid { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); }
+
+/* Whole photograph visible — contain on a dark ground, never cropped mid-face. */
+.sra-modal__photo {
+  position: relative; align-self: stretch; min-height: 340px;
+  background: radial-gradient(circle at 50% 35%, #14200f, var(--sra-black));
+  border-right: 1px solid var(--sra-line-solid);
 }
-.sra-hero__brand-text span {
-  display: block; margin-top: .45rem; font-family: var(--sra-display);
-  font-size: clamp(.66rem, 1.7vw, .82rem); letter-spacing: .2em; text-transform: uppercase; color: var(--sra-gold);
-}
-@media (max-width: 520px) {
-  .sra-hero__brand { gap: .8rem; }
-  .sra-brand__logo { width: 48px; height: 46px; }
-  .sra-brand__name { font-size: 1rem; }
-  .sra-brand__sub { font-size: .55rem; letter-spacing: .12em; }
+.sra-modal__photo img { width: 100%; height: 100%; object-fit: contain; object-position: center; padding: .9rem; }
+
+.sra-modal__body { padding: clamp(1.5rem, 3.2vw, 2.5rem); }
+.sra-modal__body h3 { font-size: clamp(1.35rem, 3vw, 2rem); color: var(--sra-gold); line-height: 1.2; }
+.sra-modal__body .sra-dir__role { font-size: .85rem; margin-top: .4rem; }
+.sra-modal__body .sra-story__born { margin-top: .8rem; }
+.sra-modal__body .sra-story__intro { margin-top: 1rem; font-size: .97rem; }
+
+/* Timeline reads as a labelled list, not a squeezed two-column table. */
+.sra-modal__body .sra-story__line { margin-top: 1.7rem; gap: 1.3rem; }
+.sra-modal__body .sra-story__line li { grid-template-columns: 1fr; gap: .45rem; padding-bottom: 1.3rem; }
+.sra-modal__body .sra-story__line span { font-size: .74rem; letter-spacing: .14em; }
+.sra-modal__body .sra-story__line p { font-size: .96rem; line-height: 1.75; color: #d3d6c8; }
+.sra-modal__body .sra-story__close { margin-top: 1.6rem; padding: 1.2rem 1.3rem; background: rgba(212,164,55,.06); border: 1px solid var(--sra-line); border-radius: 6px; font-size: .95rem; }
+
+@media (max-width: 860px) {
+  .sra-modal__grid { grid-template-columns: 1fr; }
+  .sra-modal__photo { min-height: 0; aspect-ratio: 1 / 1; border-right: 0; border-bottom: 1px solid var(--sra-line-solid); }
 }
 
 /* ================= redesigned hero ================= */
@@ -489,7 +487,7 @@
   border: 1px solid var(--sra-line); border-radius: 260px 260px 8px 8px;
   background: var(--sra-black); box-shadow: var(--sra-shadow);
 }
-.sra-dir__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center 12%; }
+.sra-dir__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center 8%; }
 
 .sra-whycard { background: linear-gradient(180deg, var(--sra-panel-2), var(--sra-panel)); border: 1px solid var(--sra-line-solid); border-radius: 6px; padding: 1.5rem; }
 .sra-whycard h3 { font-family: var(--sra-display); font-size: .86rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sra-gold); margin-bottom: 1.1rem; }
@@ -587,7 +585,7 @@
   border: 1px solid var(--sra-line); background: linear-gradient(180deg, var(--sra-olive), var(--sra-black));
   display: grid; place-items: center; color: rgba(212,164,55,.45);
 }
-.sra-dir__shot img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.sra-dir__shot img { width: 100%; height: 100%; object-fit: cover; object-position: center 12%; }
 .sra-dir__meta { min-width: 0; display: flex; flex-direction: column; height: 100%; }
 .sra-dir__facts { grid-template-columns: 1fr 1fr; }
 .sra-dir__foot { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.1rem; margin-top: auto; padding-top: 1rem; }
