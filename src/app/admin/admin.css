@@ -296,3 +296,66 @@ a.adm-stat:hover { transform: translateY(-2px); border-color: #cfd8cd; box-shado
 .adm-media__thumb { aspect-ratio: 16 / 10; background: var(--a-bg); border-bottom: 1px solid var(--a-line-soft); position: relative; overflow: hidden; display: grid; place-items: center; }
 .adm-media__thumb img { width: 100%; height: 100%; object-fit: cover; }
 .adm-media__thumb svg { color: #cbd5c8; }
+
+/* ============ legacy badges, re-skinned ============ */
+.adm .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid transparent; white-space: nowrap; }
+.adm .badge-green { background: #ecfdf3; color: #027a48; border-color: #abefc6; }
+.adm .badge-blue { background: #eff8ff; color: #175cd3; border-color: #b2ddff; }
+.adm .badge-yellow { background: #fffaeb; color: #b54708; border-color: #fedf89; }
+.adm .badge-red { background: #fef3f2; color: #b42318; border-color: #fecdca; }
+.adm .badge-gray { background: #f4f5f2; color: #475569; border-color: var(--a-line); }
+
+/* ============ attendance workspace ============ */
+.adm .attendance-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.adm .camera-card { display: flex; flex-direction: column; gap: 13px; }
+.adm .camera-frame {
+  position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
+  background: #0b1410; display: grid; place-items: center; border: 1px solid var(--a-line);
+}
+.adm .camera-frame video { width: 100%; height: 100%; object-fit: cover; }
+.adm .camera-frame svg { width: 46px; height: 46px; color: #4b5c53; }
+.adm .status-message { margin: 0; font-size: 12.5px; color: var(--a-text-2); background: var(--a-bg); border: 1px solid var(--a-line); border-radius: 8px; padding: 10px 12px; line-height: 1.6; }
+.adm .attendance-actions { display: grid; gap: 9px; margin-top: 16px; }
+.adm .attendance-actions .btn { justify-content: center; }
+@media (max-width: 900px) { .adm .attendance-layout { grid-template-columns: 1fr; } }
+
+/* ============ exam manager ============ */
+.adm .exam-manager { display: grid; gap: 16px; }
+.adm .exam-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.adm .exam-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .adm .exam-workspace { grid-template-columns: 1fr; } }
+.adm .workspace-heading, .adm .exam-editor-heading {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 14px;
+}
+.adm .workspace-heading h2, .adm .exam-editor-heading h2,
+.adm .workspace-heading h3, .adm .exam-editor-heading h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.adm .exam-list-panel { background: var(--a-card); border: 1px solid var(--a-line); border-radius: var(--a-radius); padding: 15px; margin-bottom: 11px; box-shadow: var(--a-shadow); transition: border-color .18s, box-shadow .18s; }
+.adm .exam-list-panel:hover { border-color: #cfd8cd; box-shadow: 0 10px 26px -18px rgba(16,24,40,.3); }
+.adm .exam-list-title { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-weight: 700; font-size: 14px; margin-bottom: 9px; }
+.adm .exam-list-stats { display: flex; flex-wrap: wrap; gap: 7px 15px; font-size: 12px; color: var(--a-text-2); margin-bottom: 11px; }
+.adm .exam-list-stats span { display: inline-flex; align-items: center; gap: 5px; }
+.adm .exam-list-stats svg { width: 14px; height: 14px; color: var(--a-green); }
+.adm .exam-list-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.adm .exam-list-actions .btn { padding: 5px 11px; font-size: 12px; }
+.adm .exam-editor, .adm .exam-results { background: var(--a-card); border: 1px solid var(--a-line); border-radius: var(--a-radius); padding: 18px; box-shadow: var(--a-shadow); }
+.adm .exam-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.adm .exam-form-grid .wide-field { grid-column: 1 / -1; }
+@media (max-width: 700px) { .adm .exam-form-grid { grid-template-columns: 1fr; } }
+.adm .exam-save-button { margin-top: 16px; }
+.adm .exam-security-note { margin-top: 12px; font-size: 12px; color: var(--a-text-2); background: #fffaeb; border: 1px solid #fedf89; border-radius: 8px; padding: 10px 12px; line-height: 1.6; }
+.adm .question-list { display: grid; gap: 10px; margin-top: 14px; }
+.adm .question-editor { background: var(--a-bg); border: 1px solid var(--a-line); border-radius: 10px; padding: 14px; }
+.adm .question-options-editor { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 11px; }
+@media (max-width: 700px) { .adm .question-options-editor { grid-template-columns: 1fr; } }
+.adm .question-editor-footer { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-top: 12px; }
+.adm .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* shared states used by the exam + leave managers */
+.adm .admin-empty, .adm .empty-inline { text-align: center; padding: 30px 16px; color: var(--a-text-3); font-size: 13px; }
+.adm .admin-loading { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 30px; color: var(--a-text-2); font-size: 13px; }
+.adm .admin-alert { border-radius: 9px; padding: 11px 14px; font-size: 13px; font-weight: 600; margin-bottom: 14px; border: 1px solid; }
+.adm .admin-alert.success { background: #ecfdf3; color: #027a48; border-color: #abefc6; }
+.adm .admin-alert.error, .adm .admin-alert.danger { background: #fef3f2; color: #b42318; border-color: #fecdca; }
+.adm .spin { animation: adm-spin 1s linear infinite; }
+@keyframes adm-spin { to { transform: rotate(360deg); } }

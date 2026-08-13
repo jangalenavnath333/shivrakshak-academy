@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { Info, MessageCircle, Send } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 type Student = { id: string; name: string; roll_number: string; parent_phone: string; phone: string }
@@ -23,9 +24,6 @@ const STATUS_LABEL: Record<SendResult['status'], { text: string; color: string }
   invalid_number: { text: '⚠️ नंबर नाही', color: '#a16207' },
   duplicate: { text: '↩︎ तोच नंबर', color: '#64748b' },
 }
-
-// Academy WhatsApp number — admin sends FROM this number
-const ACADEMY_WA = '917720991375'
 
 const TEMPLATES = [
   { label: 'फी Reminder', text: 'नमस्कार, तुमच्या पाल्याची फी बाकी आहे. कृपया लवकरात लवकर भरा.\n— शिवरक्षक करियर अकॅडमी\n📞 7720991375 | 9284842177 🙏' },
@@ -114,37 +112,48 @@ export default function WhatsAppPage() {
   }
 
   return (
-    <div style={{ padding: 28 }}>
+    <div className="admin-page">
       <div className="page-header">
         <div>
-          <div className="page-title">📱 WhatsApp Messaging</div>
-          <div className="page-subtitle">पालक / विद्यार्थी यांना message पाठवा</div>
+          <div className="page-title">WhatsApp संदेश केंद्र</div>
+          <div className="page-subtitle">विद्यार्थी व पालकांना server वरून थेट संदेश पाठवा.</div>
         </div>
       </div>
 
-      {/* Academy WhatsApp info */}
-      <div style={{ background: '#dcfce7', border: '1px solid #86efac', borderRadius: 12, padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 22 }}>📱</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: '#166534' }}>तुमचा Academy WhatsApp नंबर: <span style={{ fontFamily: 'monospace', fontSize: 16 }}>7720991375</span></div>
-          <div style={{ fontSize: 12, color: '#15803d', marginTop: 2 }}>🚀 <b>थेट पाठवा</b> मध्ये message server वरून Twilio मार्फत जातो — WhatsApp app उघडत नाही. <b>Manual</b> tab फक्त पर्याय म्हणून आहे.</div>
+      {/* Sender status — what the admin needs to know before sending anything. */}
+      <div className="adm-stats" style={{ marginBottom: 18 }}>
+        <div className="adm-stat">
+          <span className="adm-stat__ico" style={{ background: '#ecfdf3', color: '#027a48' }}><MessageCircle size={19} /></span>
+          <div className="adm-stat__lbl">Academy WhatsApp नंबर</div>
+          <div className="adm-stat__val" style={{ fontSize: 19, fontFamily: 'monospace' }}>7720991375</div>
         </div>
-        <a href={`https://wa.me/${ACADEMY_WA}?text=${encodeURIComponent('Test message from Shivrakshak Academy admin')}`}
-          target="_blank"
-          style={{ background: '#25d366', color: 'white', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-          📱 Test करा
-        </a>
+        <div className="adm-stat">
+          <span className="adm-stat__ico" style={{ background: '#eff8ff', color: '#175cd3' }}><Send size={19} /></span>
+          <div className="adm-stat__lbl">पाठवण्याची पद्धत</div>
+          <div className="adm-stat__val" style={{ fontSize: 17 }}>Twilio (server)</div>
+          <div className="adm-stat__sub">WhatsApp app उघडत नाही</div>
+        </div>
+        <div className="adm-stat">
+          <span className="adm-stat__ico" style={{ background: '#fffaeb', color: '#b54708' }}><Info size={19} /></span>
+          <div className="adm-stat__lbl">निवडलेले विद्यार्थी</div>
+          <div className="adm-stat__val">{selected.size}</div>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 24 }}>
+      <div className="adm-alert adm-alert--ok" style={{ fontWeight: 500 }}>
+        <b>थेट पाठवा</b> मध्ये संदेश server वरून Twilio मार्फत जातो. Twilio trial खात्यावर फक्त
+        <b> verified नंबरवरच</b> संदेश पोहोचतो — अयशस्वी झाल्यास खाली नेमके कारण दिसेल.
+        <b> Manual</b> tab फक्त पर्याय म्हणून आहे.
+      </div>
+
+      <div className="adm-tabs" role="tablist">
         {([
-          { key: 'bulk', label: '🚀 थेट पाठवा (Twilio)' },
-          { key: 'notice', label: '📢 सर्वांना Notice' },
-          { key: 'individual', label: '👤 Manual (WhatsApp app)' },
+          { key: 'bulk', label: 'थेट पाठवा (Twilio)' },
+          { key: 'notice', label: 'सर्वांना Notice' },
+          { key: 'individual', label: 'Manual (WhatsApp app)' },
         ] as const).map(t => (
-          <button key={t.key} className="btn" onClick={() => setTab(t.key)}
-            style={{ background: tab === t.key ? 'white' : 'transparent', color: tab === t.key ? '#0f172a' : '#64748b', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', border: 'none', padding: '8px 16px' }}>
+          <button key={t.key} type="button" role="tab" aria-selected={tab === t.key}
+            className="adm-tab" data-active={tab === t.key} onClick={() => setTab(t.key)}>
             {t.label}
           </button>
         ))}
