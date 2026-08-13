@@ -29,8 +29,8 @@ export default function DirectorCards() {
           const body = (
             <>
               <span className="sra-dir__shot" aria-hidden="true">
-                {person.photo
-                  ? <Image src={person.photo} alt="" fill sizes="(max-width: 620px) 40vw, 190px" style={{ objectFit: 'cover' }} />
+                {person.cardPhoto
+                  ? <Image src={person.cardPhoto} alt="" fill sizes="(max-width: 620px) 40vw, 190px" style={{ objectFit: 'cover' }} />
                   : <UserRound size={40} />}
               </span>
               <div className="sra-dir__meta">

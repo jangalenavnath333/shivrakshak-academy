@@ -513,7 +513,7 @@
 .sra-dir__grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(1.8rem, 4vw, 3.2rem); align-items: start; }
 .sra-dir__left { display: grid; gap: 1.4rem; }
 .sra-dir__portrait {
-  position: relative; aspect-ratio: 2 / 3; overflow: hidden;
+  position: relative; aspect-ratio: 1 / 1; overflow: hidden;
   border: 1px solid var(--sra-line); border-radius: 260px 260px 8px 8px;
   background: var(--sra-black); box-shadow: var(--sra-shadow);
 }

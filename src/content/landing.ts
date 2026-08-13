@@ -77,6 +77,9 @@ export const FOUNDERS_PHOTO = '/images/director/founders.png'
 export const DIRECTORS = [
   {
     photo: '/images/director/raje-pawar.jpg' as string | null,
+    // Separate photograph for the small directors card only; the section
+    // portrait and the dialog keep `photo`.
+    cardPhoto: '/images/director/raje-pawar-card.jpg' as string | null,
     name: 'वस्ताद योद्धा राजे पवार',
     role: 'माजी सैनिक, भारतीय सेना | संस्थापक व संचालक',
     phone: '9011887714',
@@ -109,6 +112,7 @@ export const DIRECTORS = [
      * /public/images/director/sambhaji-mahadik.jpg and this card matches the first.
      */
     photo: null as string | null,
+    cardPhoto: null as string | null,
     name: 'वस्ताद संभाजी महाडिक',
     role: 'माजी सैनिक, भारतीय सेना | सह-संचालक',
     phone: '9284842177',
