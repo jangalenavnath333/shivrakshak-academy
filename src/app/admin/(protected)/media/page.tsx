@@ -48,6 +48,28 @@ export default function MediaPage() {
       </div>
       <button className="btn btn-primary" disabled={busy||!form.title||!form.url||(isDemoPlacement&&!form.thumbnail_url)} onClick={save}>Websiteवर प्रकाशित करा</button>
     </section>
-    <div className="media-admin-grid">{items.map(item=><article key={item.id} className="admin-card media-admin-item"><div>{item.media_type==='image'?<ImageIcon/>:<Video/>}<strong>{item.title}</strong><span>{item.placement}</span></div><button className="icon-danger" onClick={()=>remove(item.id)} aria-label="Delete"><Trash2/></button></article>)}</div>
+    {items.length===0
+      ? <div className="adm-panel" style={{marginTop:18}}><div className="adm-empty"><ImageIcon size={32}/><b>अजून कोणताही media नाही</b><span>वरील form मधून पहिला फोटो किंवा व्हिडिओ प्रकाशित करा.</span></div></div>
+      : <div className="media-admin-grid">{items.map(item=><article key={item.id} className="admin-card media-admin-item">
+          {/* Preview so a placement can be recognised without opening the URL. */}
+          <div className="adm-media__thumb" style={{padding:0,display:'grid'}}>
+            {item.media_type==='image' && item.url
+              ? <img src={item.url} alt={item.alt_text||item.title} loading="lazy"/>
+              : item.thumbnail_url
+                ? <img src={item.thumbnail_url} alt={item.title} loading="lazy"/>
+                : <Video size={26}/>}
+          </div>
+          <div>
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              {item.media_type==='image'?<ImageIcon size={15}/>:<Video size={15}/>}
+              <strong>{item.title}</strong>
+            </div>
+            <span>{item.placement}</span>
+            <span className={`adm-badge ${item.is_published?'adm-badge--ok':'adm-badge--muted'}`} style={{alignSelf:'flex-start',fontFamily:'inherit',marginTop:4}}>
+              {item.is_published?'प्रकाशित':'लपवलेले'}
+            </span>
+          </div>
+          <button className="icon-danger" onClick={()=>remove(item.id)} aria-label={`${item.title} काढून टाका`}><Trash2 size={15}/></button>
+        </article>)}</div>}
   </div>
 }
