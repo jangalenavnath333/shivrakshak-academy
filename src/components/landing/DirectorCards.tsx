@@ -28,12 +28,12 @@ export default function DirectorCards() {
         {DIRECTORS.map((person, i) => {
           const body = (
             <>
-              <span className="sra-dir__badge" aria-hidden="true">
+              <span className="sra-dir__shot" aria-hidden="true">
                 {person.photo
-                  ? <Image src={person.photo} alt="" fill sizes="52px" style={{ objectFit: 'cover' }} />
-                  : <UserRound size={19} />}
+                  ? <Image src={person.photo} alt="" fill sizes="(max-width: 620px) 40vw, 190px" style={{ objectFit: 'cover' }} />
+                  : <UserRound size={40} />}
               </span>
-              <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="sra-dir__meta">
                 <p className="sra-dir__name">{person.name}</p>
                 <p className="sra-dir__role">{person.role}</p>
                 <div className="sra-dir__facts">
@@ -41,8 +41,10 @@ export default function DirectorCards() {
                     <div key={f.label}><small>{f.label}</small><b>{f.value}</b></div>
                   ))}
                 </div>
-                <span className="sra-dir__phone"><Phone size={14} aria-hidden="true" /> {person.phone}</span>
-                {person.detail && <span className="sra-dir__more">संपूर्ण माहिती पहा →</span>}
+                <span className="sra-dir__foot">
+                  <span className="sra-dir__phone"><Phone size={14} aria-hidden="true" /> {person.phone}</span>
+                  {person.detail && <span className="sra-dir__more">संपूर्ण माहिती पहा →</span>}
+                </span>
               </div>
             </>
           )

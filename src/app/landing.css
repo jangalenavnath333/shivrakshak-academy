@@ -575,3 +575,28 @@
 .sra-cbox--form .form-error { color: #fca5a5; }
 .sra-cbox--form .form-success svg, .sra-cbox--form .form-error svg { width: 16px; height: 16px; }
 @media (max-width: 520px) { .sra-cbox--form .enquiry-fields { grid-template-columns: 1fr; } }
+
+/* ---------- founder cards: equal size, real portrait, separated footer ---------- */
+.sra-dir__people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; align-items: stretch; }
+.sra-dir__card {
+  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 1.3rem; align-items: start;
+  padding: 1.4rem; height: 100%;
+}
+.sra-dir__shot {
+  position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--sra-line); background: linear-gradient(180deg, var(--sra-olive), var(--sra-black));
+  display: grid; place-items: center; color: rgba(212,164,55,.45);
+}
+.sra-dir__shot img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.sra-dir__meta { min-width: 0; display: flex; flex-direction: column; height: 100%; }
+.sra-dir__facts { grid-template-columns: 1fr 1fr; }
+.sra-dir__foot { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.1rem; margin-top: auto; padding-top: 1rem; }
+.sra-dir__phone { margin-top: 0 !important; }
+.sra-dir__more { margin-top: 0 !important; }
+
+@media (max-width: 1080px) { .sra-dir__people { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .sra-dir__card { grid-template-columns: 1fr; }
+  .sra-dir__shot { max-width: 220px; margin-inline: auto; }
+  .sra-dir__facts { grid-template-columns: 1fr; }
+}
