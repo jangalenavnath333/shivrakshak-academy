@@ -1,6 +1,7 @@
+import Link from 'next/link'
+import { ArrowRight, Search, UserPlus, Users } from 'lucide-react'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { COURSES, formatDate } from '@/lib/utils'
-import Link from 'next/link'
 import type { Student } from '@/types'
 
 async function getStudents(search?: string, gender?: string, course?: string): Promise<Student[]> {
@@ -16,94 +17,126 @@ async function getStudents(search?: string, gender?: string, course?: string): P
   return data || []
 }
 
+const initials = (name?: string | null) => (name || '?').trim().charAt(0).toUpperCase()
+
 export default async function StudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; gender?: string; course?: string }>
+  searchParams: Promise<{ search?: string; q?: string; gender?: string; course?: string }>
 }) {
   const params = await searchParams
-  const students = await getStudents(params.search, params.gender, params.course)
+  // `q` accepted too, so the header's global search lands here correctly.
+  const search = params.search || params.q
+  const students = await getStudents(search, params.gender, params.course)
+  const filtered = Boolean(search || params.gender || params.course)
 
   return (
-    <div style={{ padding: 28 }}>
+    <div className="admin-page">
       <div className="page-header">
         <div>
-          <div className="page-title">👥 विद्यार्थी</div>
-          <div className="page-subtitle">{students.length} विद्यार्थी सापडले</div>
+          <div className="page-title">विद्यार्थी</div>
+          <div className="page-subtitle">
+            {filtered ? `${students.length} विद्यार्थी सापडले` : `एकूण ${students.length} सक्रिय विद्यार्थी`}
+          </div>
         </div>
-        <Link href="/admin/students/new" className="btn btn-primary">+ नवीन विद्यार्थी</Link>
+        <Link href="/admin/students/new" className="btn btn-primary"><UserPlus size={16} /> नवीन विद्यार्थी</Link>
       </div>
 
-      {/* Search + Filters */}
-      <form method="GET" style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-        <input
-          name="search"
-          defaultValue={params.search}
-          className="form-input"
-          style={{ maxWidth: 300 }}
-          placeholder="🔍 नाव किंवा S-01 code शोधा..."
-        />
-        <select name="gender" defaultValue={params.gender} className="form-input" style={{ maxWidth: 150 }}>
-          <option value="">सर्व</option>
-          <option value="male">मुले</option>
-          <option value="female">मुली</option>
-        </select>
-        <select name="course" defaultValue={params.course} className="form-input" style={{ maxWidth: 180 }}>
-          <option value="">सर्व कोर्सेस</option>
-          {Object.entries(COURSES).map(([val, label]) => (
-            <option key={val} value={val}>{label}</option>
-          ))}
-        </select>
-        <button type="submit" className="btn btn-primary">शोधा</button>
-        <Link href="/admin/students" className="btn btn-secondary">Reset</Link>
+      <form method="GET" className="adm-panel" style={{ padding: 14, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200 }}>
+            <Search size={15} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} aria-hidden="true" />
+            <input name="search" defaultValue={search} className="form-input" style={{ paddingLeft: 34 }}
+              placeholder="नाव किंवा रोल नंबर (S-01) शोधा" aria-label="नाव किंवा रोल नंबर शोधा" />
+          </div>
+          <select name="course" defaultValue={params.course} className="form-input" style={{ maxWidth: 190 }} aria-label="कोर्स">
+            <option value="">सर्व कोर्सेस</option>
+            {Object.entries(COURSES).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+          </select>
+          <select name="gender" defaultValue={params.gender} className="form-input" style={{ maxWidth: 140 }} aria-label="लिंग">
+            <option value="">सर्व</option>
+            <option value="male">मुले</option>
+            <option value="female">मुली</option>
+          </select>
+          <button type="submit" className="btn btn-primary">शोधा</button>
+          <Link href="/admin/students" className="btn btn-secondary">Reset</Link>
+        </div>
       </form>
 
-      {/* Table */}
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>रोल नं.</th>
-              <th>नाव</th>
-              <th>पालक</th>
-              <th>फोन</th>
-              <th>कोर्स</th>
-              <th>लिंग</th>
-              <th>प्रवेश</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8', padding: 40 }}>
-                  कोणताही विद्यार्थी सापडला नाही
-                </td>
-              </tr>
-            ) : (
-              students.map((s) => (
-                <tr key={s.id}>
-                  <td><span className="badge badge-blue">{s.roll_number}</span></td>
-                  <td style={{ fontWeight: 600 }}>{s.name}</td>
-                  <td style={{ color: '#64748b' }}>{s.parent_name}</td>
-                  <td>
-                    <div style={{ fontSize: 12 }}>{s.phone}</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>पालक: {s.parent_phone}</div>
-                  </td>
-                  <td><span className="badge badge-yellow">{COURSES[s.course] || s.course}</span></td>
-                  <td><span className={`badge ${s.gender === 'male' ? 'badge-blue' : 'badge-gray'}`}>{s.gender === 'male' ? '👦 मुलगा' : '👧 मुलगी'}</span></td>
-                  <td style={{ fontSize: 12, color: '#64748b' }}>{s.admission_date ? formatDate(s.admission_date) : '—'}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <Link href={`/admin/students/${s.id}`} className="btn btn-secondary" style={{ padding: '5px 10px', fontSize: 12 }}>पहा</Link>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {students.length === 0 ? (
+        <div className="adm-panel">
+          <div className="adm-empty">
+            <Users size={32} />
+            <b>कोणताही विद्यार्थी सापडला नाही</b>
+            <span>{filtered ? 'शोध बदलून पुन्हा प्रयत्न करा किंवा Reset दाबा.' : 'प्रवेश मंजूर झाल्यावर विद्यार्थी इथे दिसतील.'}</span>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="adm-panel adm-onlydesk">
+            <div className="adm-tablewrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>रोल नं.</th><th>विद्यार्थी</th><th>पालक</th><th>संपर्क</th>
+                    <th>कोर्स</th><th>लिंग</th><th>प्रवेश दिनांक</th><th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map(s => (
+                    <tr key={s.id}>
+                      <td><span className="adm-badge adm-badge--muted" style={{ fontFamily: 'monospace' }}>{s.roll_number}</span></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span className="adm-avatar">{initials(s.name)}</span>
+                          <b style={{ fontWeight: 600 }}>{s.name}</b>
+                        </div>
+                      </td>
+                      <td style={{ color: '#475569' }}>{s.parent_name || '—'}</td>
+                      <td>
+                        <div style={{ fontSize: 12.5 }}>{s.phone || '—'}</div>
+                        <div style={{ fontSize: 11.5, color: '#94a3b8' }}>पालक: {s.parent_phone || '—'}</div>
+                      </td>
+                      <td><span className="adm-badge adm-badge--info">{COURSES[s.course] || s.course}</span></td>
+                      <td style={{ color: '#475569', fontSize: 12.5 }}>{s.gender === 'male' ? 'मुलगा' : 'मुलगी'}</td>
+                      <td style={{ fontSize: 12.5, color: '#475569' }}>{s.admission_date ? formatDate(s.admission_date) : '—'}</td>
+                      <td>
+                        <Link href={`/admin/students/${s.id}`} className="btn btn-secondary" style={{ padding: '5px 11px', fontSize: 12 }}>
+                          प्रोफाइल पहा
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Cards keep the same data readable on a phone instead of a wide scroll. */}
+          <div className="adm-onlymob" style={{ display: 'grid', gap: 10 }}>
+            {students.map(s => (
+              <Link key={s.id} href={`/admin/students/${s.id}`} className="adm-panel" style={{ padding: 14, textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                  <span className="adm-avatar" style={{ width: 40, height: 40, fontSize: 15 }}>{initials(s.name)}</span>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <b style={{ fontSize: 14, display: 'block' }}>{s.name}</b>
+                    <span style={{ fontSize: 11.5, color: '#94a3b8', fontFamily: 'monospace' }}>{s.roll_number}</span>
+                  </div>
+                  <ArrowRight size={16} style={{ color: '#94a3b8' }} aria-hidden="true" />
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 11 }}>
+                  <span className="adm-badge adm-badge--info">{COURSES[s.course] || s.course}</span>
+                  <span className="adm-badge adm-badge--muted">{s.gender === 'male' ? 'मुलगा' : 'मुलगी'}</span>
+                  {s.admission_date && <span className="adm-badge adm-badge--muted">{formatDate(s.admission_date)}</span>}
+                </div>
+                <div style={{ marginTop: 10, fontSize: 12.5, color: '#475569' }}>
+                  {s.phone || '—'} · पालक: {s.parent_name || '—'}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
