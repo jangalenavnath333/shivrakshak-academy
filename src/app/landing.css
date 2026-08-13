@@ -607,11 +607,11 @@
 /* ---------- founder cards: equal size, real portrait, separated footer ---------- */
 .sra-dir__people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; align-items: stretch; }
 .sra-dir__card {
-  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 1.3rem; align-items: start;
+  display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 1.4rem; align-items: stretch;
   padding: 1.4rem; height: 100%;
 }
 .sra-dir__shot {
-  position: relative; width: 100%; aspect-ratio: 2 / 3; border-radius: 6px; overflow: hidden;
+  position: relative; width: 100%; aspect-ratio: 2 / 3; min-height: 100%; border-radius: 6px; overflow: hidden;
   border: 1px solid var(--sra-line); background: linear-gradient(180deg, var(--sra-olive), var(--sra-black));
   display: grid; place-items: center; color: rgba(212,164,55,.45);
 }
