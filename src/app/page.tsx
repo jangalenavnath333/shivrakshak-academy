@@ -3,7 +3,8 @@ import { MessageCircle } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { createPublicSiteClient } from '@/lib/public-site-supabase'
 import type { Course, MediaAsset, SiteSettings } from '@/types'
-import { HERO_STATS, RESULT_STATS, RESULTS } from '@/content/landing'
+import { ACADEMY_ADDRESS, ACADEMY_EMAIL, HERO_STATS, RESULT_STATS, RESULTS } from '@/content/landing'
+import { BranchNote, RegistrationStrip } from '@/components/landing/BranchNote'
 import LandingNav from '@/components/landing/LandingNav'
 import Hero from '@/components/landing/Hero'
 import StatsStrip from '@/components/landing/StatsStrip'
@@ -30,10 +31,10 @@ const fallbackSettings: SiteSettings = {
   tagline: 'शिस्त, पराक्रम, समर्पण — यशाची आमची परंपरा.',
   hero_title: 'शिस्त, पराक्रम, समर्पण',
   hero_subtitle: 'Army • Police • SRPF • Written Exam Training',
-  phone: '9284842177',
-  whatsapp: '917720991375',
-  email: 'info@shivrakshakacademy.in',
-  address: 'अहमदनगर, महाराष्ट्र',
+  phone: '9011887714',
+  whatsapp: '919011887714',
+  email: 'powarraje34@gmail.com',
+  address: 'बालिकाश्रम रोड, न्यू आर्ट्स कॉलेजसमोर, अहिल्यानगर (अहमदनगर), महाराष्ट्र ४१४००१',
 }
 
 const fallbackCourses = [
@@ -61,7 +62,7 @@ async function getHomeData() {
   }
 }
 
-const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v6'], { revalidate: 300 })
+const getCachedHomeData = unstable_cache(getHomeData, ['academy-home-data-v7'], { revalidate: 300 })
 
 const shivrakshakYoutube = 'https://www.youtube.com/@shivrakshak_academy_01'
 const shivrakshakInstagram = 'https://www.instagram.com/shivrakshak_academy_01/'
@@ -79,8 +80,8 @@ export default async function HomePage() {
 
   const phone = settings.phone || fallbackSettings.phone!
   const whatsapp = settings.whatsapp || phone
-  const email = settings.email || fallbackSettings.email!
-  const address = settings.address || fallbackSettings.address!
+  const email = settings.email || ACADEMY_EMAIL
+  const address = settings.address || ACADEMY_ADDRESS
   const academyName = settings.academy_name || fallbackSettings.academy_name
   const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('नमस्कार, मला शिवरक्षक करिअर अकॅडमीच्या प्रवेशाबद्दल माहिती हवी आहे.')}`
 
@@ -99,9 +100,11 @@ export default async function HomePage() {
         FORM: Brief-pinned direction from the supplied reference; no roll.
         FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
       */}
+      <RegistrationStrip />
       <LandingNav academyName={academyName} waLink={waLink} />
       <Hero image={heroImage} phone={phone} />
       <StatsStrip stats={HERO_STATS} />
+      <BranchNote address={address} />
       <Director />
       <WhyChoose />
       <Courses photos={coursePhotos} />
