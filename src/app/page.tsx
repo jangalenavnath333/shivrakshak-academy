@@ -3,13 +3,14 @@ import { MessageCircle } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { createPublicSiteClient } from '@/lib/public-site-supabase'
 import type { Course, MediaAsset, SiteSettings } from '@/types'
-import { ACADEMY_ADDRESS, ACADEMY_EMAIL, HERO_STATS, RESULT_STATS, RESULTS } from '@/content/landing'
+import { ACADEMY_ADDRESS, ACADEMY_EMAIL, RESULTS } from '@/content/landing'
 import { BranchNote, RegistrationStrip } from '@/components/landing/BranchNote'
 import LandingNav from '@/components/landing/LandingNav'
 import Hero from '@/components/landing/Hero'
-import StatsStrip from '@/components/landing/StatsStrip'
+import Strengths from '@/components/landing/Strengths'
+import Figures from '@/components/landing/Figures'
+import Mission from '@/components/landing/Mission'
 import Director from '@/components/landing/Director'
-import WhyChoose from '@/components/landing/WhyChoose'
 import Courses from '@/components/landing/Courses'
 import Training from '@/components/landing/Training'
 import Results from '@/components/landing/Results'
@@ -18,7 +19,7 @@ import Process from '@/components/landing/Process'
 import Facilities from '@/components/landing/Facilities'
 import Testimonials from '@/components/landing/Testimonials'
 import FinalCta from '@/components/landing/FinalCta'
-import Contact from '@/components/landing/Contact'
+import ContactBand from '@/components/landing/ContactBand'
 import LandingFooter from '@/components/landing/LandingFooter'
 import './landing.css'
 
@@ -102,27 +103,26 @@ export default async function HomePage() {
       */}
       <RegistrationStrip />
       <LandingNav academyName={academyName} waLink={waLink} />
-      <Hero image={heroImage} phone={phone} academyName={academyName} />
-      <StatsStrip stats={HERO_STATS} />
+      <Hero phone={phone} academyName={academyName} />
+      <Strengths />
       <BranchNote address={address} />
       <Director />
-      <WhyChoose />
       <Courses photos={coursePhotos} />
       <Training hero={heroImage} />
       <Results photos={resultPhotos} />
-      <StatsStrip stats={RESULT_STATS} />
+      <Figures />
       <Gallery />
       <Process />
       <Facilities />
       <Testimonials />
+      <Mission image={heroImage} />
       <FinalCta image={heroImage} waLink={waLink} />
-      <Contact
+      <ContactBand
         phone={phone}
         whatsapp={whatsapp}
-        email={email}
         address={address}
         waLink={waLink}
-        courses={courses.slice(0, 4).map(({ id, slug, title }) => ({ id, slug, title }))}
+        courses={courses.slice(0, 6).map(({ id, slug, title }) => ({ id, slug, title }))}
       />
       <LandingFooter
         academyName={academyName}

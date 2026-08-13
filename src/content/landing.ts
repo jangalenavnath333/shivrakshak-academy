@@ -11,21 +11,31 @@
 
 export type Stat = { value: string; label: string }
 
-/** Headline numbers under the hero. Placeholders — replace with verified figures. */
-export const HERO_STATS: Stat[] = [
-  { value: '5000+', label: 'प्रशिक्षित विद्यार्थी' },
-  { value: '15+', label: 'वर्षांचा अनुभव' },
-  { value: '100+', label: 'टेस्ट व सराव' },
-  { value: '98%', label: 'यशाचा ध्यास' },
+/**
+ * The strengths strip under the hero.
+ *
+ * These are qualities the academy can stand behind, not counts. Selection totals
+ * and success percentages are deliberately absent: none are recorded anywhere in
+ * this project, and inventing them would put an unverifiable claim in front of
+ * parents. Add ACADEMY_FIGURES below once real numbers exist.
+ */
+export const STRENGTHS = [
+  { title: 'Expert Trainers', detail: 'माजी सैनिकांकडून प्रत्यक्ष मार्गदर्शन' },
+  { title: 'Proven Results', detail: 'निवड झालेल्या विद्यार्थ्यांची परंपरा' },
+  { title: 'Physical Excellence', detail: 'रोजचा मैदानी सराव व स्टॅमिना' },
+  { title: 'Complete Guidance', detail: 'प्रवेशापासून अंतिम निवडीपर्यंत' },
 ]
 
-/** Second strip, lower on the page. Placeholders — replace with verified figures. */
-export const RESULT_STATS: Stat[] = [
-  { value: '5000+', label: 'प्रशिक्षित विद्यार्थी' },
-  { value: '1200+', label: 'निवड झालेले विद्यार्थी' },
-  { value: '15+', label: 'वर्षांचा अनुभव' },
-  { value: '100+', label: 'टेस्ट व सराव' },
-  { value: '98%', label: 'Selection Rate' },
+/**
+ * Verified facts only. Every line here is checkable — the Udyam certificate, the
+ * founders' service, or the academy's own single-branch status.
+ * Add counts here only when the academy confirms them.
+ */
+export const ACADEMY_FIGURES = [
+  { value: '२', label: 'माजी सैनिक संचालक' },
+  { value: '१७', label: 'वर्षे सैन्य सेवा (संस्थापक)' },
+  { value: '१', label: 'शाखा — अहिल्यानगर' },
+  { value: '४', label: 'भरती कोर्सेस' },
 ]
 
 /**
@@ -112,11 +122,20 @@ export const FOUNDER_QUOTE =
 export const FOUNDER_BADGES = ['माजी सैनिक मार्गदर्शन', 'शिस्तबद्ध प्रशिक्षण', 'वैयक्तिक लक्ष', 'मैदानी सराव']
 
 export const WHY_CHOOSE = [
-  { title: 'मैदानी प्रशिक्षण', icon: 'run', points: ['1600m Running', '100m Sprint', 'Long Jump', 'Shot Put', 'Ground Practice'] },
-  { title: 'लेखी परीक्षा तयारी', icon: 'book', points: ['Army Bharti', 'Police Bharti', 'SRPF', 'GK', 'मराठी', 'गणित'] },
-  { title: 'अनुभवी मार्गदर्शन', icon: 'mentor', points: ['Personal Mentoring', 'Daily Progress', 'Performance Tracking'] },
-  { title: 'शिस्त आणि यश', icon: 'target', points: ['Army-style Routine', 'Regular Tests', 'Performance Analysis'] },
-] as const
+  { title: 'Army Written & Physical', detail: 'संपूर्ण तयारी — मैदान आणि वर्ग दोन्ही' },
+  { title: 'NDA / Navy / Air Force', detail: 'संपूर्ण मार्गदर्शन व सराव' },
+  { title: 'Personality Development', detail: 'आत्मविश्वास व नेतृत्वगुण' },
+  { title: 'Physical Training', detail: 'रोजचा शिस्तबद्ध मैदानी सराव' },
+  { title: 'Modern Infrastructure', detail: 'प्रशस्त मैदान व वर्गखोल्या' },
+  { title: 'Selection Guidance', detail: 'निवडीपर्यंत सतत पाठिंबा' },
+]
+
+/** Cinematic closing line. */
+export const MISSION = {
+  english: ['YOUR DREAM.', 'OUR MISSION.'],
+  highlight: 'TOGETHER WE WILL DEFEND THE NATION!',
+  marathi: 'तुमचे स्वप्न — आमचे ध्येय.',
+}
 
 /** Course photographs live in /public. Replace the file or change the path. */
 export const COURSES = [
