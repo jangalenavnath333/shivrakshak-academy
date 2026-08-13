@@ -15,6 +15,13 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
 
       <div className="sra-wrap sra-hero__grid">
         <div className="sra-hero__in">
+          {/* Its own space above the headline — never laid over the poster, which
+              already carries the academy's own branding. */}
+          {ACADEMY_LOGO && (
+            <div className="sra-hero__mark">
+              <Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="140px" priority />
+            </div>
+          )}
           <p className="sra-hero__eyebrow">Discipline · Dedication · Destination</p>
 
           <h1>
@@ -44,11 +51,6 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
             <Image src={FOUNDERS_PHOTO} alt={`${academyName} — दोन्ही माजी सैनिक संस्थापक`}
               fill priority quality={90} sizes="(max-width: 980px) 92vw, 46vw" />
           </div>
-          {ACADEMY_LOGO && (
-            <div className="sra-hero__seal" aria-hidden="true">
-              <Image src={ACADEMY_LOGO} alt="" role="presentation" fill sizes="120px" />
-            </div>
-          )}
         </div>
       </div>
     </section>
