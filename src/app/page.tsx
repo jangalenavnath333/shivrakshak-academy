@@ -39,10 +39,10 @@ const fallbackSettings: SiteSettings = {
 }
 
 const fallbackCourses = [
-  { id: 'army', title: 'Army Bharti', slug: 'army', description: 'मैदानी व लेखी तयारी', image_url: '/course-army.jpg', is_published: true, sort_order: 1 },
-  { id: 'police', title: 'Police Bharti', slug: 'police', description: 'पोलीस भरती तयारी', image_url: '/course-police.jpg', is_published: true, sort_order: 2 },
-  { id: 'srpf', title: 'SRPF Bharti', slug: 'srpf', description: 'SRPF विशेष प्रशिक्षण', image_url: '/course-srpf.jpg', is_published: true, sort_order: 3 },
-  { id: 'written', title: 'Written Exam Batch', slug: 'written', description: 'लेखी परीक्षा तयारी', image_url: '/course-written.jpg', is_published: true, sort_order: 4 },
+  { id: 'army', title: 'Army Bharti', slug: 'army', description: 'मैदानी व लेखी तयारी', image_url: '/images/gallery/training-3.jpg', is_published: true, sort_order: 1 },
+  { id: 'police', title: 'Police Bharti', slug: 'police', description: 'पोलीस भरती तयारी', image_url: '/images/gallery/training-1.jpg', is_published: true, sort_order: 2 },
+  { id: 'srpf', title: 'SRPF Bharti', slug: 'srpf', description: 'SRPF विशेष प्रशिक्षण', image_url: '/images/gallery/training-2.jpg', is_published: true, sort_order: 3 },
+  { id: 'written', title: 'Written Exam Batch', slug: 'written', description: 'लेखी परीक्षा तयारी', image_url: '/images/gallery/academy-1.jpg', is_published: true, sort_order: 4 },
 ] satisfies Course[]
 
 async function getHomeData() {
@@ -102,7 +102,12 @@ export default async function HomePage() {
         FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
       */}
       <RegistrationStrip />
-      <LandingNav academyName={academyName} waLink={waLink} />
+      <LandingNav academyName={academyName} waLink={waLink} socials={{
+        youtube: settings.youtube_url || shivrakshakYoutube,
+        instagram: settings.instagram_url || shivrakshakInstagram,
+        facebook: settings.facebook_url || undefined,
+        telegram: shivrakshakTelegram,
+      }} />
       <Hero phone={phone} academyName={academyName} />
       <Strengths />
       <BranchNote address={address} />

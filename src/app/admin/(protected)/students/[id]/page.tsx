@@ -4,6 +4,7 @@ import { COURSES, DOC_TYPES, formatDate, formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import type { Student, FeePayment, Document } from '@/types'
 import StudentCredentials from './StudentCredentials'
+import FeeHistoryManager from '@/components/admin/FeeHistoryManager'
 
 const FORM_COURSE_KEYS: Record<string, string> = {
   staff: 'staff_selection',
@@ -19,21 +20,23 @@ const PAYMENT_MODES: Record<string, string> = {
 
 async function getStudentData(id: string) {
   const supabase = await createSupabaseServerClient()
-  const [studentRes, feesRes, docsRes] = await Promise.all([
+  const [studentRes, feesRes, docsRes, examsRes] = await Promise.all([
     supabase.from('students').select('*').eq('id', id).single(),
     supabase.from('fee_payments').select('*').eq('student_id', id).order('payment_date', { ascending: false }),
     supabase.from('documents').select('*').eq('student_id', id),
+    supabase.from('exam_attempts').select('id, score, max_score, percentage, started_at, submitted_at, exams(title)').eq('student_id', id).eq('status', 'completed').order('submitted_at', { ascending: false }),
   ])
   return {
     student: studentRes.data as Student | null,
     fees: feesRes.data as FeePayment[] || [],
     docs: docsRes.data as Document[] || [],
+    examAttempts: examsRes.data || [],
   }
 }
 
 export default async function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { student, fees, docs } = await getStudentData(id)
+  const { student, fees, docs, examAttempts } = await getStudentData(id)
 
   if (!student) {
     return <div style={{ padding: 40, textAlign: 'center' }}>विद्यार्थी सापडला नाही</div>
@@ -188,30 +191,44 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
           )}
         </div>
 
+        {/* Exam Results */}
+        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+          <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>📝 परीक्षांचे रिझल्ट्स</h3>
+          {examAttempts.length === 0 ? (
+            <p style={{ color: '#94a3b8', fontSize: 14 }}>अद्याप कोणतीही परीक्षा दिली नाही</p>
+          ) : (
+            <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>
+                  <th style={{ textAlign: 'left', padding: '6px 0' }}>परीक्षा</th>
+                  <th style={{ textAlign: 'left', padding: '6px 0' }}>तारीख</th>
+                  <th style={{ textAlign: 'right', padding: '6px 0' }}>स्कोर</th>
+                  <th style={{ textAlign: 'right', padding: '6px 0' }}>टक्केवारी</th>
+                </tr>
+              </thead>
+              <tbody>
+                {examAttempts.map((attempt: any) => (
+                  <tr key={attempt.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '10px 0', color: '#0f172a', fontWeight: 600 }}>{attempt.exams?.title || 'Unknown Exam'}</td>
+                    <td style={{ color: '#475569' }}>{formatDate(attempt.submitted_at)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700, color: '#0284c7' }}>{attempt.score} / {attempt.max_score}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700, color: (attempt.percentage || 0) >= 35 ? '#16a34a' : '#dc2626' }}>
+                      {attempt.percentage}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
         {/* Fee History */}
         <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>💳 फी इतिहास</h3>
           {fees.length === 0 ? (
             <p style={{ color: '#94a3b8', fontSize: 14 }}>अजून फी भरली नाही</p>
           ) : (
-            <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>
-                  <th style={{ textAlign: 'left', padding: '6px 0' }}>तारीख</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0' }}>रक्कम</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0' }}>माध्यम</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fees.map((f) => (
-                  <tr key={f.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '8px 0', color: '#475569' }}>{formatDate(f.payment_date)}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>{formatCurrency(f.amount_paid)}</td>
-                    <td style={{ textAlign: 'right' }}><span className="badge badge-gray">{f.payment_mode}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <FeeHistoryManager fees={fees as any[]} studentId={id} />
           )}
         </div>
       </div>

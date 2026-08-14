@@ -16,7 +16,7 @@ export default function Testimonials() {
               <span className="sra-tst__q" aria-hidden="true">&ldquo;</span>
               <p>{item.quote}</p>
               <div className="sra-tst__who">
-                <span><Image src={item.photo} alt={item.name} fill sizes="44px" quality={70} /></span>
+                <span><Image src={item.photo} alt={item.name} fill sizes="44px" quality={90} style={{ objectPosition: 'center top' }} /></span>
                 <div>
                   <b>{item.name}</b>
                   <small>{item.force}</small>

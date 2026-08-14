@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import type { AdmissionFormDetails, StudentFeeSummary } from '@/types'
 import { adminMutation } from '@/lib/admin-api'
+import ExportButtons from '@/components/admin/ExportButtons'
 
 type Application = {
   id: string
@@ -21,6 +22,7 @@ type Application = {
   admission_status: 'pending' | 'approved' | 'payment_recorded'
   created_at: string
   admission_details: Partial<AdmissionFormDetails>
+  documents?: { id: string; doc_type: string; file_url: string; file_name: string }[]
 }
 
 type ActivationResult = {
@@ -54,6 +56,9 @@ export default function FeesPage() {
   const [printUrl, setPrintUrl] = useState('')
   const [delivery, setDelivery] = useState<ActivationResult['delivery'] | null>(null)
   const [tab, setTab] = useState<Tab>('approval')
+  const [reviewStudent, setReviewStudent] = useState<Application | null>(null)
+  const [editMode, setEditMode] = useState(false)
+  const [editData, setEditData] = useState<{ name: string; phone: string; course: string }>({ name: '', phone: '', course: 'police' })
 
   const refresh = useCallback(async () => {
     const [applicationsResponse, feeResponse] = await Promise.all([
@@ -100,6 +105,55 @@ export default function FeesPage() {
       setSuccessMsg('अर्ज मंजूर झाला. आता तो "Fee Entry" मध्ये दिसेल.')
       await refresh()
     } catch (error) { alert(error instanceof Error ? error.message : 'Approval failed') }
+    finally { setLoading(false) }
+  }
+
+  const reject = async (studentId: string) => {
+    if (!confirm('हा अर्ज कायमचा डिलीट करायचा आहे?')) return
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/admissions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', studentId }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Deletion failed')
+      setSuccessMsg('अर्ज डिलीट करण्यात आला.')
+      setReviewStudent(null)
+      await refresh()
+    } catch (error) { alert(error instanceof Error ? error.message : 'Deletion failed') }
+    finally { setLoading(false) }
+  }
+
+  const archiveStudent = async (studentId: string) => {
+    if (!confirm('तुम्हाला खात्री आहे का की तुम्हाला हा विद्यार्थी अर्काईव्ह (Archive) करायचा आहे?')) return
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/admissions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', studentId }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Archive failed')
+      setSuccessMsg('विद्यार्थी अर्काईव्ह करण्यात आला.')
+      await refresh()
+    } catch (error) { alert(error instanceof Error ? error.message : 'Archive failed') }
+    finally { setLoading(false) }
+  }
+
+  const saveEdit = async () => {
+    if (!reviewStudent) return
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/admissions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ action: 'edit', studentId: reviewStudent.id, name: editData.name, phone: editData.phone, course: editData.course }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Edit failed')
+      setSuccessMsg('अर्जाची माहिती सेव्ह झाली.')
+      setReviewStudent(null)
+      setEditMode(false)
+      await refresh()
+    } catch (error) { alert(error instanceof Error ? error.message : 'Edit failed') }
     finally { setLoading(false) }
   }
 
@@ -270,7 +324,21 @@ export default function FeesPage() {
 
       {tab === 'approval' && (
         <section className="adm-panel">
-          <div className="adm-panel__head"><h3>मंजुरीसाठी आलेले अर्ज</h3></div>
+          <div className="adm-panel__head">
+            <h3>मंजुरीसाठी आलेले अर्ज</h3>
+            {pendingApplications.length > 0 && (
+              <ExportButtons 
+                title="मंजुरीसाठी आलेले अर्ज"
+                filename="pending_admissions"
+                data={pendingApplications.map(a => ({
+                  'विद्यार्थी': a.name,
+                  'मोबाईल': a.phone || '',
+                  'कोर्स': a.course || '',
+                  'दिनांक': new Date(a.created_at).toLocaleDateString('mr-IN')
+                }))}
+              />
+            )}
+          </div>
           {pendingApplications.length === 0 ? (
             <div className="adm-empty"><Inbox size={32} /><b>मंजुरी बाकी नाही</b><span>नवीन अर्ज आल्यावर इथे दिसतील.</span></div>
           ) : (
@@ -284,7 +352,12 @@ export default function FeesPage() {
                       <td>{a.phone}<div style={{ fontSize: 11.5, color: '#94a3b8' }}>पालक: {a.parent_phone}</div></td>
                       <td><span className="adm-badge adm-badge--info">{a.course}</span></td>
                       <td style={{ fontSize: 12.5, color: '#475569' }}>{new Date(a.created_at).toLocaleDateString('mr-IN')}</td>
-                      <td><button className="btn btn-primary" disabled={loading} onClick={() => approve(a.id)}><Check size={15} /> मंजूर करा</button></td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="btn btn-secondary" disabled={loading} onClick={() => { setReviewStudent(a); setEditMode(false); }}>पहा</button>
+                          <button className="btn btn-primary" disabled={loading} onClick={() => approve(a.id)}><Check size={15} /> मंजूर</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -339,12 +412,25 @@ export default function FeesPage() {
       {tab === 'students' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 350px', gap: 16, alignItems: 'start' }} className="adm-feegrid">
           <section className="adm-panel">
-            <div className="adm-panel__head">
+            <div className="adm-panel__head" style={{ flexWrap: 'wrap', gap: 10 }}>
               <h3>विद्यार्थी व फी नोंदी</h3>
-              <div style={{ position: 'relative', maxWidth: 230 }}>
-                <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} aria-hidden="true" />
-                <input className="form-input" style={{ paddingLeft: 31, height: 34, fontSize: 13 }} placeholder="नाव किंवा S-01"
-                  aria-label="विद्यार्थी शोधा" value={search} onChange={e => setSearch(e.target.value)} />
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <ExportButtons 
+                  title="विद्यार्थी व फी नोंदी"
+                  filename="students_fees"
+                  data={filtered.map(s => ({
+                    'रोल नं.': s.roll_number,
+                    'नाव': s.name,
+                    'एकूण फी': formatCurrency(s.total_fee),
+                    'भरलेली': formatCurrency(s.total_paid),
+                    'बाकी': formatCurrency(s.pending_amount)
+                  }))}
+                />
+                <div style={{ position: 'relative', maxWidth: 230 }}>
+                  <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} aria-hidden="true" />
+                  <input className="form-input" style={{ paddingLeft: 31, height: 34, fontSize: 13 }} placeholder="नाव किंवा S-01"
+                    aria-label="विद्यार्थी शोधा" value={search} onChange={e => setSearch(e.target.value)} />
+                </div>
               </div>
             </div>
             {filtered.length === 0 ? (
@@ -361,8 +447,13 @@ export default function FeesPage() {
                         <td style={{ color: '#027a48', fontWeight: 600 }}>{formatCurrency(s.total_paid)}</td>
                         <td style={{ color: Number(s.pending_amount) > 0 ? '#b42318' : '#94a3b8', fontWeight: 600 }}>{formatCurrency(s.pending_amount)}</td>
                         <td>
-                          <button className={`btn ${selected === s.id ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '5px 11px', fontSize: 12 }}
-                            onClick={() => { setSelected(s.id); setAmount('') }}>फी नोंदवा</button>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button className={`btn ${selected === s.id ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '5px 11px', fontSize: 12 }}
+                              onClick={() => { setSelected(s.id); setAmount('') }}>फी नोंदवा</button>
+                            <a href={`/api/admin/print/${s.id}`} target="_blank" className="btn btn-secondary" style={{ padding: '5px 11px', fontSize: 12 }}>पहा / 🖨️ Form</a>
+                            <Link href={`/admin/students/edit/${s.id}`} className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="Edit">✏️</Link>
+                            <button onClick={() => archiveStudent(s.id)} className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="Archive/Delete">🗑️</button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -411,6 +502,96 @@ export default function FeesPage() {
             </table>
           </div>
         </section>
+      )}
+
+      {/* Review Modal */}
+      {reviewStudent && (
+        <div className="sra-modal" style={{ zIndex: 9999 }} role="dialog" aria-modal="true">
+          <div className="sra-modal__scrim" onClick={() => { setReviewStudent(null); setEditMode(false); }}></div>
+          <div className="sra-modal__box" style={{ maxWidth: '800px', width: '95%', maxHeight: '90vh', overflowY: 'auto', background: '#fff', padding: '24px' }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              {editMode ? 'अर्ज दुरुस्त करा' : 'अर्जाची सविस्तर माहिती'}
+            </h2>
+            
+            {!editMode ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', color: '#0f172a' }}>👤 विद्यार्थी माहिती</h3>
+                    <p><strong>नाव:</strong> {reviewStudent.name}</p>
+                    <p><strong>पालकाचे नाव:</strong> {reviewStudent.parent_name}</p>
+                    <p><strong>मोबाईल:</strong> {reviewStudent.phone}</p>
+                    <p><strong>पालकाचा मो.:</strong> {reviewStudent.parent_phone}</p>
+                    <p><strong>पत्ता:</strong> {reviewStudent.admission_details?.address}</p>
+                    <p><strong>गाव/तालुका:</strong> {reviewStudent.admission_details?.village}, {reviewStudent.admission_details?.taluka}</p>
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', color: '#0f172a' }}>📋 प्रवेश माहिती</h3>
+                    <p><strong>कोर्स:</strong> {reviewStudent.course}</p>
+                    <p><strong>लिंग:</strong> {reviewStudent.admission_details?.gender}</p>
+                    <p><strong>वय:</strong> {reviewStudent.admission_details?.age}</p>
+                    <p><strong>उंची:</strong> {reviewStudent.admission_details?.height} सेमी</p>
+                    <p><strong>वजन:</strong> {reviewStudent.admission_details?.weight} किलो</p>
+                    <p><strong>छाती:</strong> {reviewStudent.admission_details?.chest} सेमी</p>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '12px', color: '#0f172a' }}>📁 अपलोड केलेली कागदपत्रे</h3>
+                  {(!reviewStudent.documents || reviewStudent.documents.length === 0) ? (
+                    <p style={{ color: '#64748b' }}>कोणतेही document अपलोड केलेले नाही.</p>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      {reviewStudent.documents.map(doc => (
+                        <a key={doc.id} href={doc.file_url.startsWith('http') ? doc.file_url : `/api/admin/documents/${doc.id}`} target="_blank" rel="noopener noreferrer" 
+                           className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          📄 {doc.doc_type}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                  <button className="btn btn-secondary" style={{ marginRight: 'auto' }} onClick={() => reject(reviewStudent.id)}>🗑️ डिलीट (Reject)</button>
+                  <button className="btn btn-secondary" onClick={() => { setEditData({ name: reviewStudent.name, phone: reviewStudent.phone || '', course: reviewStudent.course || 'police' }); setEditMode(true); }}>✏️ Edit</button>
+                  <button className="btn btn-primary" onClick={() => { approve(reviewStudent.id); setReviewStudent(null); }}><Check size={16}/> मंजूर करा</button>
+                  <button className="btn btn-secondary" onClick={() => setReviewStudent(null)}>बंद करा</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                  <label>
+                    <span className="form-label">विद्यार्थ्याचे नाव</span>
+                    <input className="form-input" type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
+                  </label>
+                  <label>
+                    <span className="form-label">मोबाईल नंबर</span>
+                    <input className="form-input" type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} />
+                  </label>
+                  <label>
+                    <span className="form-label">कोर्स</span>
+                    <select className="form-input" value={editData.course} onChange={e => setEditData({...editData, course: e.target.value})}>
+                      <option value="police">पोलीस भरती</option>
+                      <option value="army">आर्मी / अग्निवीर</option>
+                      <option value="navy">नेव्ही</option>
+                      <option value="mpsc">एम.पी.एस.सी</option>
+                      <option value="railway">रेल्वे भरती</option>
+                      <option value="staff_selection">स्टॉफ सिलेक्शन</option>
+                      <option value="saral_seva">सरळ सेवा</option>
+                      <option value="other">इतर</option>
+                    </select>
+                  </label>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                  <button className="btn btn-secondary" onClick={() => setEditMode(false)}>रद्द करा</button>
+                  <button className="btn btn-primary" disabled={loading} onClick={saveEdit}>💾 सेव्ह करा</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

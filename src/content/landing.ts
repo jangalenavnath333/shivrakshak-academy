@@ -76,7 +76,7 @@ export const FOUNDERS_PHOTO = '/images/director/founders.png'
  */
 export const DIRECTORS = [
   {
-    photo: '/images/director/raje-pawar.jpg' as string | null,
+    photo: '/images/director/raje-pawar-army.jpg' as string | null,
     // Separate photograph for the small directors card only; the section
     // portrait and the dialog keep `photo`.
     cardPhoto: '/images/director/raje-pawar-yoddha.jpg' as string | null,
@@ -107,35 +107,33 @@ export const DIRECTORS = [
     } as DirectorDetail | null,
   },
   {
-    /**
-     * Portrait: save the uniformed photograph as
-     * /public/images/director/sambhaji-mahadik.jpg and this card matches the first.
-     */
-    photo: null as string | null,
-    cardPhoto: null as string | null,
+    photo: '/images/director/sambhaji-mahadik-yodha.jpg' as string | null,
+    cardPhoto: '/images/director/sambhaji-mahadik-yodha.jpg' as string | null,
+    backgroundPosition: 'center 20%',
     name: 'वस्ताद संभाजी महाडिक',
     role: 'माजी सैनिक, भारतीय सेना | सह-संचालक',
     phone: '9284842177',
     facts: [
-      { label: 'भूमिका', value: 'मैदानी प्रशिक्षण प्रमुख' },
-      { label: 'सन्मान', value: 'सेवा पदके' },
+      { label: 'रँक', value: 'हवालदार' },
+      { label: 'सैन्य सेवा', value: '१७ वर्षे' },
+      { label: 'रेजिमेंट', value: 'बॉम्बे इंजिनियर्स ग्रुप' },
+      { label: 'सेवा काळ', value: '२००२ — २०१९' },
     ],
-    /**
-     * Only what the academy has confirmed. His service record is deliberately not
-     * copied from the founder's — replace the milestones with his own dates and
-     * postings when the academy provides them.
-     */
     detail: {
-      born: 'माजी सैनिक, भारतीय सेना',
+      born: 'माजी सैनिक, भारतीय सेना · बॉम्बे इंजिनियर्स अँड ग्रुप सेंटर',
       intro:
-        'भारतीय सैन्यातील सेवेनंतर वस्ताद संभाजी महाडिक शिवरक्षक करिअर अकॅडमीच्या मैदानी प्रशिक्षणाची जबाबदारी सांभाळतात. रोजचा सराव, शारीरिक चाचणीची तयारी आणि विद्यार्थ्यांची प्रगती त्यांच्या देखरेखीखाली चालते.',
+        'शाळेत जायला सुरुवात केल्यापासूनच मनात एकच विचार होता — "या देशासाठी काहीतरी करायचं!" छत्रपती शिवाजी महाराज, छत्रपती संभाजी महाराज आणि भारतासाठी आपले अमूल्य जीवन अर्पण करणाऱ्या क्रांतिकारकांच्या विचारांचा मनावर खोलवर परिणाम झाला. कुटुंबातील मामा आणि भाऊ भारतीय सैन्यात सेवेत असल्यामुळे सैन्यसेवेची प्रेरणा आणखी वाढली.',
       milestones: [
-        { year: 'सैन्य सेवा', text: 'भारतीय सैन्यात सेवा; सेवा पदकांनी सन्मानित.' },
-        { year: 'अकॅडमी', text: 'सह-संचालक — मैदानी प्रशिक्षण विभागाचे प्रमुख.' },
-        { year: 'प्रशिक्षण', text: 'धावणे, लांब उडी, गोळाफेक व स्टॅमिना यांचा दैनंदिन सराव घेतात.' },
+        { year: '४ ऑक्टो. २००२', text: 'वयाच्या अवघ्या साडेसतरा वर्षी, पहिल्याच सैन्य भरती रॅलीमध्ये हजारो उमेदवारांच्या गर्दीतून बॉम्बे इंजिनियर्स अँड ग्रुप सेंटर येथे भारतीय सैन्यात भरती.' },
+        { year: 'प्रशिक्षण', text: 'WT कोर्स, शॉर्ट कमांडो कोर्स, IED कोर्स, Nuclear-Biological-Chemical Warfare, Combat Engineer Instructor Course, NCO प्रशिक्षण यशस्वीरीत्या पूर्ण.' },
+        { year: '२०१२', text: 'भारत-अमेरिका संयुक्त सैन्य युद्धाभ्यासात उत्कृष्ट कामगिरीबद्दल प्रशस्तीपत्र प्राप्त.' },
+        { year: 'NCO प्रमोशन', text: '४०० जवानांमधून द्वितीय क्रमांक मिळवत Grade \'A\' प्राप्त. रेजिमेंटल पोलीस हवालदार म्हणून महत्त्वाची जबाबदारी.' },
+        { year: 'खेळ', text: 'कबड्डी आणि कुस्ती या दोन्ही खेळांमध्ये कमांड लेव्हलवर सहभाग.' },
+        { year: '१७ वर्षे सेवा', text: 'भारतमातेच्या सेवेसाठी स्वतःला वाहून घेत तब्बल १७ वर्षे प्रामाणिक, शिस्तबद्ध आणि समर्पित सेवा बजावल्यानंतर स्वेच्छेने सेवानिवृत्ती.' },
+        { year: 'अकॅडमी', text: 'सह-संचालक — मैदानी प्रशिक्षण विभागाचे प्रमुख. आजही त्याच जिद्दीने, शिस्तीने युवकांना सैन्य, पोलीस व सुरक्षा दलांमध्ये जाण्यासाठी प्रेरित करण्याचे कार्य सुरू.' },
       ],
       closing:
-        'सविस्तर सेवा-तपशील अकॅडमीकडून मिळताच येथे जोडला जाईल.',
+        'सैनिक ते समाजघडविणारा मार्गदर्शक — देशासाठी जगायचं, देशासाठी घडायचं आणि देशासाठी पुढची पिढी तयार करायची — हा संकल्प आजही कायम आहे. "वेड फक्त देशसेवेचं!"',
     } as DirectorDetail | null,
   },
 ]
@@ -166,10 +164,10 @@ export const MISSION = {
 
 /** Course photographs live in /public. Replace the file or change the path. */
 export const COURSES = [
-  { slug: 'army', title: 'Army Bharti', image: '/course-army.jpg', description: 'भारतीय सेनेत भरती होण्याचे स्वप्न पूर्ण करण्यासाठी संपूर्ण मैदानी व लेखी तयारी.', features: ['GD / Technical', 'Physical Standards', 'Written Practice'] },
-  { slug: 'police', title: 'Police Bharti', image: '/course-police.jpg', description: 'महाराष्ट्र पोलीस भरतीसाठी मैदानी चाचणी, लेखी परीक्षा व मुलाखतीची तयारी.', features: ['मैदानी चाचणी', 'लेखी परीक्षा', 'मुलाखत मार्गदर्शन'] },
-  { slug: 'srpf', title: 'SRPF Bharti', image: '/course-srpf.jpg', description: 'SRPF व राज्य राखीव दलासाठी विशेष शारीरिक आणि मानसिक तयारी.', features: ['विशेष मैदानी सराव', 'Stamina Training', 'Test Series'] },
-  { slug: 'written', title: 'Written Exam Batch', image: '/course-written.jpg', description: 'गणित, बुद्धिमत्ता, मराठी, इंग्रजी आणि सामान्य ज्ञानाची सखोल तयारी.', features: ['गणित व बुद्धिमत्ता', 'मराठी / इंग्रजी', 'Daily Mock Tests'] },
+  { slug: 'army', title: 'Army Bharti', image: '/images/gallery/training-3.jpg', description: 'भारतीय सेनेत भरती होण्याचे स्वप्न पूर्ण करण्यासाठी संपूर्ण मैदानी व लेखी तयारी.', features: ['GD / Technical', 'Physical Standards', 'Written Practice'] },
+  { slug: 'police', title: 'Police Bharti', image: '/images/gallery/training-1.jpg', description: 'महाराष्ट्र पोलीस भरतीसाठी मैदानी चाचणी, लेखी परीक्षा व मुलाखतीची तयारी.', features: ['मैदानी चाचणी', 'लेखी परीक्षा', 'मुलाखत मार्गदर्शन'] },
+  { slug: 'srpf', title: 'SRPF Bharti', image: '/images/gallery/training-2.jpg', description: 'SRPF व राज्य राखीव दलासाठी विशेष शारीरिक आणि मानसिक तयारी.', features: ['विशेष मैदानी सराव', 'Stamina Training', 'Test Series'] },
+  { slug: 'written', title: 'Written Exam Batch', image: '/images/gallery/academy-1.jpg', description: 'गणित, बुद्धिमत्ता, मराठी, इंग्रजी आणि सामान्य ज्ञानाची सखोल तयारी.', features: ['गणित व बुद्धिमत्ता', 'मराठी / इंग्रजी', 'Daily Mock Tests'] },
 ]
 
 export const TRAINING_POINTS = [
@@ -182,12 +180,12 @@ export const TRAINING_POINTS = [
  * `photo` with a real student photograph and update the name, force and year.
  */
 export const RESULTS = [
-  { name: 'अमोल पाटील', force: 'Indian Army', year: '2023', photo: '/result-1.jpg' },
-  { name: 'रोहन शिंदे', force: 'Maharashtra Police', year: '2023', photo: '/result-2.jpg' },
-  { name: 'सागर जाधव', force: 'SRPF', year: '2023', photo: '/result-3.jpg' },
-  { name: 'प्रतीक खरे', force: 'Indian Army', year: '2024', photo: '/result-4.jpg' },
-  { name: 'विकास वाघमारे', force: 'Maharashtra Police', year: '2024', photo: '/result-5.jpg' },
-  { name: 'नितीन कदम', force: 'SRPF', year: '2024', photo: '/result-6.jpg' },
+  { name: 'अमोल पाटील', force: 'Indian Army', year: '2023', photo: '/images/gallery/felicitation-1.jpg' },
+  { name: 'रोहन शिंदे', force: 'Maharashtra Police', year: '2023', photo: '/images/gallery/felicitation-2.jpg' },
+  { name: 'सागर जाधव', force: 'SRPF', year: '2023', photo: '/images/gallery/felicitation-3.jpg' },
+  { name: 'प्रतीक खरे', force: 'Indian Army', year: '2024', photo: '/images/gallery/felicitation-4.jpg' },
+  { name: 'विकास वाघमारे', force: 'Maharashtra Police', year: '2024', photo: '/images/gallery/felicitation-5.jpg' },
+  { name: 'नितीन कदम', force: 'SRPF', year: '2024', photo: '/images/gallery/felicitation-6.jpg' },
 ]
 
 /** Real academy photographs. */
@@ -224,9 +222,9 @@ export const FACILITIES = [
 
 /** Placeholder testimonials — replace with real, consented student quotes. */
 export const TESTIMONIALS = [
-  { name: 'संदीप कदम', force: 'Indian Army', photo: '/result-1.jpg', quote: 'शिवरक्षकमधल्या रोजच्या मैदानी सरावामुळे माझा स्टॅमिना खूप वाढला. शिस्तबद्ध वेळापत्रकामुळेच मी सैन्यात निवड मिळवू शकलो.' },
-  { name: 'रोहित जाधव', force: 'Maharashtra Police', photo: '/result-2.jpg', quote: 'दररोजची तयारी, टेस्ट सिरीज आणि सरांचे वैयक्तिक मार्गदर्शन यामुळे पोलीस भरतीत माझी निवड झाली.' },
-  { name: 'अमोल शिरसाट', force: 'SRPF', photo: '/result-3.jpg', quote: 'SRPF साठी लागणारे सर्व मैदानी आणि लेखी प्रशिक्षण इथे एकाच ठिकाणी मिळाले. मार्गदर्शन अतिशय स्पष्ट होते.' },
+  { name: 'संदीप कदम', force: 'Indian Army', photo: '/images/gallery/felicitation-1.jpg', quote: 'शिवरक्षकमधल्या रोजच्या मैदानी सरावामुळे माझा स्टॅमिना खूप वाढला. शिस्तबद्ध वेळापत्रकामुळेच मी सैन्यात निवड मिळवू शकलो.' },
+  { name: 'रोहित जाधव', force: 'Maharashtra Police', photo: '/images/gallery/felicitation-2.jpg', quote: 'दररोजची तयारी, टेस्ट सिरीज आणि सरांचे वैयक्तिक मार्गदर्शन यामुळे पोलीस भरतीत माझी निवड झाली.' },
+  { name: 'अमोल शिरसाट', force: 'SRPF', photo: '/images/gallery/felicitation-3.jpg', quote: 'SRPF साठी लागणारे सर्व मैदानी आणि लेखी प्रशिक्षण इथे एकाच ठिकाणी मिळाले. मार्गदर्शन अतिशय स्पष्ट होते.' },
 ]
 
 export const WORKING_HOURS = [

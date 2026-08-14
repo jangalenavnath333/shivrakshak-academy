@@ -67,9 +67,7 @@ camera + FaceDetector), the exam engine, media upload, settings.
 
 ## Still needed from the academy
 
-1. Co-founder संभाजी महाडिक: photograph → `public/images/director/sambhaji-mahadik.jpg`,
-   then set `cardPhoto`/`photo` in `DIRECTORS[1]`. His service record is
-   deliberately **not** copied from the founder's — get his real one.
+1. ~~Co-founder संभाजी महाडिक: photograph~~ ✅ Done — photo & full service record added.
 2. Real figures. `ACADEMY_FIGURES` currently lists only verifiable facts. No
    selection counts or success percentages exist anywhere in this project;
    do not invent them.

@@ -17,7 +17,7 @@ export default function Results({ photos }: { photos: (string | undefined)[] }) 
             {RESULTS.map((student, i) => (
               <article className="sra-res" key={student.name}>
                 <div className="sra-res__img">
-                  <Image src={photos[i] || student.photo} alt={student.name} fill quality={76} sizes="(max-width: 620px) 60vw, 210px" />
+                  <Image src={photos[i] || student.photo} alt={student.name} fill quality={90} sizes="(max-width: 620px) 60vw, 210px" style={{ objectPosition: 'center top' }} />
                 </div>
                 <div className="sra-res__body">
                   <b>{student.name}</b>

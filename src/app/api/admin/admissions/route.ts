@@ -25,6 +25,15 @@ const requestSchema = z.discriminatedUnion('action', [
   // Retry for an admission whose fee is already recorded but whose exam login /
   // activation did not complete on the first attempt.
   z.object({ action: z.literal('resume'), studentId: id }),
+  z.object({ action: z.literal('delete'), studentId: id }),
+  // Edit a pending admission.
+  z.object({
+    action: z.literal('edit'),
+    studentId: id,
+    name: z.string().trim().min(2).max(120).optional(),
+    phone: z.string().trim().regex(/^\d{10}$/).optional().or(z.literal('')),
+    course: z.enum(['police', 'navy', 'mpsc', 'staff_selection', 'saral_seva', 'army', 'railway', 'other']).optional(),
+  }),
 ])
 
 /**
@@ -123,7 +132,7 @@ export async function GET() {
   const admin = createSupabaseAdminClient()
   const { data, error } = await admin
     .from('students')
-    .select('id, name, parent_name, phone, parent_phone, course, gender, total_fee, admission_status, approved_at, created_at, admission_details')
+    .select('id, name, parent_name, phone, parent_phone, course, gender, total_fee, admission_status, approved_at, created_at, admission_details, documents(id, doc_type, file_url, file_name)')
     .in('admission_status', ['pending', 'approved', 'payment_recorded'])
     .order('created_at', { ascending: false })
     .limit(500)
@@ -153,6 +162,55 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     if (!data) return NextResponse.json({ error: 'Pending अर्ज सापडला नाही किंवा तो आधीच approve झाला आहे.' }, { status: 409 })
+    return NextResponse.json({ ok: true })
+  }
+
+  if (payload.action === 'delete') {
+    // Only allow deletion of pending admissions
+    const { data: student, error: studentError } = await admin
+      .from('students')
+      .select('id, admission_status, documents(file_url)')
+      .eq('id', payload.studentId)
+      .maybeSingle()
+
+    if (studentError) return NextResponse.json({ error: studentError.message }, { status: 400 })
+    if (!student) return NextResponse.json({ error: 'अर्ज सापडला नाही.' }, { status: 404 })
+
+    if (student.admission_status === 'active' || student.admission_status === 'archived') {
+      // Archive the student instead of hard deleting
+      const { error: archiveError } = await admin.from('students').update({ admission_status: 'archived' }).eq('id', payload.studentId)
+      if (archiveError) return NextResponse.json({ error: archiveError.message }, { status: 500 })
+      return NextResponse.json({ ok: true })
+    }
+
+    // For pending/others, hard delete documents and the record
+    const fileUrls = (student.documents || []).map(doc => doc.file_url).filter(Boolean)
+    if (fileUrls.length > 0) {
+      await admin.storage.from('student-documents').remove(fileUrls)
+    }
+
+    // Delete student (cascade will delete documents rows and pending_student_credentials)
+    const { error: deleteError } = await admin.from('students').delete().eq('id', payload.studentId)
+    if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
+
+    return NextResponse.json({ ok: true })
+  }
+
+  if (payload.action === 'edit') {
+    const updates: any = {}
+    if (payload.name) updates.name = payload.name
+    if (payload.phone !== undefined) updates.phone = payload.phone
+    if (payload.course) updates.course = payload.course
+
+    if (Object.keys(updates).length > 0) {
+      const { error: updateError } = await admin
+        .from('students')
+        .update(updates)
+        .eq('id', payload.studentId)
+        .eq('admission_status', 'pending')
+
+      if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
     return NextResponse.json({ ok: true })
   }
 

@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 const id = z.string().uuid()
 const actionSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('fee.create'), payload: z.object({ student_id: id, amount_paid: z.number().positive().max(10_000_000), payment_date: z.string().date(), payment_mode: z.enum(['cash', 'upi', 'bank_transfer', 'cheque']) }) }),
+  z.object({ action: z.literal('fee.update'), payload: z.object({ id, amount_paid: z.number().positive().max(10_000_000), payment_date: z.string().date(), payment_mode: z.enum(['cash', 'upi', 'bank_transfer', 'cheque']) }) }),
+  z.object({ action: z.literal('fee.delete'), payload: z.object({ id }) }),
   z.object({ action: z.literal('mess.create'), payload: z.object({ student_id: id, start_date: z.string().date(), end_date: z.string().date(), amount: z.number().min(0).max(10_000_000) }).refine((value) => value.end_date >= value.start_date, 'End date must not be before start date') }),
   z.object({ action: z.literal('notice.create'), payload: z.object({ title: z.string().trim().min(2).max(200), content: z.string().trim().max(5000), category: z.enum(['general', 'exam', 'result', 'holiday', 'important']), is_published: z.boolean() }) }),
   z.object({ action: z.literal('notice.toggle'), payload: z.object({ id, is_published: z.boolean() }) }),
@@ -23,6 +25,13 @@ const actionSchema = z.discriminatedUnion('action', [
     admission_date: z.string(), duration: z.string().trim().max(80), age: z.number().int().nullable(), height: z.number().nullable(),
     weight: z.number().nullable(), chest: z.number().nullable(), gender: z.enum(['male', 'female']), total_fee: z.number().min(0).max(10_000_000),
   }) }),
+  z.object({ action: z.literal('student.update'), payload: z.object({
+    id, name: z.string().trim().min(2).max(120), parent_name: z.string().trim().max(120), address: z.string().trim().max(500),
+    phone: z.string().trim().max(15), parent_phone: z.string().trim().max(15), aadhaar_no: z.string().trim().max(20),
+    guarantee_letter_no: z.string().trim().max(80), dob: z.string(), course: z.enum(['police', 'navy', 'mpsc', 'staff_selection', 'saral_seva', 'army', 'railway', 'other']),
+    admission_date: z.string(), duration: z.string().trim().max(80), age: z.number().int().nullable(), height: z.number().nullable(),
+    weight: z.number().nullable(), chest: z.number().nullable(), gender: z.enum(['male', 'female']), total_fee: z.number().min(0).max(10_000_000),
+  }) }),
 ])
 
 export async function POST(request: Request) {
@@ -35,6 +44,12 @@ export async function POST(request: Request) {
 
   if (action === 'fee.create') {
     const { error } = await supabase.from('fee_payments').insert(payload)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  } else if (action === 'fee.update') {
+    const { error } = await supabase.from('fee_payments').update({ amount_paid: payload.amount_paid, payment_date: payload.payment_date, payment_mode: payload.payment_mode }).eq('id', payload.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  } else if (action === 'fee.delete') {
+    const { error } = await supabase.from('fee_payments').delete().eq('id', payload.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   } else if (action === 'mess.create') {
     const { error } = await supabase.from('mess_subscriptions').insert(payload)
@@ -57,6 +72,15 @@ export async function POST(request: Request) {
       dob: payload.dob || null,
       admission_date: payload.admission_date || null,
     }).select('id, roll_number').single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ data })
+  } else if (action === 'student.update') {
+    const { id: studentId, ...updatePayload } = payload
+    const { data, error } = await supabase.from('students').update({
+      ...updatePayload,
+      dob: updatePayload.dob || null,
+      admission_date: updatePayload.admission_date || null,
+    }).eq('id', studentId).select('id, roll_number').single()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })
   } else if (action === 'media.create') {

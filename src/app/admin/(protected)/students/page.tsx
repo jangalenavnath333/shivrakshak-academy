@@ -3,10 +3,12 @@ import { ArrowRight, Search, UserPlus, Users } from 'lucide-react'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { COURSES, formatDate } from '@/lib/utils'
 import type { Student } from '@/types'
+import ExportButtons from '@/components/admin/ExportButtons'
+import StudentActionButtons from '@/components/admin/StudentActionButtons'
 
-async function getStudents(search?: string, gender?: string, course?: string): Promise<Student[]> {
+async function getStudents(search?: string, gender?: string, course?: string, tab: string = 'active'): Promise<Student[]> {
   const supabase = await createSupabaseServerClient()
-  let query = supabase.from('students').select('*').eq('admission_status', 'active').order('roll_number', { ascending: true })
+  let query = supabase.from('students').select('*').eq('admission_status', tab === 'archived' ? 'archived' : 'active').order('roll_number', { ascending: true })
   if (search) {
     // Search by name OR roll_number (S-01, S-02 style)
     query = query.or(`name.ilike.%${search}%,roll_number.ilike.%${search}%`)
@@ -27,7 +29,7 @@ export default async function StudentsPage({
   const params = await searchParams
   // `q` accepted too, so the header's global search lands here correctly.
   const search = params.search || params.q
-  const students = await getStudents(search, params.gender, params.course)
+  const students = await getStudents(search, params.gender, params.course, params.tab)
   const filtered = Boolean(search || params.gender || params.course)
 
   return (
@@ -36,13 +38,39 @@ export default async function StudentsPage({
         <div>
           <div className="page-title">विद्यार्थी</div>
           <div className="page-subtitle">
-            {filtered ? `${students.length} विद्यार्थी सापडले` : `एकूण ${students.length} सक्रिय विद्यार्थी`}
+            {filtered ? `${students.length} विद्यार्थी सापडले` : `एकूण ${students.length} ${params.tab === 'archived' ? 'अर्काईव्ह केलेले' : 'सक्रिय'} विद्यार्थी`}
           </div>
         </div>
-        <Link href="/admin/students/new" className="btn btn-primary"><UserPlus size={16} /> नवीन विद्यार्थी</Link>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <ExportButtons 
+            title={params.tab === 'archived' ? "अर्काईव्ह विद्यार्थी यादी" : "विद्यार्थी यादी"}
+            filename={params.tab === 'archived' ? "archived_students" : "students_list"}
+            data={students.map(s => ({
+              'रोल नं.': s.roll_number,
+              'विद्यार्थी नाव': s.name,
+              'पालक': s.parent_name || '',
+              'संपर्क': s.phone || '',
+              'पालक संपर्क': s.parent_phone || '',
+              'कोर्स': COURSES[s.course] || s.course,
+              'लिंग': s.gender === 'male' ? 'मुलगा' : 'मुलगी',
+              'प्रवेश दिनांक': s.admission_date ? formatDate(s.admission_date) : ''
+            }))} 
+          />
+          <Link href="/admin/students/new" className="btn btn-primary"><UserPlus size={16} /> नवीन विद्यार्थी</Link>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 20, borderBottom: '1px solid #e2e8f0', marginBottom: 20 }}>
+        <Link href="/admin/students?tab=active" style={{ padding: '10px 15px', fontWeight: 600, color: params.tab !== 'archived' ? '#1e293b' : '#64748b', borderBottom: params.tab !== 'archived' ? '2px solid #027a48' : 'none', textDecoration: 'none' }}>
+          सक्रिय विद्यार्थी
+        </Link>
+        <Link href="/admin/students?tab=archived" style={{ padding: '10px 15px', fontWeight: 600, color: params.tab === 'archived' ? '#1e293b' : '#64748b', borderBottom: params.tab === 'archived' ? '2px solid #027a48' : 'none', textDecoration: 'none' }}>
+          अर्काईव्ह (Archive)
+        </Link>
       </div>
 
       <form method="GET" className="adm-panel" style={{ padding: 14, marginBottom: 16 }}>
+        <input type="hidden" name="tab" value={params.tab || 'active'} />
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200 }}>
             <Search size={15} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} aria-hidden="true" />
@@ -101,9 +129,7 @@ export default async function StudentsPage({
                       <td style={{ color: '#475569', fontSize: 12.5 }}>{s.gender === 'male' ? 'मुलगा' : 'मुलगी'}</td>
                       <td style={{ fontSize: 12.5, color: '#475569' }}>{s.admission_date ? formatDate(s.admission_date) : '—'}</td>
                       <td>
-                        <Link href={`/admin/students/${s.id}`} className="btn btn-secondary" style={{ padding: '5px 11px', fontSize: 12 }}>
-                          प्रोफाइल पहा
-                        </Link>
+                        <StudentActionButtons studentId={s.id} />
                       </td>
                     </tr>
                   ))}

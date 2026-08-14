@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "Bash(node -e ' *)",
+      "Bash(awk '{printf \"  %-38s %s\\\\n\", $1, $3}')",
+      "mcp__claude_ai_Vercel__get_deployment",
+      "Bash(node \"C:/Users/Asus/.claude/skills/impeccable/scripts/context.mjs\" --target src/app/page.tsx)",
+      "Read(//c/Users/Asus/.claude/skills/impeccable/reference/**)",
+      "Bash(grep -E \"Compiled|Failed|Error|error|○ /$|ƒ /$\")",
+      "Bash(node \"C:/Users/Asus/.claude/skills/impeccable/scripts/detect.mjs\" --json src/app/landing.css src/app/page.tsx src/components/landing)"
+    ]
+  }
+}
