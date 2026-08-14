@@ -96,18 +96,20 @@ export async function POST(request: Request) {
     )
     const parsed = admissionSchema.safeParse(raw)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid admission details', issues: parsed.error.flatten() }, { status: 400 })
+      const issueText = parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')
+      return NextResponse.json({ error: `Invalid admission details: ${issueText}`, issues: parsed.error.flatten() }, { status: 400 })
     }
 
     let rawAdmissionDetails: unknown
     try {
       rawAdmissionDetails = JSON.parse(parsed.data.admission_details)
     } catch {
-      return NextResponse.json({ error: 'Invalid admission details' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid admission details (JSON parse error)' }, { status: 400 })
     }
     const admissionDetails = admissionDetailsSchema.safeParse(rawAdmissionDetails)
     if (!admissionDetails.success) {
-      return NextResponse.json({ error: 'Invalid admission details', issues: admissionDetails.error.flatten() }, { status: 400 })
+      const issueText = admissionDetails.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')
+      return NextResponse.json({ error: `Invalid admission details: ${issueText}`, issues: admissionDetails.error.flatten() }, { status: 400 })
     }
 
     const { data: phoneAllowed, error: phoneLimitError } = await supabase.rpc('consume_admission_rate_limit', { p_key: `phone:${parsed.data.parent_phone}` })
