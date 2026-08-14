@@ -18,7 +18,7 @@ const LINKS = [
   { href: '#contact', label: 'संपर्क' },
 ]
 
-export default function LandingNav({ academyName, waLink, socials }: { academyName: string; waLink: string; socials: { youtube: string; instagram: string; telegram: string } }) {
+export default function LandingNav({ academyName, waLink, socials }: { academyName: string; waLink: string; socials: { youtube: string; instagram: string; telegram: string; facebook?: string } }) {
   const [open, setOpen] = useState(false)
 
   // A drawer left open while the page scrolls behind it reads as a stuck overlay.

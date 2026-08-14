@@ -24,7 +24,7 @@ const initials = (name?: string | null) => (name || '?').trim().charAt(0).toUppe
 export default async function StudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; q?: string; gender?: string; course?: string }>
+  searchParams: Promise<{ search?: string; q?: string; gender?: string; course?: string; tab?: string }>
 }) {
   const params = await searchParams
   // `q` accepted too, so the header's global search lands here correctly.
