@@ -26,13 +26,14 @@ const requestSchema = z.discriminatedUnion('action', [
   // activation did not complete on the first attempt.
   z.object({ action: z.literal('resume'), studentId: id }),
   z.object({ action: z.literal('delete'), studentId: id }),
-  // Edit a pending admission.
+  // Edit a pending or approved admission.
   z.object({
     action: z.literal('edit'),
     studentId: id,
     name: z.string().trim().min(2).max(120).optional(),
     phone: z.string().trim().regex(/^\d{10}$/).optional().or(z.literal('')),
     course: z.enum(['police', 'navy', 'mpsc', 'staff_selection', 'saral_seva', 'army', 'railway', 'other']).optional(),
+    email: z.string().email().optional().or(z.literal('')),
   }),
 ])
 
@@ -202,12 +203,17 @@ export async function POST(request: Request) {
     if (payload.phone !== undefined) updates.phone = payload.phone
     if (payload.course) updates.course = payload.course
 
+    const { data: student } = await admin.from('students').select('admission_details').eq('id', payload.studentId).single()
+    if (student && payload.email !== undefined) {
+      updates.admission_details = { ...(student.admission_details as object), email: payload.email }
+    }
+
     if (Object.keys(updates).length > 0) {
       const { error: updateError } = await admin
         .from('students')
         .update(updates)
         .eq('id', payload.studentId)
-        .eq('admission_status', 'pending')
+        .in('admission_status', ['pending', 'approved'])
 
       if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
     }

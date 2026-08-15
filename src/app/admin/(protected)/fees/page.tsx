@@ -59,7 +59,7 @@ export default function FeesPage() {
   const [tab, setTab] = useState<Tab>('approval')
   const [reviewStudent, setReviewStudent] = useState<Application | null>(null)
   const [editMode, setEditMode] = useState(false)
-  const [editData, setEditData] = useState<{ name: string; phone: string; course: string }>({ name: '', phone: '', course: 'police' })
+  const [editData, setEditData] = useState<{ name: string; phone: string; course: string; email: string }>({ name: '', phone: '', course: 'police', email: '' })
 
   const refresh = useCallback(async () => {
     const [applicationsResponse, feeResponse] = await Promise.all([
@@ -146,7 +146,7 @@ export default function FeesPage() {
     try {
       const response = await fetch('/api/admin/admissions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ action: 'edit', studentId: reviewStudent.id, name: editData.name, phone: editData.phone, course: editData.course }),
+        body: JSON.stringify({ action: 'edit', studentId: reviewStudent.id, name: editData.name, phone: editData.phone, course: editData.course, email: editData.email }),
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Edit failed')
@@ -390,7 +390,7 @@ export default function FeesPage() {
                               onClick={() => { setSelected(a.id); setAmount(''); setTotalFee('') }}>निवडा</button>
                             <button className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="माहिती पहा किंवा बदला"
                               onClick={() => { 
-                                setEditData({ name: a.name, phone: a.phone || '', course: a.course || 'police' })
+                                setEditData({ name: a.name, phone: a.phone || '', course: a.course || 'police', email: a.admission_details?.email || '' })
                                 setReviewStudent(a)
                                 setEditMode(true) 
                               }}>✏️</button>
@@ -563,7 +563,7 @@ export default function FeesPage() {
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
                   <button className="btn btn-secondary" style={{ marginRight: 'auto' }} onClick={() => reject(reviewStudent.id)}>🗑️ डिलीट (Reject)</button>
-                  <button className="btn btn-secondary" onClick={() => { setEditData({ name: reviewStudent.name, phone: reviewStudent.phone || '', course: reviewStudent.course || 'police' }); setEditMode(true); }}>✏️ Edit</button>
+                  <button className="btn btn-secondary" onClick={() => { setEditData({ name: reviewStudent.name, phone: reviewStudent.phone || '', course: reviewStudent.course || 'police', email: reviewStudent.admission_details?.email || '' }); setEditMode(true); }}>✏️ Edit</button>
                   {reviewStudent.admission_status !== 'approved' && (
                     <button className="btn btn-primary" onClick={() => { approve(reviewStudent.id); setReviewStudent(null); }}><Check size={16}/> मंजूर करा</button>
                   )}
@@ -580,6 +580,10 @@ export default function FeesPage() {
                   <label>
                     <span className="form-label">मोबाईल नंबर</span>
                     <input className="form-input" type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} />
+                  </label>
+                  <label>
+                    <span className="form-label">ई-मेल</span>
+                    <input className="form-input" type="email" value={editData.email} onChange={e => setEditData({...editData, email: e.target.value})} />
                   </label>
                   <label>
                     <span className="form-label">कोर्स</span>
