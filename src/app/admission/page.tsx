@@ -56,6 +56,37 @@ const EMPTY: FormValues = {
   totalFee: '', paidAmount: '', paymentDate: today(), paymentMode: 'cash',
 }
 
+async function compressImage(file: File): Promise<File> {
+  if (file.type === 'application/pdf') return file
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = (ev) => {
+      const img = new Image()
+      img.src = ev.target?.result as string
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxW = 1200
+        const maxH = 1200
+        let w = img.width
+        let h = img.height
+        if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW }
+        if (h > maxH) { w = Math.round((w * maxH) / h); h = maxH }
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, w, h)
+        canvas.toBlob((blob) => {
+          if (!blob) return reject(new Error('Canvas is empty'))
+          resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }))
+        }, 'image/jpeg', 0.8)
+      }
+      img.onerror = reject
+    }
+    reader.onerror = reject
+  })
+}
+
 export default function AdmissionPage() {
   const [started, setStarted] = useState(false)
   const [step, setStep] = useState(1)
@@ -135,18 +166,23 @@ export default function AdmissionPage() {
   const back = () => { setErrors([]); setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   /* ── File upload ── */
-  const onFile = (key: string, file?: File) => {
+  const onFile = async (key: string, file?: File) => {
     if (!file) return
-    if (file.size > 5 * 1024 * 1024) { setErrors([`${file.name} — 5MB पेक्षा मोठी फाईल चालणार नाही`]); return }
     if (file.type.includes('pdf')) {
+      if (file.size > 5 * 1024 * 1024) { setErrors([`${file.name} — PDF फाईल 5MB पेक्षा मोठी चालणार नाही`]); return }
       setFiles(p => ({ ...p, [key]: { file, preview: '' } }))
       setErrors([])
       return
     }
-    const reader = new FileReader()
-    reader.onload = () => setFiles(p => ({ ...p, [key]: { file, preview: String(reader.result) } }))
-    reader.readAsDataURL(file)
-    setErrors([])
+    try {
+      const compressed = await compressImage(file)
+      const reader = new FileReader()
+      reader.onload = () => setFiles(p => ({ ...p, [key]: { file: compressed, preview: String(reader.result) } }))
+      reader.readAsDataURL(compressed)
+      setErrors([])
+    } catch (err) {
+      setErrors(['फोटो प्रोसेस करता आला नाही. कृपया दुसरा फोटो निवडा.'])
+    }
   }
 
   /* ── Submit ── */
@@ -187,11 +223,24 @@ export default function AdmissionPage() {
       })
 
       const response = await fetch('/api/admissions', { method: 'POST', body: payload })
-      const result = await response.json().catch(() => ({})) as { submitted?: boolean; error?: string }
+      let result: { submitted?: boolean; error?: string } = {}
+      let errorText = ''
+      try {
+        const cloned = response.clone()
+        errorText = await cloned.text()
+        result = JSON.parse(errorText)
+      } catch (err) {
+        console.error('Failed to parse API response as JSON', errorText)
+      }
+
       if (!response.ok || !result.submitted) {
+        if (response.status === 413) throw new Error('फॉर्म मधील फाईलची साईझ खूप मोठी आहे. कृपया लहान फोटो अपलोड करा. (Error 413)')
+        if (response.status === 504) throw new Error('सर्व्हरला खूप वेळ लागत आहे (Timeout). कृपया पुन्हा प्रयत्न करा. (Error 504)')
+        if (response.status >= 500) throw new Error(`सर्व्हर एरर (${response.status}). कृपया पुन्हा प्रयत्न करा.`)
+
         const message = response.status === 429
           ? 'खूप वेळा अर्ज submit करण्याचा प्रयत्न झाला. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.'
-          : result.error || 'अर्ज Supabase मध्ये save झाला नाही. कृपया पुन्हा प्रयत्न करा.'
+          : result.error || `Error ${response.status}: सर्व्हरने फॉर्म नाकारला.`
         throw new Error(message)
       }
 
