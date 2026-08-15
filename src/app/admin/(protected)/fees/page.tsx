@@ -385,8 +385,16 @@ export default function FeesPage() {
                         <td>{a.phone || a.parent_phone}</td>
                         <td style={{ fontSize: 12.5, color: '#475569' }}>{a.admission_details?.email || '—'}</td>
                         <td>
-                          <button className={`btn ${selected === a.id ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '5px 11px', fontSize: 12 }}
-                            onClick={() => { setSelected(a.id); setAmount(''); setTotalFee('') }}>निवडा</button>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button className={`btn ${selected === a.id ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '5px 11px', fontSize: 12 }}
+                              onClick={() => { setSelected(a.id); setAmount(''); setTotalFee('') }}>निवडा</button>
+                            <button className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="माहिती पहा किंवा बदला"
+                              onClick={() => { 
+                                setEditData({ name: a.name, phone: a.phone || '', course: a.course || 'police' })
+                                setReviewStudent(a)
+                                setEditMode(true) 
+                              }}>✏️</button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -556,7 +564,9 @@ export default function FeesPage() {
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
                   <button className="btn btn-secondary" style={{ marginRight: 'auto' }} onClick={() => reject(reviewStudent.id)}>🗑️ डिलीट (Reject)</button>
                   <button className="btn btn-secondary" onClick={() => { setEditData({ name: reviewStudent.name, phone: reviewStudent.phone || '', course: reviewStudent.course || 'police' }); setEditMode(true); }}>✏️ Edit</button>
-                  <button className="btn btn-primary" onClick={() => { approve(reviewStudent.id); setReviewStudent(null); }}><Check size={16}/> मंजूर करा</button>
+                  {reviewStudent.admission_status !== 'approved' && (
+                    <button className="btn btn-primary" onClick={() => { approve(reviewStudent.id); setReviewStudent(null); }}><Check size={16}/> मंजूर करा</button>
+                  )}
                   <button className="btn btn-secondary" onClick={() => setReviewStudent(null)}>बंद करा</button>
                 </div>
               </>
