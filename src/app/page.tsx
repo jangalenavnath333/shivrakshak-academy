@@ -113,7 +113,7 @@ export default async function HomePage() {
       <BranchNote address={address} />
       <Director />
       <Courses photos={coursePhotos} />
-      <Training hero={heroImage} />
+      <Training />
       <Results photos={resultPhotos} />
       <Figures />
       <Gallery />

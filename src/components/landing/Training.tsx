@@ -4,8 +4,7 @@ import { ArrowRight, CircleCheckBig } from 'lucide-react'
 import { GALLERY, TRAINING_POINTS } from '@/content/landing'
 import Reveal from './Reveal'
 
-export default function Training({ hero }: { hero: string }) {
-  const shots = [hero, GALLERY[1].src, GALLERY[3].src, GALLERY[5].src]
+export default function Training() {
   return (
     <section className="sra-section sra-section--tint sra-train">
       <div className="sra-wrap sra-train__grid">
@@ -22,12 +21,8 @@ export default function Training({ hero }: { hero: string }) {
           </div>
         </Reveal>
         <Reveal delay={90}>
-          <div className="sra-train__shots">
-            {shots.map((src, i) => (
-              <figure key={`${src}-${i}`}>
-                <Image src={src} alt="मैदानी सरावाचे क्षण" fill quality={74} sizes="(max-width: 900px) 100vw, 30vw" />
-              </figure>
-            ))}
+          <div className="sra-train__shots" style={{ display: 'flex', aspectRatio: 'auto', overflow: 'hidden', borderRadius: '8px' }}>
+            <Image src="/images/training-collage.jpg" alt="मैदानी सरावाचे क्षण" width={800} height={600} style={{ width: '100%', height: 'auto', objectFit: 'contain' }} quality={90} sizes="(max-width: 900px) 100vw, 50vw" />
           </div>
         </Reveal>
       </div>
