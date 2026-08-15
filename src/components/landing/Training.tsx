@@ -5,6 +5,15 @@ import { GALLERY, TRAINING_POINTS } from '@/content/landing'
 import Reveal from './Reveal'
 
 export default function Training() {
+  const mediaItems = [
+    { type: 'video', src: '/videos/train-vid-1.mp4' },
+    { type: 'video', src: '/videos/train-vid-2.mp4' },
+    { type: 'video', src: '/videos/train-vid-3.mp4' },
+    { type: 'image', src: '/images/gallery/train-new-1.jpg' },
+    { type: 'image', src: '/images/gallery/train-new-2.jpg' },
+    { type: 'video', src: '/videos/train-vid-4.mp4' },
+  ]
+
   return (
     <section className="sra-section sra-section--tint sra-train">
       <div className="sra-wrap sra-train__grid">
@@ -21,8 +30,16 @@ export default function Training() {
           </div>
         </Reveal>
         <Reveal delay={90}>
-          <div className="sra-train__shots" style={{ display: 'flex', aspectRatio: 'auto', overflow: 'hidden', borderRadius: '8px' }}>
-            <Image src="/images/training-collage.jpg" alt="मैदानी सरावाचे क्षण" width={800} height={600} style={{ width: '100%', height: 'auto', objectFit: 'contain' }} quality={90} sizes="(max-width: 900px) 100vw, 50vw" />
+          <div className="sra-train__shots">
+            {mediaItems.map((item, i) => (
+              <figure key={i}>
+                {item.type === 'image' ? (
+                  <Image src={item.src} alt="मैदानी सरावाचे क्षण" fill quality={74} sizes="(max-width: 900px) 100vw, 30vw" />
+                ) : (
+                  <video src={item.src} autoPlay loop muted playsInline />
+                )}
+              </figure>
+            ))}
           </div>
         </Reveal>
       </div>
