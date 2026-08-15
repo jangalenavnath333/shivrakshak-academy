@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, CircleCheckBig } from 'lucide-react'
+import { ArrowRight, CircleCheckBig, ChevronLeft, ChevronRight } from 'lucide-react'
 import { TRAINING_POINTS } from '@/content/landing'
 import Reveal from './Reveal'
 
@@ -35,6 +35,13 @@ export default function Training() {
     return () => clearInterval(interval)
   }, [])
 
+  const scrollLeft = () => {
+    if (railRef.current) railRef.current.scrollBy({ left: -260, behavior: 'smooth' })
+  }
+  const scrollRight = () => {
+    if (railRef.current) railRef.current.scrollBy({ left: 260, behavior: 'smooth' })
+  }
+
   return (
     <section className="sra-section sra-section--tint sra-train">
       <div className="sra-wrap sra-train__grid">
@@ -50,7 +57,14 @@ export default function Training() {
             <Link href="/admission" className="sra-btn sra-btn--gold">अधिक माहिती घ्या <ArrowRight size={17} /></Link>
           </div>
         </Reveal>
-        <Reveal delay={90}>
+      </div>
+
+      <Reveal delay={90}>
+        <div className="sra-train__carousel">
+          <button className="sra-train__btn sra-train__btn--prev" onClick={scrollLeft} aria-label="Previous">
+            <ChevronLeft size={28} />
+          </button>
+
           <div 
             className="sra-train__shots" 
             ref={railRef}
@@ -69,8 +83,12 @@ export default function Training() {
               </figure>
             ))}
           </div>
-        </Reveal>
-      </div>
+
+          <button className="sra-train__btn sra-train__btn--next" onClick={scrollRight} aria-label="Next">
+            <ChevronRight size={28} />
+          </button>
+        </div>
+      </Reveal>
     </section>
   )
 }
