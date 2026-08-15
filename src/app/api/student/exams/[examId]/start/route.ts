@@ -17,7 +17,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ ex
       : error?.message?.includes('ended') ? 'परीक्षेची वेळ संपली आहे.'
       : error?.message?.includes('Maximum attempts') ? 'या परीक्षेसाठी उपलब्ध सर्व attempts वापरले आहेत.'
       : error?.message?.includes('no questions') ? 'या परीक्षेत अजून प्रश्न जोडलेले नाहीत.'
-      : 'परीक्षा सुरू करता आली नाही.'
+      : `परीक्षा सुरू करता आली नाही. Error: ${error?.message || 'Unknown'}`
+    console.error('Exam start failed:', { examId: examId.data, userId: student.userId, error })
     return NextResponse.json({ error: message }, { status: 400 })
   }
 

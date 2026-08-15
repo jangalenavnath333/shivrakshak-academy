@@ -43,11 +43,16 @@ const formatDate = (value: string | null) => value
 export default function StudentExamList({ exams, attempts, serverNow }: { exams: Exam[]; attempts: Attempt[]; serverNow: string }) {
   const router = useRouter()
   const [starting, setStarting] = useState('')
+  const [confirming, setConfirming] = useState('')
   const [error, setError] = useState('')
   const now = new Date(serverNow).getTime()
 
   async function startExam(examId: string) {
-    if (!window.confirm('परीक्षा सुरू केल्यावर timer लगेच सुरू होईल. तयार आहात का?')) return
+    if (confirming !== examId) {
+      setConfirming(examId)
+      return
+    }
+    setConfirming('')
     setStarting(examId)
     setError('')
     try {
@@ -92,9 +97,21 @@ export default function StudentExamList({ exams, attempts, serverNow }: { exams:
                 <div className="student-result-box"><CheckCircle2 /><div><span>तुमचा निकाल</span><strong>{latestCompleted.score} / {latestCompleted.max_score} ({latestCompleted.percentage}%)</strong><small>बरोबर {latestCompleted.correct_count} · चूक {latestCompleted.wrong_count} · न सोडवलेले {latestCompleted.unanswered_count}</small></div></div>
               ) : latestCompleted ? <div className="student-result-pending"><CalendarClock /> निकाल {exam.result_release_at ? formatDate(exam.result_release_at) : 'लवकरच'} जाहीर होईल</div> : null}
 
-              <button onClick={() => expiredAttempt ? router.push(`/student/exams/${exam.id}/take?attempt=${encodeURIComponent(expiredAttempt.id)}`) : startExam(exam.id)} disabled={!canStart || starting === exam.id}>
-                {starting === exam.id ? <><LoaderCircle className="spin" /> सुरू होत आहे…</> : expiredAttempt ? <><CheckCircle2 /> पूर्ण झालेली परीक्षा उघडा</> : active ? <><RotateCcw /> परीक्षा पुढे सुरू ठेवा</> : !hasStarted ? <><CalendarClock /> अजून सुरू नाही</> : hasEnded ? 'परीक्षा संपली' : attemptsUsed >= exam.max_attempts ? 'Attempts पूर्ण' : <><PlayCircle /> परीक्षा सुरू करा</>}
+              <button onClick={() => expiredAttempt ? router.push(`/student/exams/${exam.id}/take?attempt=${encodeURIComponent(expiredAttempt.id)}`) : startExam(exam.id)} disabled={!canStart || starting === exam.id} className={confirming === exam.id ? 'confirm-btn' : ''}>
+                {starting === exam.id ? <><LoaderCircle className="spin" /> सुरू होत आहे…</> 
+                  : confirming === exam.id ? 'हो, तयार आहे (सुरू करा)' 
+                  : expiredAttempt ? <><CheckCircle2 /> पूर्ण झालेली परीक्षा उघडा</> 
+                  : active ? <><RotateCcw /> परीक्षा पुढे सुरू ठेवा</> 
+                  : !hasStarted ? <><CalendarClock /> अजून सुरू नाही</> 
+                  : hasEnded ? 'परीक्षा संपली' 
+                  : attemptsUsed >= exam.max_attempts ? 'Attempts पूर्ण' 
+                  : <><PlayCircle /> परीक्षा सुरू करा</>}
               </button>
+              {confirming === exam.id && (
+                <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                  <button onClick={() => setConfirming('')} style={{ background: 'transparent', color: 'var(--sra-text-muted)', border: 'none', textDecoration: 'underline', padding: '4px' }}>रद्द करा</button>
+                </div>
+              )}
             </article>
           )
         })}
