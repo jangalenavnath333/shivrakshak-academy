@@ -36,7 +36,7 @@ export default function Training() {
                 {item.type === 'image' ? (
                   <Image src={item.src} alt="मैदानी सरावाचे क्षण" fill quality={74} sizes="(max-width: 900px) 100vw, 30vw" />
                 ) : (
-                  <video src={item.src} autoPlay loop muted playsInline />
+                  <video src={item.src} autoPlay loop muted playsInline controls />
                 )}
               </figure>
             ))}
