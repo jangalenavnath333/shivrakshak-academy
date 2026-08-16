@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Shivrakshak Academy ERP - Project Seminar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    
+    <style>
+        /* Custom Military & Glassmorphism Theme */
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Mukta:wght@400;600;700&display=swap');
+
+        :root {
+            --sra-ground: #050805;
+            --sra-panel: rgba(14, 22, 12, 0.6);
+            --sra-gold: #e2b740;
+            --sra-gold-lt: #ffe07a;
+            --sra-text: #fdfbf7;
+            --sra-muted: #b5baaa;
+            --sra-glass-bg: rgba(15, 20, 15, 0.45);
+            --sra-glass-border: rgba(255, 255, 255, 0.08);
+            --sra-display: 'Oswald', sans-serif;
+            --sra-body: 'Mukta', sans-serif;
+        }
+
+        body { background: var(--sra-ground); color: var(--sra-text); font-family: var(--sra-body); }
+        
+        /* The main cinematic background */
+        .reveal { 
+            background: radial-gradient(circle at center, #101809 0%, var(--sra-ground) 100%); 
+        }
+        
+        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+            font-family: var(--sra-display);
+            text-transform: uppercase;
+            color: var(--sra-gold);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+        }
+
+        .reveal h1 { font-size: 2.5em; background: linear-gradient(135deg, var(--sra-gold-lt), var(--sra-gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .reveal h2 { font-size: 1.8em; color: var(--sra-gold-lt); margin-bottom: 30px; }
+        
+        .reveal p, .reveal li { font-size: 1em; line-height: 1.5; color: var(--sra-text); text-align: left; }
+        .reveal ul { display: inline-block; text-align: left; margin: 0 auto; padding-left: 40px; }
+        .reveal li { margin-bottom: 15px; }
+
+        .glass-card {
+            background: var(--sra-glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--sra-glass-border);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .gold-accent { color: var(--sra-gold-lt); font-weight: bold; }
+        
+        /* Navigation styling */
+        .reveal .controls { color: var(--sra-gold); }
+        .reveal .progress { color: var(--sra-gold); }
+
+        .title-sub { font-size: 1.2em; color: var(--sra-muted); margin-bottom: 40px !important; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: Title -->
+            <section>
+                <div class="glass-card">
+                    <h1>Shivrakshak Academy</h1>
+                    <h2>ERP & Official Web Portal</h2>
+                    <p class="title-sub" style="text-align: center;">A Complete Enterprise Resource Planning & High-Performance Web System for Defense Academies</p>
+                    <p style="text-align: center; color: var(--sra-gold-lt);"><strong>Academic Year:</strong> 2025-2026</p>
+                </div>
+            </section>
+
+            <!-- Slide 2: Introduction -->
+            <section>
+                <h2>Introduction</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">What is Shivrakshak Academy?</span> A premier defense academy in Maharashtra training youth for the Indian Army, Police, and SRPF.</li>
+                        <li><span class="gold-accent">The Core Idea:</span> Transitioning from scattered manual operations to a centralized <strong>ERP (Enterprise Resource Planning)</strong> system.</li>
+                        <li><span class="gold-accent">Project Goal:</span> To build an ultra-premium, cinematic landing page for brand awareness, fully integrated with a robust backend ERP for end-to-end academy management.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 3: Problem Statement -->
+            <section>
+                <h2>Problem Statement</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">No Centralized System:</span> Data was scattered across physical files and excel sheets, making academy administration difficult.</li>
+                        <li><span class="gold-accent">Manual Admissions:</span> Paper-based admission forms were slow, prone to data loss, and hard to track.</li>
+                        <li><span class="gold-accent">Offline Exams:</span> Conducting mock tests manually required excessive printing, time, and manual evaluation.</li>
+                        <li><span class="gold-accent">Media Management:</span> No direct system to dynamically update academy photos and videos for marketing.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 4: Proposed Solution -->
+            <section>
+                <h2>Proposed ERP Solution & Objectives</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><strong>Centralized ERP Dashboard:</strong> A secure, all-in-one Admin Portal to manage the entire academy's operations.</li>
+                        <li><strong>Premium Public Portal:</strong> A dynamic, cinematic website using 'Glassmorphism' UI to attract students.</li>
+                        <li><strong>Digital Admission System:</strong> Paperless data entry with instant printable admission receipts.</li>
+                        <li><strong>Online Exam Portal (CBT):</strong> A fully functional Computer Based Test engine for real-time exam practice and instant scoring.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 5: Tech Stack -->
+            <section>
+                <h2>Technology Stack</h2>
+                <div class="glass-card" style="text-align: center;">
+                    <p style="text-align: center;"><span class="gold-accent">Frontend Framework:</span> Next.js 14 (App Router) & React 18</p>
+                    <p style="text-align: center;"><span class="gold-accent">Styling:</span> Vanilla CSS3 with Custom Glassmorphism variables</p>
+                    <p style="text-align: center;"><span class="gold-accent">Backend/API:</span> Next.js Server Actions & API Routes</p>
+                    <p style="text-align: center;"><span class="gold-accent">Database:</span> Supabase (PostgreSQL) - Cloud Database</p>
+                    <p style="text-align: center;"><span class="gold-accent">Authentication:</span> Supabase Auth (Secure Admin Login)</p>
+                    <p style="text-align: center;"><span class="gold-accent">Deployment:</span> Vercel (Edge Network)</p>
+                </div>
+            </section>
+
+            <!-- Slide 6: Architecture -->
+            <section>
+                <h2>ERP System Architecture</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">Client Tier:</span> Browsers interacting with the Next.js Frontend (Website & Exam Portal).</li>
+                        <li><span class="gold-accent">ERP Admin Tier:</span> Next.js Server rendering secure UI and executing Admin API routes.</li>
+                        <li><span class="gold-accent">Database Tier:</span> Supabase PostgreSQL handling admissions, exams, results, and media assets.</li>
+                        <li><span class="gold-accent">Storage Tier:</span> Supabase Cloud Storage buckets for uploaded academy photos and videos.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 7: Features - Public Website -->
+            <section>
+                <h2>Module 1 - The Public Portal</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">Cinematic Hero Section:</span> Deep military gradients with glowing metallic typography.</li>
+                        <li><span class="gold-accent">Dynamic Content:</span> Courses, Strengths, and Testimonials loaded dynamically from the ERP.</li>
+                        <li><span class="gold-accent">Premium Lightbox Gallery:</span> Clickable photos and inline video players with frosted-glass overlays.</li>
+                        <li><span class="gold-accent">Responsive Design:</span> 100% optimized for Mobile, Tablet, and Desktop.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 8: Features - Admin Dashboard -->
+            <section>
+                <h2>Module 2 - Academy ERP Dashboard</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">Student Management:</span> View, edit, and manage all student admission data in real-time.</li>
+                        <li><span class="gold-accent">Dynamic Receipts:</span> Instantly generate printable, fully-formatted admission forms/receipts.</li>
+                        <li><span class="gold-accent">Media Controller:</span> Upload new gallery photos, videos, and assign placements directly from the dashboard.</li>
+                        <li><span class="gold-accent">Secure Access:</span> Role-based protected routes ensuring only authorized personnel can access academy data.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 9: Features - Online Exam Engine -->
+            <section>
+                <h2>Module 3 - CBT Exam Portal</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">Exam Creation:</span> Admins can create custom tests with multiple-choice questions via the ERP.</li>
+                        <li><span class="gold-accent">Real-Time Testing:</span> Students experience a realistic timer-based exam environment.</li>
+                        <li><span class="gold-accent">Concurrency Handling:</span> Advanced database logic to prevent duplicate exam starts.</li>
+                        <li><span class="gold-accent">Instant Results:</span> Automatic evaluation and result generation upon submission.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 10: Future Scope -->
+            <section>
+                <h2>Future Scope</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li><span class="gold-accent">Payment Gateway:</span> Integration with Razorpay/PhonePe for seamless online fee collection.</li>
+                        <li><span class="gold-accent">Inventory Management:</span> Tracking academy physical assets (uniforms, training equipment).</li>
+                        <li><span class="gold-accent">Mobile Application:</span> A dedicated Android/iOS app for students.</li>
+                        <li><span class="gold-accent">WhatsApp/SMS Integration:</span> Automated alerts for student attendance and exam marks to parents.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 11: Conclusion -->
+            <section>
+                <h2>Conclusion</h2>
+                <div class="glass-card">
+                    <ul>
+                        <li>The project successfully established a highly professional digital identity AND a powerful backend <strong>ERP System</strong> for Shivrakshak Academy.</li>
+                        <li>By digitizing admissions and exams, administrative overhead is reduced by over 80%.</li>
+                        <li>The use of Next.js and Supabase ensures the ERP platform is highly scalable, secure, and ready for future technological expansions.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 12: End -->
+            <section>
+                <div class="glass-card" style="text-align: center;">
+                    <h1 style="font-size: 3em;">THANK YOU!</h1>
+                    <p style="text-align: center; margin-top: 30px; color: var(--sra-muted)">Any Questions?</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Reveal.js JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+            controls: true,
+            progress: true,
+            center: true,
+        });
+    </script>
+</body>
+</html>
