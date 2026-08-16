@@ -8,7 +8,7 @@ import { TRAINING_POINTS } from '@/content/landing'
 import Reveal from './Reveal'
 
 export default function Training() {
-  const [activeMedia, setActiveMedia] = useState<{ type: string; src: string } | null>(null)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
   
   const mediaItems = [
     { type: 'video', src: '/videos/train-vid-1.mp4' },
@@ -19,12 +19,14 @@ export default function Training() {
     { type: 'video', src: '/videos/train-vid-4.mp4' },
   ]
 
+  const activeMedia = activeIndex !== null ? mediaItems[activeIndex] : null
+
   const railRef = useRef<HTMLDivElement>(null)
   const isInteracting = useRef(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (railRef.current && !isInteracting.current) {
+      if (railRef.current && !isInteracting.current && activeIndex === null) {
         const { scrollLeft, scrollWidth, clientWidth } = railRef.current
         const maxScroll = scrollWidth - clientWidth
         if (scrollLeft >= maxScroll - 10) {
@@ -35,13 +37,27 @@ export default function Training() {
       }
     }, 2500)
     return () => clearInterval(interval)
-  }, [])
+  }, [activeIndex])
 
   const scrollLeft = () => {
     if (railRef.current) railRef.current.scrollBy({ left: -260, behavior: 'smooth' })
   }
   const scrollRight = () => {
     if (railRef.current) railRef.current.scrollBy({ left: 260, behavior: 'smooth' })
+  }
+
+  const nextMedia = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (activeIndex !== null) {
+      setActiveIndex((activeIndex + 1) % mediaItems.length)
+    }
+  }
+
+  const prevMedia = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (activeIndex !== null) {
+      setActiveIndex((activeIndex - 1 + mediaItems.length) % mediaItems.length)
+    }
   }
 
   return (
@@ -78,7 +94,7 @@ export default function Training() {
             {mediaItems.map((item, i) => (
               <figure 
                 key={i} 
-                onClick={() => setActiveMedia(item)} 
+                onClick={() => setActiveIndex(i)} 
                 style={{ cursor: 'pointer', position: 'relative' }}
               >
                 {item.type === 'image' ? (
@@ -105,7 +121,7 @@ export default function Training() {
       {activeMedia && (
         <div 
           className="sra-lightbox sra-fade-in" 
-          onClick={() => setActiveMedia(null)}
+          onClick={() => setActiveIndex(null)}
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
             background: 'rgba(5, 8, 5, 0.92)', backdropFilter: 'blur(15px)',
@@ -114,7 +130,7 @@ export default function Training() {
           }}
         >
           <button 
-            onClick={() => setActiveMedia(null)}
+            onClick={() => setActiveIndex(null)}
             style={{
               position: 'absolute', top: '2rem', right: '2rem',
               background: 'transparent', border: 'none', color: '#fff',
@@ -124,6 +140,30 @@ export default function Training() {
             <X size={40} />
           </button>
           
+          <button 
+            onClick={prevMedia}
+            style={{
+              position: 'absolute', left: '2rem', top: '50%', transform: 'translateY(-50%)',
+              background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff',
+              cursor: 'pointer', zIndex: 10000, width: '50px', height: '50px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <ChevronLeft size={32} />
+          </button>
+
+          <button 
+            onClick={nextMedia}
+            style={{
+              position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)',
+              background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff',
+              cursor: 'pointer', zIndex: 10000, width: '50px', height: '50px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <ChevronRight size={32} />
+          </button>
+
           <div 
             className="sra-lightbox__content"
             onClick={e => e.stopPropagation()} 
@@ -131,6 +171,7 @@ export default function Training() {
           >
             {activeMedia.type === 'video' ? (
               <video 
+                key={activeMedia.src} // Add key to force re-render and autoPlay on change
                 src={activeMedia.src} 
                 controls 
                 autoPlay 
@@ -138,6 +179,7 @@ export default function Training() {
               />
             ) : (
               <img 
+                key={activeMedia.src}
                 src={activeMedia.src} 
                 alt="Training Image" 
                 style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}

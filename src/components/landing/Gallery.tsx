@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { X, PlayCircle } from 'lucide-react'
+import { X, PlayCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { GALLERY } from '@/content/landing'
 import Reveal from './Reveal'
 
@@ -15,7 +15,7 @@ export type GalleryMedia = {
 }
 
 export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: GalleryMedia[] }) {
-  const [activeMedia, setActiveMedia] = useState<GalleryMedia | null>(null)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   // Normalize hardcoded GALLERY to match GalleryMedia type
   const combinedMedia: GalleryMedia[] = [
@@ -27,6 +27,22 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
       media_type: 'image' as const
     }))
   ]
+
+  const activeMedia = activeIndex !== null ? combinedMedia[activeIndex] : null
+
+  const nextMedia = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (activeIndex !== null) {
+      setActiveIndex((activeIndex + 1) % combinedMedia.length)
+    }
+  }
+
+  const prevMedia = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (activeIndex !== null) {
+      setActiveIndex((activeIndex - 1 + combinedMedia.length) % combinedMedia.length)
+    }
+  }
 
   return (
     <section className="sra-section sra-section--tint" id="gallery">
@@ -41,7 +57,7 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
             {combinedMedia.map((item, i) => (
               <figure 
                 key={item.id} 
-                onClick={() => setActiveMedia(item)}
+                onClick={() => setActiveIndex(i)}
                 style={{ cursor: 'pointer' }}
               >
                 <Image 
@@ -67,7 +83,7 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
       {activeMedia && (
         <div 
           className="sra-lightbox sra-fade-in" 
-          onClick={() => setActiveMedia(null)}
+          onClick={() => setActiveIndex(null)}
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
             background: 'rgba(5, 8, 5, 0.92)', backdropFilter: 'blur(15px)',
@@ -76,7 +92,7 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
           }}
         >
           <button 
-            onClick={() => setActiveMedia(null)}
+            onClick={() => setActiveIndex(null)}
             style={{
               position: 'absolute', top: '2rem', right: '2rem',
               background: 'transparent', border: 'none', color: '#fff',
@@ -86,6 +102,30 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
             <X size={40} />
           </button>
           
+          <button 
+            onClick={prevMedia}
+            style={{
+              position: 'absolute', left: '2rem', top: '50%', transform: 'translateY(-50%)',
+              background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff',
+              cursor: 'pointer', zIndex: 10000, width: '50px', height: '50px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <ChevronLeft size={32} />
+          </button>
+
+          <button 
+            onClick={nextMedia}
+            style={{
+              position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)',
+              background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff',
+              cursor: 'pointer', zIndex: 10000, width: '50px', height: '50px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <ChevronRight size={32} />
+          </button>
+
           <div 
             className="sra-lightbox__content"
             onClick={e => e.stopPropagation()} 
@@ -93,6 +133,7 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
           >
             {activeMedia.media_type === 'video' ? (
               <video 
+                key={activeMedia.url}
                 src={activeMedia.url} 
                 controls 
                 autoPlay 
@@ -100,6 +141,7 @@ export default function Gallery({ uploadedMedia = [] }: { uploadedMedia?: Galler
               />
             ) : (
               <img 
+                key={activeMedia.url}
                 src={activeMedia.url} 
                 alt={activeMedia.title || ''} 
                 style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
