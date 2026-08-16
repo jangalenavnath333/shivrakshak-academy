@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, CircleCheckBig, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, CircleCheckBig, ChevronLeft, ChevronRight, PlayCircle, X } from 'lucide-react'
 import { TRAINING_POINTS } from '@/content/landing'
 import Reveal from './Reveal'
 
 export default function Training() {
+  const [activeMedia, setActiveMedia] = useState<{ type: string; src: string } | null>(null)
+  
   const mediaItems = [
     { type: 'video', src: '/videos/train-vid-1.mp4' },
     { type: 'video', src: '/videos/train-vid-2.mp4' },
@@ -74,11 +76,20 @@ export default function Training() {
             onTouchEnd={() => isInteracting.current = false}
           >
             {mediaItems.map((item, i) => (
-              <figure key={i}>
+              <figure 
+                key={i} 
+                onClick={() => setActiveMedia(item)} 
+                style={{ cursor: 'pointer', position: 'relative' }}
+              >
                 {item.type === 'image' ? (
                   <Image src={item.src} alt="मैदानी सरावाचे क्षण" fill quality={74} sizes="(max-width: 900px) 100vw, 30vw" />
                 ) : (
-                  <video src={item.src} autoPlay loop muted playsInline controls />
+                  <>
+                    <video src={item.src} autoPlay loop muted playsInline style={{ pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)' }}>
+                      <PlayCircle size={48} color="var(--sra-gold)" opacity={0.9} />
+                    </div>
+                  </>
                 )}
               </figure>
             ))}
@@ -89,6 +100,52 @@ export default function Training() {
           </button>
         </div>
       </Reveal>
+
+      {/* Lightbox Modal */}
+      {activeMedia && (
+        <div 
+          className="sra-lightbox sra-fade-in" 
+          onClick={() => setActiveMedia(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(5, 8, 5, 0.92)', backdropFilter: 'blur(15px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '2rem'
+          }}
+        >
+          <button 
+            onClick={() => setActiveMedia(null)}
+            style={{
+              position: 'absolute', top: '2rem', right: '2rem',
+              background: 'transparent', border: 'none', color: '#fff',
+              cursor: 'pointer', zIndex: 10000
+            }}
+          >
+            <X size={40} />
+          </button>
+          
+          <div 
+            className="sra-lightbox__content"
+            onClick={e => e.stopPropagation()} 
+            style={{ position: 'relative', width: '100%', maxWidth: '1000px', maxHeight: '85vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+          >
+            {activeMedia.type === 'video' ? (
+              <video 
+                src={activeMedia.src} 
+                controls 
+                autoPlay 
+                style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
+              />
+            ) : (
+              <img 
+                src={activeMedia.src} 
+                alt="Training Image" 
+                style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
