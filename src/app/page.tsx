@@ -7,6 +7,7 @@ import { ACADEMY_ADDRESS, ACADEMY_EMAIL, RESULTS } from '@/content/landing'
 import { BranchNote, RegistrationStrip } from '@/components/landing/BranchNote'
 import LandingNav from '@/components/landing/LandingNav'
 import Hero from '@/components/landing/Hero'
+import PaymentQR from '@/components/landing/PaymentQR'
 import Strengths from '@/components/landing/Strengths'
 import Figures from '@/components/landing/Figures'
 import Mission from '@/components/landing/Mission'
@@ -110,6 +111,7 @@ export default async function HomePage() {
       }} />
       <Hero phone={phone} academyName={academyName} />
       <Strengths />
+      <PaymentQR />
       <BranchNote address={address} />
       <Director />
       <Courses photos={coursePhotos} />
