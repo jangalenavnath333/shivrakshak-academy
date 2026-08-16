@@ -116,7 +116,7 @@ export default async function HomePage() {
       <Training />
       <Results photos={resultPhotos} />
       <Figures />
-      <Gallery />
+      <Gallery uploadedMedia={media.filter(m => m.placement === 'gallery')} />
       <Process />
       <Facilities />
       <Testimonials />
