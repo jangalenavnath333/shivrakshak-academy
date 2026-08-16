@@ -76,10 +76,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ data })
   } else if (action === 'student.update') {
     const { id: studentId, ...updatePayload } = payload
+    
+    const { data: existing } = await supabase.from('students').select('admission_details').eq('id', studentId).single()
+    const updatedDetails = {
+      ...(existing?.admission_details as object || {}),
+      firstName: updatePayload.name?.split(' ')[0] || '',
+      lastName: updatePayload.name?.split(' ').pop() || '',
+      address: updatePayload.address,
+      studentPhone: updatePayload.phone,
+      parentPhone: updatePayload.parent_phone,
+      aadhaar: updatePayload.aadhaar_no,
+      guaranteeNo: updatePayload.guarantee_letter_no,
+      dob: updatePayload.dob,
+      age: updatePayload.age ? String(updatePayload.age) : '',
+      height: updatePayload.height ? String(updatePayload.height) : '',
+      weight: updatePayload.weight ? String(updatePayload.weight) : '',
+      chest: updatePayload.chest ? String(updatePayload.chest) : '',
+      gender: updatePayload.gender,
+      courses: [updatePayload.course],
+      admissionDate: updatePayload.admission_date,
+      durationMonths: updatePayload.duration,
+      totalFee: String(updatePayload.total_fee),
+    }
+
     const { data, error } = await supabase.from('students').update({
       ...updatePayload,
       dob: updatePayload.dob || null,
       admission_date: updatePayload.admission_date || null,
+      admission_details: updatedDetails
     }).eq('id', studentId).select('id, roll_number').single()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })
