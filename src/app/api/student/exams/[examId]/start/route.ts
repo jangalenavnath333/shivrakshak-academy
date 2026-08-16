@@ -11,7 +11,27 @@ export async function POST(_request: Request, { params }: { params: Promise<{ ex
 
   const admin = createSupabaseAdminClient()
   const { data, error } = await admin.rpc('start_student_exam', { p_exam_id: examId.data, p_auth_user_id: student.userId })
-  const attempt = Array.isArray(data) ? data[0] : data
+  
+  let attempt = Array.isArray(data) ? data[0] : data
+
+  // Handle double-click concurrent requests returning unique constraint errors
+  if (error && (error.code === '23505' || error.message?.includes('duplicate key'))) {
+    const { data: studentData } = await admin.from('students').select('id').eq('auth_user_id', student.userId).single()
+    if (studentData) {
+      const { data: existing } = await admin.from('exam_attempts')
+        .select('id, expires_at')
+        .eq('exam_id', examId.data)
+        .eq('student_id', studentData.id)
+        .eq('status', 'in_progress')
+        .order('attempt_no', { ascending: false })
+        .limit(1)
+        .single()
+      if (existing) {
+        return NextResponse.json({ attemptId: existing.id, expiresAt: existing.expires_at, resumed: true })
+      }
+    }
+  }
+
   if (error || !attempt?.attempt_id) {
     const message = error?.message?.includes('not started') ? 'परीक्षा अजून सुरू झालेली नाही.'
       : error?.message?.includes('ended') ? 'परीक्षेची वेळ संपली आहे.'
