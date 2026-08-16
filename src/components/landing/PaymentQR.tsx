@@ -2,40 +2,48 @@ import Image from 'next/image'
 
 export default function PaymentQR() {
   return (
-    <section className="sra-qr-section sra-fade-in" style={{ padding: '60px 20px', background: 'var(--sra-panel)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
-      <div className="sra-container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-        <h2 className="sra-heading" style={{ fontSize: '2rem', marginBottom: '10px' }}>
-          प्रवेशासाठी फी <span className="sra-accent">ऑनलाईन भरा</span>
+    <section className="sra-qr-section sra-fade-in" style={{ padding: '80px 20px', background: 'radial-gradient(circle at center, rgba(20,30,16,0.9), var(--sra-black))', borderBottom: '1px solid rgba(212,175,55,0.15)', position: 'relative' }}>
+      <div className="sra-container" style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+        <h2 className="sra-heading" style={{ fontSize: '2.5rem', marginBottom: '15px', color: '#fff', textTransform: 'uppercase', letterSpacing: '2px' }}>
+          SECURE <span className="sra-accent" style={{ color: 'var(--sra-gold-lt)', textShadow: '0 0 15px rgba(212,175,55,0.4)' }}>PAYMENT GATEWAY</span>
         </h2>
-        <p className="sra-body" style={{ color: 'var(--sra-gray-text)', marginBottom: '30px' }}>
+        <p className="sra-body" style={{ color: 'var(--sra-muted)', marginBottom: '40px', fontSize: '1.1rem' }}>
           खालील QR कोड स्कॅन करून तुम्ही तुमची ॲडमिशन फी भरू शकता. पेमेंट झाल्यावर स्क्रीनशॉट नक्की पाठवा.
         </p>
 
         <div 
-          className="sra-qr-card sra-hover-lift"
+          className="sra-qr-card sra-hover-lift sra-glass"
           style={{ 
-            background: 'rgba(255, 255, 255, 0.03)', 
-            border: '1px solid rgba(212, 175, 55, 0.2)',
-            borderRadius: '16px',
-            padding: '30px',
-            maxWidth: '350px',
+            borderRadius: '20px',
+            padding: '40px',
+            maxWidth: '400px',
             margin: '0 auto',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(212, 175, 55, 0.05)',
+            position: 'relative'
           }}
         >
-          <div style={{ background: 'white', padding: '15px', borderRadius: '12px', display: 'inline-block' }}>
+          {/* Decorative Corner Borders */}
+          <div style={{ position: 'absolute', top: '15px', left: '15px', width: '30px', height: '30px', borderTop: '2px solid var(--sra-gold)', borderLeft: '2px solid var(--sra-gold)' }} />
+          <div style={{ position: 'absolute', top: '15px', right: '15px', width: '30px', height: '30px', borderTop: '2px solid var(--sra-gold)', borderRight: '2px solid var(--sra-gold)' }} />
+          <div style={{ position: 'absolute', bottom: '15px', left: '15px', width: '30px', height: '30px', borderBottom: '2px solid var(--sra-gold)', borderLeft: '2px solid var(--sra-gold)' }} />
+          <div style={{ position: 'absolute', bottom: '15px', right: '15px', width: '30px', height: '30px', borderBottom: '2px solid var(--sra-gold)', borderRight: '2px solid var(--sra-gold)' }} />
+
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '12px', display: 'inline-block', boxShadow: '0 10px 20px rgba(0,0,0,0.5)' }}>
             <Image 
               src="/images/payment-qr.jpg" 
               alt="Shivrakshak Academy Payment QR Code" 
-              width={250} 
-              height={250} 
+              width={280} 
+              height={280} 
               style={{ display: 'block', borderRadius: '8px' }}
             />
           </div>
-          <div style={{ marginTop: '20px' }}>
-            <div style={{ fontSize: '1.2rem', fontFamily: 'var(--font-oswald)', color: 'var(--sra-accent)' }}>
-              SHIVRAKSHAK CAREER ACADEMY
+          <div style={{ marginTop: '25px' }}>
+            <div style={{ fontSize: '1.4rem', fontFamily: 'var(--font-oswald)', color: 'var(--sra-gold-lt)', letterSpacing: '1px' }}>
+              SHIVRAKSHAK ACADEMY
+            </div>
+            <div style={{ fontSize: '1rem', color: 'var(--sra-text)', marginTop: '8px', opacity: 0.8, letterSpacing: '2px' }}>
+              UPI ID: powarraje34@okicici
             </div>
           </div>
         </div>
