@@ -15,6 +15,7 @@ const LINKS = [
   { href: '#results', label: 'निकाल' },
   { href: '#gallery', label: 'गॅलरी' },
   { href: '/admission', label: 'प्रवेश' },
+  { href: '/student/login', label: 'विद्यार्थी लॉगिन' },
   { href: '#contact', label: 'संपर्क' },
 ]
 

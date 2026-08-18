@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getAdminUser } from '@/lib/admin-auth'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { sendTransactionalEmail } from '@/lib/email'
 
 const id = z.string().uuid()
 const actionSchema = z.discriminatedUnion('action', [
@@ -31,6 +32,7 @@ const actionSchema = z.discriminatedUnion('action', [
     guarantee_letter_no: z.string().trim().max(80), dob: z.string(), course: z.enum(['police', 'navy', 'mpsc', 'staff_selection', 'saral_seva', 'army', 'railway', 'other']),
     admission_date: z.string(), duration: z.string().trim().max(80), age: z.number().int().nullable(), height: z.number().nullable(),
     weight: z.number().nullable(), chest: z.number().nullable(), gender: z.enum(['male', 'female']), total_fee: z.number().min(0).max(10_000_000),
+    email: z.string().email().or(z.literal('')).optional(),
   }) }),
 ])
 
@@ -75,11 +77,12 @@ export async function POST(request: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ data })
   } else if (action === 'student.update') {
-    const { id: studentId, ...updatePayload } = payload
+    const { id: studentId, email, ...updatePayload } = payload
     
     const { data: existing } = await supabase.from('students').select('admission_details').eq('id', studentId).single()
     const updatedDetails = {
       ...(existing?.admission_details as object || {}),
+      email: email || '',
       firstName: updatePayload.name?.split(' ')[0] || '',
       lastName: updatePayload.name?.split(' ').pop() || '',
       address: updatePayload.address,
@@ -106,6 +109,16 @@ export async function POST(request: Request) {
       admission_details: updatedDetails
     }).eq('id', studentId).select('id, roll_number').single()
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    
+    const oldEmail = (existing?.admission_details as any)?.email
+    if (email && email !== oldEmail) {
+      await sendTransactionalEmail({
+        to: email,
+        subject: 'तुमची माहिती शिवरक्षक करिअर अकॅडमीमध्ये अपडेट झाली आहे',
+        html: `<h2>शिवरक्षक करिअर अकॅडमी</h2><p>नमस्कार ${updatePayload.name}, तुमची माहिती (Email सोबत) सिस्टीममध्ये यशस्वीरित्या अपडेट करण्यात आली आहे.</p><p>काही अडचण असल्यास कृपया संपर्क साधा.</p>`,
+      })
+    }
+    
     return NextResponse.json({ data })
   } else if (action === 'media.create') {
     if (payload.placement.startsWith('demo-')) {

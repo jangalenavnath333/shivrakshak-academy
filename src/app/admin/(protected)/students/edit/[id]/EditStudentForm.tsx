@@ -11,7 +11,7 @@ type FormData = {
   name: string; parent_name: string; address: string; phone: string; parent_phone: string
   aadhaar_no: string; guarantee_letter_no: string; dob: string; course: string
   admission_date: string; duration: string; age: string; height: string
-  weight: string; chest: string; gender: string; total_fee: string
+  weight: string; chest: string; gender: string; total_fee: string; email: string
 }
 
 export default function EditStudentForm({ student }: { student: Student }) {
@@ -36,7 +36,8 @@ export default function EditStudentForm({ student }: { student: Student }) {
       weight: student.weight?.toString() || '',
       chest: student.chest?.toString() || '',
       gender: student.gender || 'male',
-      total_fee: student.total_fee?.toString() || '0'
+      total_fee: student.total_fee?.toString() || '0',
+      email: student.admission_details?.email || ''
     }
   })
 
@@ -88,6 +89,11 @@ export default function EditStudentForm({ student }: { student: Student }) {
             <div>
               <label className="form-label">फोन</label>
               <input className="form-input" {...register('phone')} />
+            </div>
+
+            <div>
+              <label className="form-label">ईमेल (Email)</label>
+              <input type="email" className="form-input" {...register('email')} />
             </div>
 
             <div>
