@@ -63,7 +63,24 @@ export default function EditStudentForm({ student }: { student: Student }) {
           <div className="page-title">✏️ {student.name} ची माहिती एडिट करा</div>
           <div className="page-subtitle">चुकीची माहिती दुरुस्त करा</div>
         </div>
-        <Link href="/admin/students" className="btn btn-secondary">← परत</Link>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {student.admission_status === 'active' && (
+            <button className="btn btn-primary" onClick={async () => {
+              try {
+                const res = await fetch('/api/admin/admissions', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'resend_email', studentId: student.id })
+                })
+                const data = await res.json()
+                if (!res.ok) throw new Error(data.error)
+                alert(data.delivery?.email?.sent ? 'ई-मेल यशस्वीरित्या पाठवला गेला!' : 'ई-मेल पाठवता आला नाही: ' + (data.delivery?.email?.detail || ''))
+              } catch (e) { alert(e instanceof Error ? e.message : 'Error') }
+            }}>
+              📧 3-पानी अर्ज Email वर पुन्हा पाठवा
+            </button>
+          )}
+          <Link href="/admin/students" className="btn btn-secondary">← परत</Link>
+        </div>
       </div>
 
       <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 28 }}>

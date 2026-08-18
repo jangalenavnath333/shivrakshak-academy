@@ -35,6 +35,7 @@ const requestSchema = z.discriminatedUnion('action', [
     course: z.enum(['police', 'navy', 'mpsc', 'staff_selection', 'saral_seva', 'army', 'railway', 'other']).optional(),
     email: z.string().email().optional().or(z.literal('')),
   }),
+  z.object({ action: z.literal('resend_email'), studentId: id }),
 ])
 
 /**
@@ -257,6 +258,38 @@ export async function POST(request: Request) {
       token,
       origin,
     })
+  }
+
+  if (payload.action === 'resend_email') {
+    const { data: student, error: studentError } = await admin
+      .from('students')
+      .select('id, name, roll_number, auth_user_id, admission_status, admission_details')
+      .eq('id', payload.studentId)
+      .eq('admission_status', 'active')
+      .maybeSingle()
+      
+    if (studentError) return NextResponse.json({ error: studentError.message }, { status: 400 })
+    if (!student?.roll_number) {
+      return NextResponse.json({ error: 'हा विद्यार्थी Active नाही.' }, { status: 409 })
+    }
+    
+    await admin.from('admission_print_tokens').upsert({ student_id: student.id, token_hash: tokenHash, revoked_at: null }, { onConflict: 'token_hash' })
+    const printUrl = `${origin}/admission/print/${token}`
+    
+    const details = (student.admission_details || {}) as Record<string, unknown>
+    const email = typeof details.email === 'string' ? details.email : ''
+    
+    if (!email) {
+      return NextResponse.json({ error: 'या विद्यार्थ्याचा ई-मेल उपलब्ध नाही.' }, { status: 400 })
+    }
+    
+    const notify = async <T>(job: Promise<T>, fallback: T) => {
+      try { return await job } catch { return fallback }
+    }
+    
+    const emailResult = await notify(sendAdmissionActivatedEmail({ to: email, studentName: student.name, rollNumber: student.roll_number, printUrl }), { sent: false as const, reason: 'provider_error' as const, detail: 'ई-मेल पाठवताना अनपेक्षित अडचण आली' })
+    
+    return NextResponse.json({ ok: true, delivery: { email: emailResult } })
   }
 
   const { data: activatedRows, error: activationError } = await admin.rpc('activate_paid_admission', {
