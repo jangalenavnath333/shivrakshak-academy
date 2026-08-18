@@ -139,8 +139,31 @@ export default function ExamManager() {
       setMessage(form.id ? 'परीक्षा व वेळापत्रक update झाले.' : 'परीक्षा तयार झाली. आता प्रश्न जोडा.')
       setForm(blankExam)
       await loadExams()
-    } catch (caught) { setError(caught instanceof Error ? caught.message : 'Exam save झाली नाही.') }
     finally { setSaving(false) }
+  }
+
+  async function quickAction(exam: Exam, action: 'start' | 'end') {
+    if (!window.confirm(action === 'start' ? 'परीक्षा आता लगेच विद्यार्थ्यांसाठी सुरू करायची आहे का?' : 'परीक्षा आता लगेच थांबवायची आहे का? (नवीन विद्यार्थी सुरू करू शकणार नाहीत)')) return
+    setError(''); setMessage('')
+    try {
+      const now = new Date().toISOString()
+      const body = {
+        ...exam,
+        starts_at: action === 'start' ? now : exam.starts_at,
+        ends_at: action === 'end' ? now : exam.ends_at,
+        is_published: true,
+        is_live: action === 'start'
+      }
+      const response = await fetch('/api/admin/exams', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      })
+      const payload = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(payload.error || 'अॅक्शन पूर्ण झाली नाही.')
+      setMessage(action === 'start' ? 'परीक्षा लगेच सुरू झाली! (Live)' : 'परीक्षा थांबवण्यात आली.')
+      await loadExams()
+      const refreshed = (exams || []).find(e => e.id === exam.id)
+      if (refreshed) setSelected({ ...refreshed, ...body })
+    } catch (caught) { setError(caught instanceof Error ? caught.message : 'अॅक्शन पूर्ण झाली नाही.') }
   }
 
   async function saveQuestion() {
@@ -209,7 +232,14 @@ export default function ExamManager() {
 
         <div className="exam-workspace admin-card">
           {!selected ? <div className="admin-empty large"><FileQuestion /><h2>Question Paper तयार करा</h2><p>डावीकडून परीक्षा निवडा. येथे प्रश्न, correct answer आणि results दिसतील.</p></div> : <>
-            <div className="workspace-heading"><div><small>SELECTED EXAM</small><h2>{selected.title}</h2><p>{questions.length} प्रश्न · {totalQuestionMarks} गुण · {results.length} attempts</p></div><button className="btn btn-secondary" onClick={() => editExam(selected)}><CalendarClock /> Reschedule</button></div>
+            <div className="workspace-heading">
+              <div><small>SELECTED EXAM</small><h2>{selected.title}</h2><p>{questions.length} प्रश्न · {totalQuestionMarks} गुण · {results.length} attempts</p></div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <button className="btn btn-primary" style={{ background: '#16a34a', borderColor: '#16a34a' }} onClick={() => quickAction(selected, 'start')} disabled={saving}><PlayCircle size={16} /> लगेच सुरू करा</button>
+                <button className="btn btn-secondary" style={{ color: '#dc2626', borderColor: '#fca5a5', background: '#fef2f2' }} onClick={() => quickAction(selected, 'end')} disabled={saving}>🛑 लगेच संपवा</button>
+                <button className="btn btn-secondary" onClick={() => editExam(selected)}><CalendarClock size={16} /> Reschedule</button>
+              </div>
+            </div>
             <div className="question-editor"><h3>{question.id ? 'Question Edit करा' : 'नवीन Question जोडा'}</h3><label><span className="form-label">Question *</span><textarea className="form-input" value={question.question_text} onChange={(event) => setQuestion({ ...question, question_text: event.target.value })} /></label><div className="question-options-editor">{question.options.map((option, optionIndex) => <label key={optionIndex} className={question.correct_option === optionIndex ? 'correct' : ''}><input type="radio" checked={question.correct_option === optionIndex} onChange={() => setQuestion({ ...question, correct_option: optionIndex })} /><span>{String.fromCharCode(65 + optionIndex)}</span><input className="form-input" value={option} placeholder={`Option ${String.fromCharCode(65 + optionIndex)}`} onChange={(event) => setQuestion({ ...question, options: question.options.map((item, index) => index === optionIndex ? event.target.value : item) })} /></label>)}</div><div className="question-editor-footer"><label><span className="form-label">गुण</span><input type="number" className="form-input" value={question.marks} onChange={(event) => setQuestion({ ...question, marks: Number(event.target.value) })} /></label><label><span className="form-label">क्रमांक</span><input type="number" className="form-input" value={question.sort_order} onChange={(event) => setQuestion({ ...question, sort_order: Number(event.target.value) })} /></label><button className="btn btn-primary" onClick={saveQuestion} disabled={questionSaving || !question.question_text || question.options.some((option) => !option)}>{questionSaving ? <LoaderCircle className="spin" /> : <Save />} Question Save</button>{question.id && <button className="btn btn-secondary" onClick={() => setQuestion({ ...blankQuestion, sort_order: questions.length + 1 })}>Cancel</button>}</div></div>
             <div className="question-list"><h3>Question Paper</h3>{questions.length === 0 ? <p className="empty-inline">Publish करण्यापूर्वी questions जोडा.</p> : questions.map((item, itemIndex) => <article key={item.id}><span>{itemIndex + 1}</span><div><b>{item.question_text}</b><p>{item.options.map((option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`).join(' · ')}</p><small>Correct: {String.fromCharCode(65 + item.correct_option)} · {item.marks} गुण</small></div><button onClick={() => setQuestion(item)} aria-label="Edit question"><Edit3 /></button><button className="danger" onClick={() => deleteQuestion(item.id)} aria-label="Delete question"><Trash2 /></button></article>)}</div>
             <div className="exam-results"><h3>विद्यार्थी निकाल</h3>{results.length === 0 ? <p className="empty-inline">अजून कुणी परीक्षा दिलेली नाही.</p> : <div className="table-scroll"><table className="data-table"><thead><tr><th>विद्यार्थी</th><th>Attempt</th><th>Status</th><th>Score</th><th>%</th><th>Submitted</th></tr></thead><tbody>{results.map((row) => { const linked = Array.isArray(row.students) ? row.students[0] : row.students; return <tr key={row.id}><td><b>{linked?.roll_number}</b><br />{linked?.name}</td><td>{row.attempt_no}</td><td><span className={`badge ${row.status === 'evaluated' ? 'badge-green' : 'badge-yellow'}`}>{row.status}</span></td><td>{row.score ?? '—'} / {row.max_score ?? '—'}</td><td>{row.percentage ?? '—'}</td><td>{formatDate(row.submitted_at)}</td></tr> })}</tbody></table></div>}</div>

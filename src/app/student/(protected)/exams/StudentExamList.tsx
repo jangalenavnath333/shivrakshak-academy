@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Award, CalendarClock, CheckCircle2, Clock3, LoaderCircle, PlayCircle, RotateCcw } from 'lucide-react'
 
@@ -45,7 +45,22 @@ export default function StudentExamList({ exams, attempts, serverNow }: { exams:
   const [starting, setStarting] = useState('')
   const [confirming, setConfirming] = useState('')
   const [error, setError] = useState('')
-  const now = new Date(serverNow).getTime()
+  
+  // Use a ticking local timer synced with the server time offset
+  const [now, setNow] = useState(new Date(serverNow).getTime())
+
+  useEffect(() => {
+    const offset = new Date(serverNow).getTime() - Date.now()
+    const timer = setInterval(() => setNow(Date.now() + offset), 1000)
+    
+    // Poll the server for exam state changes every 10 seconds
+    const refresher = setInterval(() => router.refresh(), 10000)
+    
+    return () => {
+      clearInterval(timer)
+      clearInterval(refresher)
+    }
+  }, [serverNow, router])
 
   async function startExam(examId: string) {
     if (confirming !== examId) {
