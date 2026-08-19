@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BarChart3, CalendarClock, CheckCircle2, Edit3, Eye, EyeOff, FileQuestion, LoaderCircle, PlusCircle, Radio, Save, Trash2, UsersRound } from 'lucide-react'
+import { BarChart3, CalendarClock, CheckCircle2, Edit3, Eye, EyeOff, FileQuestion, LoaderCircle, PlayCircle, PlusCircle, Radio, Save, Trash2, UsersRound } from 'lucide-react'
 
 type Exam = {
   id: string
@@ -139,7 +139,9 @@ export default function ExamManager() {
       setMessage(form.id ? 'परीक्षा व वेळापत्रक update झाले.' : 'परीक्षा तयार झाली. आता प्रश्न जोडा.')
       setForm(blankExam)
       await loadExams()
-    finally { setSaving(false) }
+    } catch (err: any) {
+      setError(err.message || String(err))
+    } finally { setSaving(false) }
   }
 
   async function quickAction(exam: Exam, action: 'start' | 'end') {
