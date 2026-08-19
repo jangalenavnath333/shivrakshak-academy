@@ -108,9 +108,9 @@ export const DIRECTORS = [
     } as DirectorDetail | null,
   },
   {
-    photo: '/images/director/sambhaji-mahadik-new.jpg' as string | null,
-    cardPhoto: '/images/director/sambhaji-mahadik-new.jpg' as string | null,
-    backgroundPosition: 'center 69%',
+    photo: '/images/director/sambhaji-mahadik-portrait.jpg' as string | null,
+    cardPhoto: '/images/director/sambhaji-mahadik-portrait.jpg' as string | null,
+    backgroundPosition: 'center',
     name: 'वस्ताद संभाजी महाडिक',
     role: 'माजी सैनिक, भारतीय सेना | संस्थापक',
     phone: '9284842177',
