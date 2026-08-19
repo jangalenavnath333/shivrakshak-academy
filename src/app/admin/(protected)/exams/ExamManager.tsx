@@ -1,7 +1,7 @@
 'use client'
 
-import { BarChart3, CalendarClock, CheckCircle2, Edit3, Eye, EyeOff, FileQuestion, LoaderCircle, PlayCircle, PlusCircle, Radio, Save, Trash2, UsersRound } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { BarChart3, CalendarClock, ChevronDown, ChevronUp, CheckCircle2, Download, Edit3, Eye, EyeOff, FileQuestion, LoaderCircle, PlayCircle, PlusCircle, Radio, Save, Trash2, Upload, UsersRound } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type Exam = {
   id: string
@@ -55,6 +55,43 @@ const toLocalInput = (value: string | null) => {
 const toIso = (value: string) => value ? new Date(value).toISOString() : null
 const formatDate = (value: string | null) => value ? new Date(value).toLocaleString('mr-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' }) : '—'
 
+/** Minimal RFC4180 CSV parser — handles quoted fields with embedded commas/newlines/escaped quotes. */
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let inQuotes = false
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+    if (inQuotes) {
+      if (char === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 1 } else inQuotes = false
+      } else field += char
+      continue
+    }
+    if (char === '"') inQuotes = true
+    else if (char === ',') { row.push(field); field = '' }
+    else if (char === '\r') continue
+    else if (char === '\n') { row.push(field); rows.push(row); row = []; field = '' }
+    else field += char
+  }
+  row.push(field)
+  if (row.length > 1 || row[0] !== '') rows.push(row)
+  return rows
+}
+
+const CSV_TEMPLATE = 'question_text,option_a,option_b,option_c,option_d,correct_option,marks\n"महाराष्ट्राची राजधानी कोणती?",मुंबई,पुणे,नाशिक,नागपूर,A,1\n'
+
+function downloadCsvTemplate() {
+  const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'question_template.csv'
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function ExamManager() {
   const [exams, setExams] = useState<Exam[]>([])
   const [form, setForm] = useState(blankExam)
@@ -67,6 +104,9 @@ export default function ExamManager() {
   const [questionSaving, setQuestionSaving] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [bulkUploading, setBulkUploading] = useState(false)
+  const bulkFileInputRef = useRef<HTMLInputElement>(null)
 
   const loadExams = useCallback(async () => {
     setLoading(true)
@@ -124,6 +164,7 @@ export default function ExamManager() {
       starts_at: toLocalInput(exam.starts_at), ends_at: toLocalInput(exam.ends_at), result_release_at: toLocalInput(exam.result_release_at),
       is_live: exam.is_live, is_published: exam.is_published,
     })
+    setShowAdvanced(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -147,6 +188,7 @@ export default function ExamManager() {
       }
       setMessage(form.id ? 'परीक्षा व वेळापत्रक update झाले.' : 'परीक्षा तयार झाली. आता प्रश्न जोडा.')
       setForm(blankExam)
+      setShowAdvanced(false)
       await loadExams()
     } catch (err: any) {
       setError(err.message || String(err))
@@ -197,6 +239,54 @@ export default function ExamManager() {
     finally { setQuestionSaving(false) }
   }
 
+  async function bulkUploadQuestions(file: File) {
+    if (!selected) return
+    setBulkUploading(true); setError(''); setMessage('')
+    try {
+      const text = await file.text()
+      const rows = parseCsv(text).filter((row) => row.some((cell) => cell.trim() !== ''))
+      if (rows.length < 2) throw new Error('CSV मध्ये किमान एक question row असायला हवा.')
+      const [header, ...dataRows] = rows
+      const columnIndex = (name: string) => header.findIndex((col) => col.trim().toLowerCase() === name)
+      const qIdx = columnIndex('question_text'), aIdx = columnIndex('option_a'), bIdx = columnIndex('option_b')
+      const cIdx = columnIndex('option_c'), dIdx = columnIndex('option_d'), correctIdx = columnIndex('correct_option'), marksIdx = columnIndex('marks')
+      if ([qIdx, aIdx, bIdx, cIdx, dIdx, correctIdx].some((value) => value === -1)) {
+        throw new Error('CSV headers चुकीचे आहेत. खालून Template डाउनलोड करून तोच वापरा.')
+      }
+      const questionsPayload = dataRows.map((row) => {
+        const letter = (row[correctIdx] || '').trim().toUpperCase()
+        const letterMap: Record<string, number> = { A: 0, B: 1, C: 2, D: 3 }
+        const correctOption = letter in letterMap ? letterMap[letter] : Number(letter) - 1
+        const marksValue = marksIdx >= 0 ? Number(row[marksIdx]) : 1
+        return {
+          question_text: (row[qIdx] || '').trim(),
+          options: [row[aIdx], row[bIdx], row[cIdx], row[dIdx]].map((value) => (value || '').trim()),
+          correct_option: correctOption,
+          marks: marksValue > 0 ? marksValue : 1,
+        }
+      })
+      const response = await fetch(`/api/admin/exams/${selected.id}/questions/bulk`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questions: questionsPayload }),
+      })
+      const payload = await response.json() as { created?: number; failed?: number; failures?: { row: number; error: string }[]; error?: string }
+      if (!response.ok) throw new Error(payload.error || 'Upload झाला नाही.')
+      setMessage(`${payload.created || 0} questions जोडले गेले.${payload.failed ? ` ${payload.failed} अयशस्वी.` : ''}`)
+      if (payload.failures && payload.failures.length > 0) {
+        setError(payload.failures.map((item) => `Row ${item.row}: ${item.error}`).join(' · '))
+      }
+      const refreshed = await fetch(`/api/admin/exams/${selected.id}/questions`, { cache: 'no-store' })
+      const refreshedPayload = await refreshed.json() as { data?: Question[] }
+      setQuestions(refreshedPayload.data || [])
+      setQuestion({ ...blankQuestion, sort_order: (refreshedPayload.data?.length || 0) + 1 })
+      await loadExams()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Upload झाला नाही.')
+    } finally {
+      setBulkUploading(false)
+      if (bulkFileInputRef.current) bulkFileInputRef.current.value = ''
+    }
+  }
+
   async function deleteQuestion(questionId: string) {
     if (!selected || !window.confirm('हा question delete करायचा आहे का?')) return
     setError('')
@@ -231,22 +321,27 @@ export default function ExamManager() {
       {error && <div className="admin-alert error">{error}</div>}{message && <div className="admin-alert success">{message}</div>}
 
       <section className="admin-card exam-editor">
-        <div className="exam-editor-heading"><div><h2>{form.id ? 'परीक्षा Edit / Reschedule' : 'नवीन परीक्षा तयार करा'}</h2><p>Publish करण्यापूर्वी schedule आणि result release time तपासा.</p></div>{form.id && <button className="btn btn-secondary" onClick={() => setForm(blankExam)}>नवीन Form</button>}</div>
+        <div className="exam-editor-heading"><div><h2>{form.id ? 'परीक्षा Edit / Reschedule' : 'नवीन परीक्षा तयार करा'}</h2><p>Course, वेळ आणि कालावधी टाका — बाकी नंतर बदलता येईल.</p></div>{form.id && <button className="btn btn-secondary" onClick={() => { setForm(blankExam); setShowAdvanced(false) }}>नवीन Form</button>}</div>
         <div className="admin-form-grid exam-form-grid">
           <label><span className="form-label">परीक्षेचे नाव *</span><input className="form-input" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>
           <label><span className="form-label">कोर्स</span><select className="form-input" value={form.course} onChange={(event) => setForm({ ...form, course: event.target.value })}><option value="all">सर्व विद्यार्थी</option><option value="police">Police</option><option value="army">Army</option><option value="navy">Navy</option><option value="mpsc">MPSC</option><option value="railway">Railway</option><option value="staff_selection">Staff Selection</option><option value="saral_seva">Saral Seva</option><option value="other">Other</option></select></label>
-          <label className="wide-field"><span className="form-label">वर्णन</span><textarea className="form-input" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
-          <label className="wide-field"><span className="form-label">विद्यार्थ्यांसाठी सूचना</span><textarea className="form-input" value={form.instructions} onChange={(event) => setForm({ ...form, instructions: event.target.value })} /></label>
           <label><span className="form-label">सुरू होण्याची वेळ</span><input type="datetime-local" className="form-input" value={form.starts_at} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} /></label>
           <label><span className="form-label">समाप्त होण्याची वेळ</span><input type="datetime-local" className="form-input" value={form.ends_at} onChange={(event) => setForm({ ...form, ends_at: event.target.value })} /></label>
-          <label><span className="form-label">निकाल जाहीर करण्याची वेळ</span><input type="datetime-local" className="form-input" value={form.result_release_at} onChange={(event) => setForm({ ...form, result_release_at: event.target.value })} /></label>
           <label><span className="form-label">कालावधी (मिनिटे)</span><input type="number" className="form-input" value={form.duration_minutes} onChange={(event) => setForm({ ...form, duration_minutes: Number(event.target.value) })} /></label>
-          <label><span className="form-label">Pass Marks</span><input type="number" className="form-input" value={form.pass_marks} onChange={(event) => setForm({ ...form, pass_marks: Number(event.target.value) })} /></label>
-          <label><span className="form-label">Wrong Answer Negative Marks</span><input type="number" step="0.25" className="form-input" value={form.negative_marks} onChange={(event) => setForm({ ...form, negative_marks: Number(event.target.value) })} /></label>
-          <label><span className="form-label">Maximum Attempts</span><input type="number" min="1" max="10" className="form-input" value={form.max_attempts} onChange={(event) => setForm({ ...form, max_attempts: Number(event.target.value) })} /></label>
-          <label className="check-control"><input type="checkbox" checked={form.is_live} onChange={(event) => setForm({ ...form, is_live: event.target.checked })} /><Radio /> LIVE badge दाखवा</label>
           <label className="check-control"><input type="checkbox" checked={form.is_published} onChange={(event) => setForm({ ...form, is_published: event.target.checked })} />{form.is_published ? <Eye /> : <EyeOff />} विद्यार्थ्यांना Publish करा</label>
         </div>
+        <button type="button" className="exam-advanced-toggle" onClick={() => setShowAdvanced((value) => !value)}>{showAdvanced ? <ChevronUp size={15} /> : <ChevronDown size={15} />} Advanced Settings (वर्णन, गुणपद्धती, निकाल वेळ...)</button>
+        {showAdvanced && (
+          <div className="admin-form-grid exam-form-grid">
+            <label className="wide-field"><span className="form-label">वर्णन</span><textarea className="form-input" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
+            <label className="wide-field"><span className="form-label">विद्यार्थ्यांसाठी सूचना</span><textarea className="form-input" value={form.instructions} onChange={(event) => setForm({ ...form, instructions: event.target.value })} /></label>
+            <label><span className="form-label">निकाल जाहीर करण्याची वेळ</span><input type="datetime-local" className="form-input" value={form.result_release_at} onChange={(event) => setForm({ ...form, result_release_at: event.target.value })} /></label>
+            <label><span className="form-label">Pass Marks</span><input type="number" className="form-input" value={form.pass_marks} onChange={(event) => setForm({ ...form, pass_marks: Number(event.target.value) })} /></label>
+            <label><span className="form-label">Wrong Answer Negative Marks</span><input type="number" step="0.25" className="form-input" value={form.negative_marks} onChange={(event) => setForm({ ...form, negative_marks: Number(event.target.value) })} /></label>
+            <label><span className="form-label">Maximum Attempts</span><input type="number" min="1" max="10" className="form-input" value={form.max_attempts} onChange={(event) => setForm({ ...form, max_attempts: Number(event.target.value) })} /></label>
+            <label className="check-control"><input type="checkbox" checked={form.is_live} onChange={(event) => setForm({ ...form, is_live: event.target.checked })} /><Radio /> LIVE badge दाखवा</label>
+          </div>
+        )}
         <button className="btn btn-primary exam-save-button" onClick={saveExam} disabled={saving || !form.title}>{saving ? <LoaderCircle className="spin" /> : <Save />} {form.id ? 'बदल Save करा' : 'परीक्षा तयार करा'}</button>
       </section>
 
@@ -261,6 +356,14 @@ export default function ExamManager() {
                 <button className="btn btn-primary" style={{ background: '#16a34a', borderColor: '#16a34a' }} onClick={() => quickAction(selected, 'start')} disabled={saving}><PlayCircle size={16} /> लगेच सुरू करा</button>
                 <button className="btn btn-secondary" style={{ color: '#dc2626', borderColor: '#fca5a5', background: '#fef2f2' }} onClick={() => quickAction(selected, 'end')} disabled={saving}>🛑 लगेच संपवा</button>
                 <button className="btn btn-secondary" onClick={() => editExam(selected)}><CalendarClock size={16} /> Reschedule</button>
+              </div>
+            </div>
+            <div className="bulk-upload-card">
+              <div><b>एकाचवेळी अनेक Questions Upload करा</b><p>CSV file मधून प्रश्न जोडा — आधी Template डाउनलोड करून त्यातच भरा.</p></div>
+              <div className="bulk-upload-actions">
+                <button type="button" className="btn btn-secondary" onClick={downloadCsvTemplate}><Download size={15} /> Template डाउनलोड</button>
+                <button type="button" className="btn btn-secondary" onClick={() => bulkFileInputRef.current?.click()} disabled={bulkUploading}>{bulkUploading ? <LoaderCircle className="spin" size={15} /> : <Upload size={15} />} CSV Upload करा</button>
+                <input ref={bulkFileInputRef} type="file" accept=".csv,text/csv" style={{ display: 'none' }} onChange={(event) => { const file = event.target.files?.[0]; if (file) void bulkUploadQuestions(file) }} />
               </div>
             </div>
             <div className="question-editor"><h3>{question.id ? 'Question Edit करा' : 'नवीन Question जोडा'}</h3><label><span className="form-label">Question *</span><textarea className="form-input" value={question.question_text} onChange={(event) => setQuestion({ ...question, question_text: event.target.value })} /></label><div className="question-options-editor">{question.options.map((option, optionIndex) => <label key={optionIndex} className={question.correct_option === optionIndex ? 'correct' : ''}><input type="radio" checked={question.correct_option === optionIndex} onChange={() => setQuestion({ ...question, correct_option: optionIndex })} /><span>{String.fromCharCode(65 + optionIndex)}</span><input className="form-input" value={option} placeholder={`Option ${String.fromCharCode(65 + optionIndex)}`} onChange={(event) => setQuestion({ ...question, options: question.options.map((item, index) => index === optionIndex ? event.target.value : item) })} /></label>)}</div><div className="question-editor-footer"><label><span className="form-label">गुण</span><input type="number" className="form-input" value={question.marks} onChange={(event) => setQuestion({ ...question, marks: Number(event.target.value) })} /></label><label><span className="form-label">क्रमांक</span><input type="number" className="form-input" value={question.sort_order} onChange={(event) => setQuestion({ ...question, sort_order: Number(event.target.value) })} /></label><button className="btn btn-primary" onClick={saveQuestion} disabled={questionSaving || !question.question_text || question.options.some((option) => !option)}>{questionSaving ? <LoaderCircle className="spin" /> : <Save />} Question Save</button>{question.id && <button className="btn btn-secondary" onClick={() => setQuestion({ ...blankQuestion, sort_order: questions.length + 1 })}>Cancel</button>}</div></div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Clock3, LoaderCircle, Send, Wifi, WifiOff } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Clock3, LoaderCircle, Send, ShieldAlert, Wifi, WifiOff } from 'lucide-react'
 
 type Question = { id: string; question_text: string; options: string[]; marks: number; sort_order: number }
 type ExamData = {
@@ -25,6 +25,8 @@ export default function ExamRunner({ attemptId }: { attemptId: string }) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [finished, setFinished] = useState<{ released: boolean; result: Result | null } | null>(null)
+  const [acknowledged, setAcknowledged] = useState(false)
+  const [rulesRead, setRulesRead] = useState(false)
   const submitExamRef = useRef<(automatic?: boolean) => Promise<void>>(async () => {})
   const autoSubmittedRef = useRef(false)
 
@@ -78,6 +80,16 @@ export default function ExamRunner({ attemptId }: { attemptId: string }) {
     return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline) }
   }, [])
 
+  // Leaving the tab/app mid-exam auto-submits immediately — students are warned about this on the rules screen before they start.
+  useEffect(() => {
+    if (!acknowledged || finished) return
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') void submitExamRef.current(true)
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [acknowledged, finished])
+
   useEffect(() => {
     if (!data || finished) return
     const serverOffset = new Date(data.serverNow).getTime() - Date.now()
@@ -121,9 +133,32 @@ export default function ExamRunner({ attemptId }: { attemptId: string }) {
   if (!data && !error) return <main className="exam-loading"><LoaderCircle className="spin" /><p>Question paper सुरक्षितपणे load होत आहे…</p></main>
   if (!data) return <main className="exam-loading"><AlertTriangle /><p>{error}</p><Link href="/student/exams">मागे जा</Link></main>
 
+  if (!acknowledged) return (
+    <main className="exam-rules">
+      <div>
+        <ShieldAlert />
+        <h1>{data.exam.title}</h1>
+        {data.exam.description && <p className="exam-rules-desc">{data.exam.description}</p>}
+        <div className="exam-rules-meta"><span><Clock3 /> {data.exam.durationMinutes} मिनिटे</span><span>{data.exam.totalMarks} गुण</span><span>Attempt {data.attempt.attemptNo}</span></div>
+        {data.exam.instructions && <div className="exam-rules-box"><b>परीक्षेच्या सूचना</b><p>{data.exam.instructions}</p></div>}
+        <div className="exam-rules-box exam-rules-warning">
+          <b>महत्त्वाचे नियम</b>
+          <ul>
+            <li>प्रश्न किंवा उत्तरांचा मजकूर copy करता येणार नाही.</li>
+            <li>परीक्षा सुरू असताना दुसऱ्या tab/app वर गेल्यास परीक्षा लगेच आपोआप Submit होईल — परत सुरू करता येणार नाही.</li>
+            <li>वेळ संपल्यास परीक्षा आपोआप Submit होईल.</li>
+            <li>Submit केल्यानंतर उत्तरे बदलता येणार नाहीत.</li>
+          </ul>
+        </div>
+        <label className="exam-rules-check"><input type="checkbox" checked={rulesRead} onChange={(event) => setRulesRead(event.target.checked)} /> मी वरील सर्व सूचना व नियम काळजीपूर्वक वाचले आहेत.</label>
+        <button className="exam-submit" onClick={() => setAcknowledged(true)} disabled={!rulesRead}>परीक्षा सुरू करा</button>
+      </div>
+    </main>
+  )
+
   const question = data.questions[index]
   return (
-    <main className="exam-runner">
+    <main className="exam-runner" onCopy={(event) => event.preventDefault()} onCut={(event) => event.preventDefault()} onContextMenu={(event) => event.preventDefault()}>
       <header><div><small>Online परीक्षा · Attempt {data.attempt.attemptNo}</small><h1>{data.exam.title}</h1></div><div className={seconds < 300 ? 'exam-timer urgent' : 'exam-timer'}><Clock3 /><span>{time}</span></div></header>
       <div className="exam-connection">{online ? <><Wifi /> Online</> : <><WifiOff /> Internet बंद — उत्तर save होईपर्यंत page बंद करू नका</>}{saving && <span><LoaderCircle className="spin" /> उत्तर save होत आहे</span>}</div>
       {error && <div className="exam-runner-error"><AlertTriangle /> {error}</div>}
