@@ -113,7 +113,14 @@ export async function PATCH(request: Request) {
   }
 
   const lockedFields = ['course', 'duration_minutes', 'negative_marks', 'pass_marks', 'max_attempts', 'starts_at', 'ends_at'] as const
-  const changesLockedExamData = lockedFields.some((field) => String(previous[field]) !== String(changes[field]))
+  const changesLockedExamData = lockedFields.some((field) => {
+    if (field === 'starts_at' || field === 'ends_at') {
+      const prevTime = previous[field] ? new Date(previous[field] as string).getTime() : null
+      const nextTime = changes[field] ? new Date(changes[field] as string).getTime() : null
+      return prevTime !== nextTime
+    }
+    return String(previous[field]) !== String(changes[field])
+  })
   if ((attemptCount || 0) > 0 && changesLockedExamData) {
     return NextResponse.json({ error: 'पहिला attempt सुरू झाल्यानंतर course, वेळ, गुणपद्धती किंवा attempts बदलता येत नाहीत. निकालाची वेळ व मजकूर बदलता येतो.' }, { status: 409 })
   }

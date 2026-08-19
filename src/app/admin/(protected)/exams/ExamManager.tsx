@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BarChart3, CalendarClock, CheckCircle2, Edit3, Eye, EyeOff, FileQuestion, LoaderCircle, PlayCircle, PlusCircle, Radio, Save, Trash2, UsersRound } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 type Exam = {
   id: string
@@ -134,8 +134,17 @@ export default function ExamManager() {
       const response = await fetch('/api/admin/exams', {
         method: form.id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       })
-      const payload = await response.json() as { data?: Exam; error?: string }
-      if (!response.ok) throw new Error(payload.error || 'Exam save झाली नाही.')
+      const payload = await response.json() as { data?: Exam; error?: string; issues?: any }
+      if (!response.ok) {
+        let errorMessage = payload.error || 'Exam save झाली नाही.'
+        if (payload.issues && payload.issues.fieldErrors) {
+          const fields = Object.keys(payload.issues.fieldErrors)
+          if (fields.length > 0) {
+            errorMessage += ` (Fields: ${fields.join(', ')})`
+          }
+        }
+        throw new Error(errorMessage)
+      }
       setMessage(form.id ? 'परीक्षा व वेळापत्रक update झाले.' : 'परीक्षा तयार झाली. आता प्रश्न जोडा.')
       setForm(blankExam)
       await loadExams()
@@ -151,8 +160,8 @@ export default function ExamManager() {
       const now = new Date().toISOString()
       const body = {
         ...exam,
-        starts_at: action === 'start' ? now : exam.starts_at,
-        ends_at: action === 'end' ? now : exam.ends_at,
+        starts_at: action === 'start' ? now : (exam.starts_at && new Date(exam.starts_at) > new Date(now) ? now : exam.starts_at),
+        ends_at: action === 'end' ? now : (action === 'start' && exam.ends_at && new Date(exam.ends_at) < new Date(now) ? null : exam.ends_at),
         is_published: true,
         is_live: action === 'start'
       }
@@ -204,6 +213,18 @@ export default function ExamManager() {
 
   const totalQuestionMarks = useMemo(() => questions.reduce((sum, item) => sum + Number(item.marks), 0), [questions])
 
+  const examsListMemo = useMemo(() => {
+    return exams.map((exam) => <article key={exam.id} className={selected?.id === exam.id ? 'selected' : ''}><div className="exam-list-title"><span className={exam.is_published ? 'published' : 'draft'}>{exam.is_published ? 'PUBLISHED' : 'DRAFT'}</span><h3>{exam.title}</h3><p>{formatDate(exam.starts_at)}</p></div><div className="exam-list-stats"><span><FileQuestion /> {exam.question_count} प्रश्न</span><span><UsersRound /> {exam.attempt_count} attempts</span><span><BarChart3 /> {exam.completed_count} निकाल</span></div><div className="exam-list-actions"><button onClick={() => editExam(exam)}><Edit3 /> Edit / Reschedule</button><button onClick={() => loadWorkspace(exam)}><PlusCircle /> Questions & Results</button></div></article>)
+  }, [exams, selected])
+
+  const questionsListMemo = useMemo(() => {
+    return questions.map((item, itemIndex) => <article key={item.id}><span>{itemIndex + 1}</span><div><b>{item.question_text}</b><p>{item.options.map((option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`).join(' · ')}</p><small>Correct: {String.fromCharCode(65 + item.correct_option)} · {item.marks} गुण</small></div><button onClick={() => setQuestion(item)} aria-label="Edit question"><Edit3 /></button><button className="danger" onClick={() => deleteQuestion(item.id)} aria-label="Delete question"><Trash2 /></button></article>)
+  }, [questions])
+
+  const resultsListMemo = useMemo(() => {
+    return results.map((row) => { const linked = Array.isArray(row.students) ? row.students[0] : row.students; return <tr key={row.id}><td><b>{linked?.roll_number}</b><br />{linked?.name}</td><td>{row.attempt_no}</td><td><span className={`badge ${row.status === 'evaluated' ? 'badge-green' : 'badge-yellow'}`}>{row.status}</span></td><td>{row.score ?? '—'} / {row.max_score ?? '—'}</td><td>{row.percentage ?? '—'}</td><td>{formatDate(row.submitted_at)}</td></tr> })
+  }, [results])
+
   return (
     <div className="admin-page exam-manager">
       <div className="page-header"><div><h1 className="page-title">Online परीक्षा व्यवस्थापन</h1><p className="page-subtitle">Exam schedule, प्रश्नपत्रिका, live attempts आणि निकाल एकाच ठिकाणी.</p></div><div className="exam-security-note"><CheckCircle2 /> Server timer & secure scoring</div></div>
@@ -230,7 +251,7 @@ export default function ExamManager() {
       </section>
 
       <section className="exam-overview">
-        <div className="exam-list-panel admin-card"><h2>सर्व परीक्षा <span>{exams.length}</span></h2>{loading ? <div className="admin-loading"><LoaderCircle className="spin" /></div> : exams.length === 0 ? <div className="admin-empty"><FileQuestion /><p>पहिली परीक्षा तयार करा.</p></div> : exams.map((exam) => <article key={exam.id} className={selected?.id === exam.id ? 'selected' : ''}><div className="exam-list-title"><span className={exam.is_published ? 'published' : 'draft'}>{exam.is_published ? 'PUBLISHED' : 'DRAFT'}</span><h3>{exam.title}</h3><p>{formatDate(exam.starts_at)}</p></div><div className="exam-list-stats"><span><FileQuestion /> {exam.question_count} प्रश्न</span><span><UsersRound /> {exam.attempt_count} attempts</span><span><BarChart3 /> {exam.completed_count} निकाल</span></div><div className="exam-list-actions"><button onClick={() => editExam(exam)}><Edit3 /> Edit / Reschedule</button><button onClick={() => loadWorkspace(exam)}><PlusCircle /> Questions & Results</button></div></article>)}</div>
+        <div className="exam-list-panel admin-card"><h2>सर्व परीक्षा <span>{exams.length}</span></h2>{loading ? <div className="admin-loading"><LoaderCircle className="spin" /></div> : exams.length === 0 ? <div className="admin-empty"><FileQuestion /><p>पहिली परीक्षा तयार करा.</p></div> : examsListMemo}</div>
 
         <div className="exam-workspace admin-card">
           {!selected ? <div className="admin-empty large"><FileQuestion /><h2>Question Paper तयार करा</h2><p>डावीकडून परीक्षा निवडा. येथे प्रश्न, correct answer आणि results दिसतील.</p></div> : <>
@@ -243,8 +264,8 @@ export default function ExamManager() {
               </div>
             </div>
             <div className="question-editor"><h3>{question.id ? 'Question Edit करा' : 'नवीन Question जोडा'}</h3><label><span className="form-label">Question *</span><textarea className="form-input" value={question.question_text} onChange={(event) => setQuestion({ ...question, question_text: event.target.value })} /></label><div className="question-options-editor">{question.options.map((option, optionIndex) => <label key={optionIndex} className={question.correct_option === optionIndex ? 'correct' : ''}><input type="radio" checked={question.correct_option === optionIndex} onChange={() => setQuestion({ ...question, correct_option: optionIndex })} /><span>{String.fromCharCode(65 + optionIndex)}</span><input className="form-input" value={option} placeholder={`Option ${String.fromCharCode(65 + optionIndex)}`} onChange={(event) => setQuestion({ ...question, options: question.options.map((item, index) => index === optionIndex ? event.target.value : item) })} /></label>)}</div><div className="question-editor-footer"><label><span className="form-label">गुण</span><input type="number" className="form-input" value={question.marks} onChange={(event) => setQuestion({ ...question, marks: Number(event.target.value) })} /></label><label><span className="form-label">क्रमांक</span><input type="number" className="form-input" value={question.sort_order} onChange={(event) => setQuestion({ ...question, sort_order: Number(event.target.value) })} /></label><button className="btn btn-primary" onClick={saveQuestion} disabled={questionSaving || !question.question_text || question.options.some((option) => !option)}>{questionSaving ? <LoaderCircle className="spin" /> : <Save />} Question Save</button>{question.id && <button className="btn btn-secondary" onClick={() => setQuestion({ ...blankQuestion, sort_order: questions.length + 1 })}>Cancel</button>}</div></div>
-            <div className="question-list"><h3>Question Paper</h3>{questions.length === 0 ? <p className="empty-inline">Publish करण्यापूर्वी questions जोडा.</p> : questions.map((item, itemIndex) => <article key={item.id}><span>{itemIndex + 1}</span><div><b>{item.question_text}</b><p>{item.options.map((option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`).join(' · ')}</p><small>Correct: {String.fromCharCode(65 + item.correct_option)} · {item.marks} गुण</small></div><button onClick={() => setQuestion(item)} aria-label="Edit question"><Edit3 /></button><button className="danger" onClick={() => deleteQuestion(item.id)} aria-label="Delete question"><Trash2 /></button></article>)}</div>
-            <div className="exam-results"><h3>विद्यार्थी निकाल</h3>{results.length === 0 ? <p className="empty-inline">अजून कुणी परीक्षा दिलेली नाही.</p> : <div className="table-scroll"><table className="data-table"><thead><tr><th>विद्यार्थी</th><th>Attempt</th><th>Status</th><th>Score</th><th>%</th><th>Submitted</th></tr></thead><tbody>{results.map((row) => { const linked = Array.isArray(row.students) ? row.students[0] : row.students; return <tr key={row.id}><td><b>{linked?.roll_number}</b><br />{linked?.name}</td><td>{row.attempt_no}</td><td><span className={`badge ${row.status === 'evaluated' ? 'badge-green' : 'badge-yellow'}`}>{row.status}</span></td><td>{row.score ?? '—'} / {row.max_score ?? '—'}</td><td>{row.percentage ?? '—'}</td><td>{formatDate(row.submitted_at)}</td></tr> })}</tbody></table></div>}</div>
+            <div className="question-list"><h3>Question Paper</h3>{questions.length === 0 ? <p className="empty-inline">Publish करण्यापूर्वी questions जोडा.</p> : questionsListMemo}</div>
+            <div className="exam-results"><h3>विद्यार्थी निकाल</h3>{results.length === 0 ? <p className="empty-inline">अजून कुणी परीक्षा दिलेली नाही.</p> : <div className="table-scroll"><table className="data-table"><thead><tr><th>विद्यार्थी</th><th>Attempt</th><th>Status</th><th>Score</th><th>%</th><th>Submitted</th></tr></thead><tbody>{resultsListMemo}</tbody></table></div>}</div>
           </>}
         </div>
       </section>
