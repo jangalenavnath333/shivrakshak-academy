@@ -32,7 +32,7 @@ type ActivationResult = {
   delivery: { email: { sent: boolean; reason?: string; detail?: string }; whatsapp: { sent: boolean; reason?: string; detail?: string } }
 }
 
-type Tab = 'approval' | 'fee' | 'students' | 'incomplete'
+type Tab = 'approval' | 'fee' | 'students' | 'incomplete' | 'archived'
 
 /** The five stages an admission passes through, shown so the order is never a guess. */
 const STEPS = [
@@ -91,9 +91,16 @@ export default function FeesPage() {
   const incompleteApplications = applications.filter(application => application.admission_status === 'payment_recorded')
   const selectedApplication = approvedApplications.find(application => application.id === selected)
   const selectedActiveStudent = students.find(student => student.id === selected && student.admission_status === 'active')
-  const filtered = useMemo(() => !search ? students : students.filter(student =>
-    student.name.toLowerCase().includes(search.toLowerCase()) || student.roll_number?.includes(search)
-  ), [search, students])
+  const activeStudentsList = useMemo(() => students.filter(s => s.admission_status !== 'archived'), [students])
+  const archivedStudentsList = useMemo(() => students.filter(s => s.admission_status === 'archived'), [students])
+  
+  const filtered = useMemo(() => {
+    const list = tab === 'archived' ? archivedStudentsList : activeStudentsList
+    if (!search) return list
+    return list.filter(student =>
+      student.name.toLowerCase().includes(search.toLowerCase()) || student.roll_number?.includes(search)
+    )
+  }, [search, tab, activeStudentsList, archivedStudentsList])
 
   const approve = async (studentId: string) => {
     setLoading(true)
@@ -252,8 +259,9 @@ export default function FeesPage() {
   const TABS: { id: Tab; label: string; count?: number; hidden?: boolean }[] = [
     { id: 'approval', label: 'प्रवेश मंजुरी', count: pendingApplications.length },
     { id: 'fee', label: 'Fee Entry', count: approvedApplications.length },
-    { id: 'students', label: 'विद्यार्थी व फी', count: students.length },
+    { id: 'students', label: 'विद्यार्थी व फी', count: activeStudentsList.length },
     { id: 'incomplete', label: 'अपूर्ण Activation', count: incompleteApplications.length, hidden: incompleteApplications.length === 0 },
+    { id: 'archived', label: 'अर्काईव्ह', count: archivedStudentsList.length },
   ]
 
   const activeStep = tab === 'approval' ? 1 : tab === 'fee' ? 3 : 5
@@ -418,15 +426,15 @@ export default function FeesPage() {
         </div>
       )}
 
-      {tab === 'students' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 350px', gap: 16, alignItems: 'start' }} className="adm-feegrid">
+      {(tab === 'students' || tab === 'archived') && (
+        <div style={{ display: 'grid', gridTemplateColumns: tab === 'archived' ? '1fr' : 'minmax(0,1fr) 350px', gap: 16, alignItems: 'start' }} className="adm-feegrid">
           <section className="adm-panel">
             <div className="adm-panel__head" style={{ flexWrap: 'wrap', gap: 10 }}>
-              <h3>विद्यार्थी व फी नोंदी</h3>
+              <h3>{tab === 'archived' ? 'अर्काईव्ह विद्यार्थी' : 'विद्यार्थी व फी नोंदी'}</h3>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <ExportButtons 
-                  title="विद्यार्थी व फी नोंदी"
-                  filename="students_fees"
+                  title={tab === 'archived' ? 'अर्काईव्ह विद्यार्थी' : 'विद्यार्थी व फी नोंदी'}
+                  filename={tab === 'archived' ? 'archived_students' : 'students_fees'}
                   data={filtered.map(s => ({
                     'रोल नं.': s.roll_number,
                     'नाव': s.name,
@@ -457,11 +465,15 @@ export default function FeesPage() {
                         <td style={{ color: Number(s.pending_amount) > 0 ? '#b42318' : '#94a3b8', fontWeight: 600 }}>{formatCurrency(s.pending_amount)}</td>
                         <td>
                           <div style={{ display: 'flex', gap: 8 }}>
-                            <button className={`btn ${selected === s.id ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '5px 11px', fontSize: 12 }}
-                              onClick={() => { setSelected(s.id); setAmount('') }}>फी नोंदवा</button>
+                            {tab !== 'archived' && (
+                              <button className={`btn ${selected === s.id ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '5px 11px', fontSize: 12 }}
+                                onClick={() => { setSelected(s.id); setAmount('') }}>फी नोंदवा</button>
+                            )}
                             <a href={`/api/admin/print/${s.id}`} target="_blank" className="btn btn-secondary" style={{ padding: '5px 11px', fontSize: 12 }}>पहा / 🖨️ Form</a>
                             <Link href={`/admin/students/edit/${s.id}`} className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="Edit">✏️</Link>
-                            <button onClick={() => archiveStudent(s.id)} className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="Archive/Delete">🗑️</button>
+                            {tab !== 'archived' && (
+                              <button onClick={() => archiveStudent(s.id)} className="btn btn-secondary" style={{ padding: '5px 8px', fontSize: 12 }} title="Archive/Delete">🗑️</button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -472,17 +484,21 @@ export default function FeesPage() {
             )}
           </section>
 
-          <section className="adm-panel">
-            <div className="adm-panel__head"><h3>पुढील फी नोंद</h3></div>
-            <div className="adm-panel__body">
-              {selectedActiveStudent ? feeForm('next') : (
-                <div className="adm-empty" style={{ padding: '20px 8px' }}>
-                  <IndianRupee size={28} /><b>विद्यार्थी निवडा</b>
-                  <span>यादीतून &ldquo;फी नोंदवा&rdquo; दाबा.</span>
-                </div>
-              )}
-            </div>
-          </section>
+
+
+          {tab !== 'archived' && (
+            <section className="adm-panel">
+              <div className="adm-panel__head"><h3>पुढील फी नोंद</h3></div>
+              <div className="adm-panel__body">
+                {selectedActiveStudent ? feeForm('next') : (
+                  <div className="adm-empty" style={{ padding: '20px 8px' }}>
+                    <IndianRupee size={28} /><b>विद्यार्थी निवडा</b>
+                    <span>यादीतून &ldquo;फी नोंदवा&rdquo; दाबा.</span>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       )}
 

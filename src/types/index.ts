@@ -55,7 +55,7 @@ export interface Student {
   chest: number
   gender: 'male' | 'female'
   total_fee: number
-  admission_status?: 'pending' | 'approved' | 'payment_recorded' | 'active'
+  admission_status?: 'pending' | 'approved' | 'payment_recorded' | 'active' | 'archived'
   approved_at?: string | null
   code_generated_at?: string | null
   print_enabled_at?: string | null
@@ -83,7 +83,7 @@ export interface StudentFeeSummary {
   parent_phone: string
   course: string
   total_fee: number
-  admission_status?: 'approved' | 'payment_recorded' | 'active'
+  admission_status?: 'approved' | 'payment_recorded' | 'active' | 'archived'
   total_paid: number
   pending_amount: number
 }
