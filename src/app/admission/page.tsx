@@ -284,7 +284,7 @@ export default function AdmissionPage() {
 
             <div className="succ-links">
               <Link href="/">🏠 मुख्यपृष्ठ</Link>
-              <a href={`https://wa.me/917720991375?text=${encodeURIComponent(`नमस्कार, मी ${studentName}. माझा प्रवेश अर्ज submit झाला आहे. पुढील प्रक्रियेसाठी संपर्क करत आहे.`)}`} target="_blank" rel="noopener">💬 अकॅडमीशी संपर्क</a>
+              <a href={`https://wa.me/919284842177?text=${encodeURIComponent(`नमस्कार, मी ${studentName}. माझा प्रवेश अर्ज submit झाला आहे. पुढील प्रक्रियेसाठी संपर्क करत आहे.`)}`} target="_blank" rel="noopener">💬 अकॅडमीशी संपर्क</a>
             </div>
           </div>
         </div>
@@ -401,7 +401,7 @@ export default function AdmissionPage() {
             <div className="al-help">
               अडचण आल्यास संपर्क करा —
               <a href="tel:9284842177">📞 9284842177</a>
-              <a href="https://wa.me/917720991375" target="_blank" rel="noopener">💬 WhatsApp</a>
+              <a href="https://wa.me/919284842177" target="_blank" rel="noopener">💬 WhatsApp</a>
             </div>
           </div>
         </div>

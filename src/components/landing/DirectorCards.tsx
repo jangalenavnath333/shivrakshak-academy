@@ -37,7 +37,7 @@ export default function DirectorCards() {
             <>
               <span className="sra-dir__shot" aria-hidden="true">
                 {person.cardPhoto
-                  ? <Image src={person.cardPhoto} alt="" fill sizes="(max-width: 620px) 40vw, 240px" quality={90} style={{ objectFit: 'cover', objectPosition: 'center 20%' }} />
+                  ? <Image src={person.cardPhoto} alt="" fill sizes="(max-width: 620px) 40vw, 240px" quality={90} style={{ objectFit: 'cover', objectPosition: person.backgroundPosition }} />
                   : <UserRound size={40} />}
               </span>
               <div className="sra-dir__meta">
@@ -50,6 +50,7 @@ export default function DirectorCards() {
                 </div>
                 <span className="sra-dir__foot">
                   <span className="sra-dir__phone"><Phone size={14} aria-hidden="true" /> {person.phone}</span>
+                  <a className="sra-dir__whatsapp" href={`https://wa.me/91${person.phone}`} target="_blank" rel="noopener" onClick={(event) => event.stopPropagation()} aria-label={`${person.name} यांना WhatsApp करा`}>💬</a>
                   {person.detail && <span className="sra-dir__more">संपूर्ण माहिती पहा →</span>}
                 </span>
               </div>
@@ -57,11 +58,11 @@ export default function DirectorCards() {
           )
 
           return person.detail ? (
-            <button key={person.name} type="button" className="sra-dir__card sra-dir__card--link"
-              onClick={() => setOpen(i)} aria-haspopup="dialog"
-              aria-label={`${person.name} — संपूर्ण माहिती पहा`}>
+            <div key={person.name} role="button" tabIndex={0} className="sra-dir__card sra-dir__card--link"
+              onClick={() => setOpen(i)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOpen(i) } }}
+              aria-haspopup="dialog" aria-label={`${person.name} — संपूर्ण माहिती पहा`}>
               {body}
-            </button>
+            </div>
           ) : (
             <article key={person.name} className="sra-dir__card">{body}</article>
           )
@@ -155,9 +156,14 @@ export default function DirectorCards() {
                   </div>
                 )}
 
-                <a className="sra-btn sra-btn--gold" href={`tel:${active.phone}`} style={{ marginTop: '1.4rem' }}>
-                  <Phone size={16} /> {active.phone}
-                </a>
+                <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.4rem', flexWrap: 'wrap' }}>
+                  <a className="sra-btn sra-btn--gold" href={`tel:${active.phone}`}>
+                    <Phone size={16} /> {active.phone}
+                  </a>
+                  <a className="sra-btn sra-btn--gold" href={`https://wa.me/91${active.phone}`} target="_blank" rel="noopener">
+                    💬 WhatsApp
+                  </a>
+                </div>
               </div>
             </div>
           </div>

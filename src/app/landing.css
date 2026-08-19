@@ -704,6 +704,8 @@
 .sra-dir__foot { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.1rem; margin-top: auto; padding-top: 1rem; }
 .sra-dir__phone { margin-top: 0 !important; }
 .sra-dir__more { margin-top: 0 !important; }
+.sra-dir__whatsapp { display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: rgba(37, 211, 102, .18); font-size: 1rem; text-decoration: none; line-height: 1; }
+.sra-dir__whatsapp:hover { background: rgba(37, 211, 102, .32); }
 
 @media (max-width: 1080px) { .sra-dir__people { grid-template-columns: 1fr; } }
 @media (max-width: 560px) {

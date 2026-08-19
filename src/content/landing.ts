@@ -80,6 +80,7 @@ export const DIRECTORS = [
     // Separate photograph for the small directors card only; the section
     // portrait and the dialog keep `photo`.
     cardPhoto: '/images/director/raje-pawar-yoddha.jpg' as string | null,
+    backgroundPosition: 'center 20%',
     name: 'वस्ताद योद्धा राजे पवार',
     role: 'माजी सैनिक, भारतीय सेना | संस्थापक व संचालक',
     phone: '9011887714',
@@ -107,11 +108,11 @@ export const DIRECTORS = [
     } as DirectorDetail | null,
   },
   {
-    photo: '/images/director/sambhaji-mahadik-yodha.jpg' as string | null,
-    cardPhoto: '/images/director/sambhaji-mahadik-yodha.jpg' as string | null,
-    backgroundPosition: 'center 20%',
+    photo: '/images/director/sambhaji-mahadik-new.jpg' as string | null,
+    cardPhoto: '/images/director/sambhaji-mahadik-new.jpg' as string | null,
+    backgroundPosition: 'center 69%',
     name: 'वस्ताद संभाजी महाडिक',
-    role: 'माजी सैनिक, भारतीय सेना | सह-संचालक',
+    role: 'माजी सैनिक, भारतीय सेना | संस्थापक',
     phone: '9284842177',
     facts: [
       { label: 'रँक', value: 'हवालदार' },
@@ -130,7 +131,7 @@ export const DIRECTORS = [
         { year: 'NCO प्रमोशन', text: '४०० जवानांमधून द्वितीय क्रमांक मिळवत Grade \'A\' प्राप्त. रेजिमेंटल पोलीस हवालदार म्हणून महत्त्वाची जबाबदारी.' },
         { year: 'खेळ', text: 'कबड्डी आणि कुस्ती या दोन्ही खेळांमध्ये कमांड लेव्हलवर सहभाग.' },
         { year: '१७ वर्षे सेवा', text: 'भारतमातेच्या सेवेसाठी स्वतःला वाहून घेत तब्बल १७ वर्षे प्रामाणिक, शिस्तबद्ध आणि समर्पित सेवा बजावल्यानंतर स्वेच्छेने सेवानिवृत्ती.' },
-        { year: 'अकॅडमी', text: 'सह-संचालक — मैदानी प्रशिक्षण विभागाचे प्रमुख. आजही त्याच जिद्दीने, शिस्तीने युवकांना सैन्य, पोलीस व सुरक्षा दलांमध्ये जाण्यासाठी प्रेरित करण्याचे कार्य सुरू.' },
+        { year: 'अकॅडमी', text: 'संस्थापक — मैदानी प्रशिक्षण विभागाचे प्रमुख. आजही त्याच जिद्दीने, शिस्तीने युवकांना सैन्य, पोलीस व सुरक्षा दलांमध्ये जाण्यासाठी प्रेरित करण्याचे कार्य सुरू.' },
       ],
       closing:
         'सैनिक ते समाजघडविणारा मार्गदर्शक — देशासाठी जगायचं, देशासाठी घडायचं आणि देशासाठी पुढची पिढी तयार करायची — हा संकल्प आजही कायम आहे. "वेड फक्त देशसेवेचं!"',
