@@ -77,8 +77,13 @@ export async function GET() {
 export async function POST(request: Request) {
   const admin = await requireAdminApi()
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const parsed = createExamSchema.safeParse(await request.json().catch(() => null))
-  if (!parsed.success) return NextResponse.json({ error: 'परीक्षेची माहिती चुकीची आहे.', issues: parsed.error.flatten() }, { status: 400 })
+  const body = await request.json().catch(() => null)
+  const parsed = createExamSchema.safeParse(body)
+  if (!parsed.success) {
+    const issues = parsed.error.flatten()
+    const errorDetails = JSON.stringify(issues)
+    return NextResponse.json({ error: `Validation Failed: ${errorDetails}`, issues }, { status: 400 })
+  }
   if (parsed.data.is_published) {
     return NextResponse.json({ error: 'परीक्षा आधी Draft म्हणून तयार करा, प्रश्न जोडा आणि नंतर Publish करा.' }, { status: 400 })
   }
@@ -92,8 +97,13 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const admin = await requireAdminApi()
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const parsed = updateExamSchema.safeParse(await request.json().catch(() => null))
-  if (!parsed.success) return NextResponse.json({ error: 'परीक्षेची माहिती चुकीची आहे.', issues: parsed.error.flatten() }, { status: 400 })
+  const body = await request.json().catch(() => null)
+  const parsed = updateExamSchema.safeParse(body)
+  if (!parsed.success) {
+    const issues = parsed.error.flatten()
+    const errorDetails = JSON.stringify(issues)
+    return NextResponse.json({ error: `Validation Failed: ${errorDetails}`, issues }, { status: 400 })
+  }
 
   const { id, ...changes } = parsed.data
   const [{ data: previous, error: previousError }, { count: attemptCount, error: attemptError }, { data: questionRows, error: questionError }] = await Promise.all([
