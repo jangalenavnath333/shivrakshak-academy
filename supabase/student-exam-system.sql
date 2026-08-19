@@ -475,8 +475,6 @@ begin
        or old.negative_marks is distinct from new.negative_marks
        or old.pass_marks is distinct from new.pass_marks
        or old.max_attempts is distinct from new.max_attempts
-       or old.starts_at is distinct from new.starts_at
-       or old.ends_at is distinct from new.ends_at
      ) then
     raise exception 'Exam configuration is locked after the first attempt' using errcode = '55000';
   end if;

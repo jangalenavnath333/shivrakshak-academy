@@ -93,12 +93,13 @@ export default function StudentExamList({ exams, attempts, serverNow }: { exams:
           const inProgress = examAttempts.find((attempt) => attempt.status === 'in_progress')
           const active = inProgress?.expires_at && new Date(inProgress.expires_at).getTime() > now ? inProgress : undefined
           const expiredAttempt = inProgress && !active ? inProgress : undefined
-          const latestCompleted = examAttempts.find((attempt) => attempt.status !== 'in_progress')
+          const completedAttempts = examAttempts.filter((attempt) => attempt.status !== 'in_progress')
+          const latestCompleted = completedAttempts[0]
           const hasStarted = !exam.starts_at || new Date(exam.starts_at).getTime() <= now
           const hasEnded = !!exam.ends_at && new Date(exam.ends_at).getTime() <= now
           const attemptsUsed = examAttempts.length
           const canStart = !!expiredAttempt || (hasStarted && !hasEnded && (!!active || attemptsUsed < exam.max_attempts))
-          const resultReleased = latestCompleted && (!exam.result_release_at || new Date(exam.result_release_at).getTime() <= now)
+          const resultReleased = completedAttempts.length > 0 && (!exam.result_release_at || new Date(exam.result_release_at).getTime() <= now)
 
           return (
             <article className="student-exam-card" key={exam.id}>
@@ -109,7 +110,18 @@ export default function StudentExamList({ exams, attempts, serverNow }: { exams:
               <div className="student-exam-schedule"><b>सुरू:</b> {formatDate(exam.starts_at)}<br /><b>समाप्त:</b> {formatDate(exam.ends_at)}</div>
 
               {resultReleased ? (
-                <div className="student-result-box"><CheckCircle2 /><div><span>तुमचा निकाल</span><strong>{latestCompleted.score} / {latestCompleted.max_score} ({latestCompleted.percentage}%)</strong><small>बरोबर {latestCompleted.correct_count} · चूक {latestCompleted.wrong_count} · न सोडवलेले {latestCompleted.unanswered_count}</small></div></div>
+                <div className="student-result-box">
+                  <CheckCircle2 />
+                  <div className="student-result-list">
+                    <span>तुमचा निकाल ({completedAttempts.length} प्रयत्न)</span>
+                    {completedAttempts.map((attempt) => (
+                      <div className="student-result-row" key={attempt.id}>
+                        <strong>{attempt.score} / {attempt.max_score} ({attempt.percentage}%)</strong>
+                        <small>{formatDate(attempt.submitted_at)} · बरोबर {attempt.correct_count} · चूक {attempt.wrong_count} · न सोडवलेले {attempt.unanswered_count}</small>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : latestCompleted ? <div className="student-result-pending"><CalendarClock /> निकाल {exam.result_release_at ? formatDate(exam.result_release_at) : 'लवकरच'} जाहीर होईल</div> : null}
 
               <button onClick={() => expiredAttempt ? router.push(`/student/exams/${exam.id}/take?attempt=${encodeURIComponent(expiredAttempt.id)}`) : startExam(exam.id)} disabled={!canStart || starting === exam.id} className={confirming === exam.id ? 'confirm-btn' : ''}>

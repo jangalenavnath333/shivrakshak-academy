@@ -5,7 +5,7 @@ import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 import { sendExamScheduleEmails } from '@/lib/email'
 
 const course = z.enum(['all', 'police', 'navy', 'mpsc', 'staff_selection', 'saral_seva', 'army', 'railway', 'other'])
-const nullableDateTime = z.string().datetime().nullable()
+const nullableDateTime = z.string().datetime({ offset: true }).nullable()
 const baseExamSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(2).max(200),
