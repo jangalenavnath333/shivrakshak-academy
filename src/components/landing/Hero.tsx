@@ -12,19 +12,21 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
       </div>
       <div className="sra-hero__scrim" aria-hidden="true" />
 
+      <div className="sra-wrap" style={{ paddingTop: '2rem', paddingBottom: '1rem' }}>
+        {/* Academy Brand inside Hero */}
+        <div className="sra-hero__top-brand" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+          <div className="sra-hero__top-logo" style={{ width: '75px', height: '75px', position: 'relative' }}>
+            <Image src={ACADEMY_LOGO as string} alt="Shivrakshak Logo" fill style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
+          </div>
+          <h2 className="sra-hero__top-name" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 800, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', margin: 0, letterSpacing: '0.02em' }}>
+            {academyName}
+          </h2>
+        </div>
+      </div>
+
       <div className="sra-wrap sra-hero__grid">
         {/* LEFT — Headlines & CTAs */}
         <div className="sra-hero__in sra-fade-in" style={{ animationDelay: '0.2s' }}>
-          {/* Academy Brand inside Hero */}
-          <div className="sra-hero__top-brand" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '2.5rem' }}>
-            <div className="sra-hero__top-logo" style={{ width: '75px', height: '75px', position: 'relative' }}>
-              <Image src={ACADEMY_LOGO as string} alt="Shivrakshak Logo" fill style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
-            </div>
-            <h2 className="sra-hero__top-name" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 800, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', margin: 0, letterSpacing: '0.02em' }}>
-              {academyName}
-            </h2>
-          </div>
-
           {/* Gold badge */}
           <div className="sra-hero__badge">
             <Shield size={16} />
