@@ -90,7 +90,7 @@ export default function DirectorCards() {
                 ))}
               </div>
 
-              {active.detail.close && <p className="sra-story__close">{active.detail.close}</p>}
+              {active.detail.closing && <p className="sra-story__close">{active.detail.closing}</p>}
             
                 {/* Military Service Documents Section */}
                 {active.name.includes('राजे पवार') && (
@@ -159,7 +159,6 @@ export default function DirectorCards() {
               </div>
             </div>
           </div>
-        </div>
       )}
 
       {/* Lightbox / Document Popup Modal */}
