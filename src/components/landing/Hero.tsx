@@ -18,7 +18,7 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
           {/* Academy Brand inside Hero */}
           <div className="sra-hero__top-brand" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '2.5rem' }}>
             <div className="sra-hero__top-logo" style={{ width: '75px', height: '75px', position: 'relative' }}>
-              <Image src={ACADEMY_LOGO} alt="Shivrakshak Logo" fill style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
+              <Image src={ACADEMY_LOGO as string} alt="Shivrakshak Logo" fill style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
             </div>
             <h2 className="sra-hero__top-name" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 800, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', margin: 0, letterSpacing: '0.02em' }}>
               {academyName}
@@ -59,7 +59,7 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
               सैन्याचा प्रत्यक्ष अनुभव &nbsp;•&nbsp; सैनिकी शिस्त &nbsp;•&nbsp; योग्य मार्गदर्शन
             </p>
             <p style={{ color: 'var(--sra-cream-2)', fontSize: '1.05rem', fontStyle: 'italic', margin: 0 }}>
-              "ज्यांनी देशसेवा केली, तेच आता घडवत आहेत देशाचे भावी जवान."
+              &quot;ज्यांनी देशसेवा केली, तेच आता घडवत आहेत देशाचे भावी जवान.&quot;
             </p>
           </div>
 
