@@ -289,7 +289,7 @@ export default function AdmissionPage() {
           </div>
         </div>
         <FormStyles />
-      </>
+      </div>
     )
   }
 
@@ -406,7 +406,7 @@ export default function AdmissionPage() {
           </div>
         </div>
         <FormStyles />
-      </>
+      </div>
     )
   }
 
