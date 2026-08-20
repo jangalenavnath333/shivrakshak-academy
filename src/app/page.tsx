@@ -101,6 +101,7 @@ export default async function HomePage() {
         FORM: Brief-pinned direction from the supplied reference; no roll.
         FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
       */}
+      <Hero phone={phone} academyName={academyName} />
       <RegistrationStrip />
       <LandingNav academyName={academyName} waLink={waLink} socials={{
         youtube: settings.youtube_url || shivrakshakYoutube,
@@ -108,7 +109,6 @@ export default async function HomePage() {
         facebook: settings.facebook_url || undefined,
         telegram: shivrakshakTelegram,
       }} />
-      <Hero phone={phone} academyName={academyName} />
       <Strengths />
       <BranchNote address={address} />
       <Director />

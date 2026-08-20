@@ -15,6 +15,16 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
       <div className="sra-wrap sra-hero__grid">
         {/* LEFT — Headlines & CTAs */}
         <div className="sra-hero__in sra-fade-in" style={{ animationDelay: '0.2s' }}>
+          {/* Academy Brand inside Hero */}
+          <div className="sra-hero__top-brand" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '2.5rem' }}>
+            <div className="sra-hero__top-logo" style={{ width: '75px', height: '75px', position: 'relative' }}>
+              <Image src={ACADEMY_LOGO} alt="Shivrakshak Logo" fill style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
+            </div>
+            <h2 className="sra-hero__top-name" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 800, color: '#fff', textShadow: '0 4px 12px rgba(0,0,0,0.8)', margin: 0, letterSpacing: '0.02em' }}>
+              {academyName}
+            </h2>
+          </div>
+
           {/* Gold badge */}
           <div className="sra-hero__badge">
             <Shield size={16} />
@@ -33,9 +43,25 @@ export default function Hero({ phone, academyName }: { phone: string; academyNam
             <span>यश</span>
           </div>
 
-          <p className="sra-hero__desc">
-            महाराष्ट्रातील सर्वात कडक शिस्त आणि सर्वोत्तम निकाल देणारी डिफेन्स अकॅडमी. तुमचा भारतीय सैन्यदलातील प्रवास इथून सुरू होतो.
-          </p>
+          <div className="sra-hero__highlight-box" style={{
+            background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(0,0,0,0.4))',
+            borderLeft: '4px solid var(--sra-gold)',
+            padding: '1.5rem',
+            borderRadius: '4px',
+            backdropFilter: 'blur(10px)',
+            marginBottom: '2rem',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+          }}>
+            <p style={{ color: '#fff', fontSize: '1.15rem', fontWeight: 600, lineHeight: 1.5, marginBottom: '0.8rem' }}>
+              महाराष्ट्रातील <span className="gold">एकमेव डिफेन्स अकॅडमी</span> — जिचे संस्थापक आणि संचालक, दोघेही निवृत्त भारतीय सैन्य अधिकारी!
+            </p>
+            <p style={{ color: 'var(--sra-gold-lt)', fontSize: '0.95rem', fontWeight: 500, letterSpacing: '0.05em', marginBottom: '0.8rem' }}>
+              सैन्याचा प्रत्यक्ष अनुभव &nbsp;•&nbsp; सैनिकी शिस्त &nbsp;•&nbsp; योग्य मार्गदर्शन
+            </p>
+            <p style={{ color: 'var(--sra-cream-2)', fontSize: '1.05rem', fontStyle: 'italic', margin: 0 }}>
+              "ज्यांनी देशसेवा केली, तेच आता घडवत आहेत देशाचे भावी जवान."
+            </p>
+          </div>
 
           {/* Trust indicators */}
           <div className="sra-hero__trust">
