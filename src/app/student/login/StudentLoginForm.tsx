@@ -37,9 +37,9 @@ export default function StudentLoginForm({ initialRollNumber }: { initialRollNum
   }
 
   return (
-    <main className="sra-login" style={{
+    <main className="sra-login sra" style={{
       minHeight: '100vh',
-      background: 'var(--sra-bg)',
+      background: 'var(--sra-ground)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

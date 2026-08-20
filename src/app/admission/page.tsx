@@ -260,7 +260,7 @@ export default function AdmissionPage() {
   /* ══════════ SUCCESS SCREEN ══════════ */
   if (submitted) {
     return (
-      <>
+      <div className="sra">
         <div className="adm-wrap no-print">
           <div className="adm-success">
             <div className="succ-icon">✅</div>
@@ -296,7 +296,7 @@ export default function AdmissionPage() {
   /* ══════════ LANDING ══════════ */
   if (!started) {
     return (
-      <>
+      <div className="sra">
         <div className="adm-land no-print">
           <div className="al-top">
             <Link href="/" className="adm-back">← मुख्यपृष्ठ</Link>
@@ -414,7 +414,7 @@ export default function AdmissionPage() {
   const STEPS = ['वैयक्तिक माहिती', 'कोर्स', 'कागदपत्रे', 'तपासा']
 
   return (
-    <>
+    <div className="sra">
       <div className="adm-wrap no-print">
         {/* Header */}
         <div className="adm-head">
@@ -624,7 +624,7 @@ export default function AdmissionPage() {
       </div>
 
       <FormStyles />
-    </>
+    </div>
   )
 }
 
@@ -660,7 +660,7 @@ function RevRow({ k, v, hi }: { k: string; v: string; hi?: boolean }) {
 function FormStyles() {
   return <style dangerouslySetInnerHTML={{ __html: `
 /* ═══ LANDING ═══ */
-.adm-land { min-height:100vh; background:var(--sra-bg); color:var(--sra-text); padding-bottom:70px; font-family:var(--sra-font); }
+.adm-land { min-height:100vh; background:var(--sra-ground); color:var(--sra-text); padding-bottom:70px; font-family:var(--sra-body); }
 .al-top { padding:16px 22px; }
 .al-hero { max-width:760px; margin:0 auto; padding:36px 22px 60px; text-align:center;
   background:radial-gradient(ellipse 80% 70% at 50% 0%, rgba(212,164,55,.1) 0%, transparent 70%); }
@@ -724,7 +724,7 @@ function FormStyles() {
   .al-help { flex-direction:column; gap:9px; }
 }
 
-.adm-wrap { min-height:100vh; background:var(--sra-bg); padding:0 0 60px; font-family:var(--sra-font); }
+.adm-wrap { min-height:100vh; background:var(--sra-ground); padding:0 0 60px; font-family:var(--sra-body); }
 .adm-head { display:flex; align-items:center; gap:16px; padding:18px 22px; background:rgba(5,8,5,.8); border-bottom:1px solid var(--sra-line); position:sticky; top:0; z-index:50; backdrop-filter:blur(12px); }
 .adm-back { color:var(--sra-muted); text-decoration:none; font-size:14px; font-weight:600; padding:8px 14px; border:1px solid var(--sra-line); border-radius:4px; white-space:nowrap; }
 .adm-t1 { color:var(--sra-gold-lt); font-family:var(--sra-display); font-weight:800; font-size:18px; }
