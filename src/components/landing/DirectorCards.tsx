@@ -70,36 +70,28 @@ export default function DirectorCards() {
       </div>
 
       {active?.detail && (
-        <div className="sra-modal" role="dialog" aria-modal="true" aria-label={active.name}>
-          <button type="button" className="sra-modal__scrim" aria-label="बंद करा" onClick={() => setOpen(null)} />
-          <div className="sra-modal__box">
-            <button type="button" className="sra-modal__x" aria-label="बंद करा" onClick={() => setOpen(null)}>
+        <div className="sra-dir__overlay" role="dialog" aria-modal="true" aria-label={active.name}>
+          <div className="sra-dir__dialog">
+            <button type="button" className="sra-dir__close" aria-label="बंद करा" onClick={() => setOpen(null)}>
               <X size={20} />
             </button>
+            <div className="sra-story" style={{ marginTop: 0, border: 'none', background: 'transparent', padding: 0 }}>
+              <h3>{active.name}</h3>
+              <p className="sra-dir__role">{active.role}</p>
+              <p className="sra-story__born">{active.detail.born}</p>
+              <p className="sra-story__intro">{active.detail.intro}</p>
 
-            <div className="sra-modal__grid">
-              {active.photo && (
-                <div className="sra-modal__photo">
-                  <Image src={active.photo} alt={active.name} fill sizes="(max-width: 800px) 92vw, 40vw" quality={92} style={{ objectFit: 'contain' }} />
-                </div>
-              )}
-              <div className="sra-modal__body">
-                <h3>{active.name}</h3>
-                <p className="sra-dir__role">{active.role}</p>
-                <p className="sra-story__born">{active.detail.born}</p>
-                <p className="sra-story__intro">{active.detail.intro}</p>
+              <div className="sra-story__tl">
+                {active.detail.milestones.map(m => (
+                  <div className="sra-story__ev" key={m.year}>
+                    <div className="sra-story__yr">{m.year}</div>
+                    <p>{m.text}</p>
+                  </div>
+                ))}
+              </div>
 
-                <ol className="sra-story__line">
-                  {active.detail.milestones.map(m => (
-                    <li key={m.year}>
-                      <span><Medal size={14} aria-hidden="true" /> {m.year}</span>
-                      <p>{m.text}</p>
-                    </li>
-                  ))}
-                </ol>
-
-                <p className="sra-story__close">{active.detail.closing}</p>
-                
+              {active.detail.close && <p className="sra-story__close">{active.detail.close}</p>}
+            
                 {/* Military Service Documents Section */}
                 {active.name.includes('राजे पवार') && (
                   <div style={{ marginTop: '2rem', borderTop: '1px solid var(--sra-line)', paddingTop: '1.5rem' }}>
@@ -172,21 +164,19 @@ export default function DirectorCards() {
 
       {/* Lightbox / Document Popup Modal */}
       {activeDoc !== null && (
-        <div className="sra-modal" style={{ zIndex: 99999 }} role="dialog" aria-modal="true">
-          <button type="button" className="sra-modal__scrim" aria-label="बंद करा" onClick={() => setActiveDoc(null)} />
-          <div className="sra-modal__box" style={{ 
+        <div className="sra-dir__overlay" style={{ zIndex: 99999 }} role="dialog" aria-modal="true">
+          <div className="sra-dir__dialog" style={{ 
             maxWidth: '95vw', 
             maxHeight: '95vh', 
             width: 'auto', 
             background: '#050804',
-            border: '2px solid var(--sra-gold)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             padding: '24px',
             position: 'relative'
           }}>
-            <button type="button" className="sra-modal__x" aria-label="बंद करा" onClick={() => setActiveDoc(null)} style={{ zIndex: 110 }}>
+            <button type="button" className="sra-dir__close" aria-label="बंद करा" onClick={() => setActiveDoc(null)} style={{ zIndex: 110 }}>
               <X size={24} />
             </button>
             

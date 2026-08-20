@@ -1,15 +1,15 @@
-import { MapPin, ShieldCheck } from 'lucide-react'
+import { MapPin, ShieldCheck, Award, Calendar } from 'lucide-react'
 import { BRANCH_NOTE, REGISTRATION } from '@/content/landing'
 
-/** Government registration line — sits directly above the hero. */
+/** Government trust bar — 3-column olive strip at the very top. */
 export function RegistrationStrip() {
   return (
     <div className="sra-reg">
       <span><ShieldCheck size={14} aria-hidden="true" /> <b>{REGISTRATION.headline}</b></span>
       <i aria-hidden="true" />
-      <span>Udyam नोंदणी क्रमांक: <b>{REGISTRATION.udyam}</b></span>
+      <span><Award size={13} aria-hidden="true" /> Udyam नोंदणी क्रमांक: <b>{REGISTRATION.udyam}</b></span>
       <i aria-hidden="true" />
-      <span>स्थापना {REGISTRATION.since}</span>
+      <span><Calendar size={13} aria-hidden="true" /> स्थापना <b>{REGISTRATION.since}</b></span>
     </div>
   )
 }

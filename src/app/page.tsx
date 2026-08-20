@@ -1,4 +1,4 @@
-import { Mukta, Oswald } from 'next/font/google'
+import { Noto_Sans_Devanagari, Oswald } from 'next/font/google'
 import { MessageCircle } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { createPublicSiteClient } from '@/lib/public-site-supabase'
@@ -23,8 +23,8 @@ import ContactBand from '@/components/landing/ContactBand'
 import LandingFooter from '@/components/landing/LandingFooter'
 import './landing.css'
 
-const mukta = Mukta({ subsets: ['devanagari', 'latin'], weight: ['400', '500', '700', '800'], variable: '--font-mukta', display: 'swap' })
-const oswald = Oswald({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-oswald', display: 'swap' })
+const noto = Noto_Sans_Devanagari({ subsets: ['devanagari', 'latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--font-noto', display: 'swap' })
+const oswald = Oswald({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-oswald', display: 'swap' })
 
 const fallbackSettings: SiteSettings = {
   id: 1,
@@ -87,7 +87,7 @@ export default async function HomePage() {
   const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('नमस्कार, मला शिवरक्षक करिअर अकॅडमीच्या प्रवेशाबद्दल माहिती हवी आहे.')}`
 
   return (
-    <main className={`sra ${mukta.variable} ${oswald.variable}`}>
+    <main className={`sra ${noto.variable} ${oswald.variable}`}>
       {/*
         THESIS: A recruitment-drive noticeboard, not a coaching-class brochure — the
         academy's authority is a retired Army officer, so the page leads with training
