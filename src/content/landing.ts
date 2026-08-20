@@ -165,10 +165,10 @@ export const MISSION = {
 
 /** Course photographs live in /public. Replace the file or change the path. */
 export const COURSES = [
-  { slug: 'army', title: 'Indian Army', image: '/images/courses/army.png', description: 'भारतीय सेनेत भरती होण्याचे स्वप्न पूर्ण करण्यासाठी संपूर्ण मैदानी व लेखी तयारी.', features: ['GD / Technical', 'Physical Standards', 'Written Practice'] },
-  { slug: 'police', title: 'Maharashtra Police', image: '/images/courses/police.png', description: 'महाराष्ट्र पोलीस भरतीसाठी मैदानी चाचणी, लेखी परीक्षा व मुलाखतीची तयारी.', features: ['मैदानी चाचणी', 'लेखी परीक्षा', 'मुलाखत मार्गदर्शन'] },
-  { slug: 'srpf', title: 'State Reserve Police Force', image: '/images/courses/srpf.png', description: 'SRPF व राज्य राखीव दलासाठी विशेष शारीरिक आणि मानसिक तयारी.', features: ['विशेष मैदानी सराव', 'Stamina Training', 'Test Series'] },
-  { slug: 'written', title: 'Written Examination', image: '/images/courses/written.png', description: 'गणित, बुद्धिमत्ता, मराठी, इंग्रजी आणि सामान्य ज्ञानाची सखोल तयारी.', features: ['गणित व बुद्धिमत्ता', 'मराठी / इंग्रजी', 'Daily Mock Tests'] },
+  { slug: 'army', title: 'Indian Army', image: '/images/courses/army.svg', description: 'भारतीय सेनेत भरती होण्याचे स्वप्न पूर्ण करण्यासाठी संपूर्ण मैदानी व लेखी तयारी.', features: ['GD / Technical', 'Physical Standards', 'Written Practice'] },
+  { slug: 'police', title: 'Maharashtra Police', image: '/images/courses/police.svg', description: 'महाराष्ट्र पोलीस भरतीसाठी मैदानी चाचणी, लेखी परीक्षा व मुलाखतीची तयारी.', features: ['मैदानी चाचणी', 'लेखी परीक्षा', 'मुलाखत मार्गदर्शन'] },
+  { slug: 'srpf', title: 'State Reserve Police Force', image: '/images/courses/srpf.svg', description: 'SRPF व राज्य राखीव दलासाठी विशेष शारीरिक आणि मानसिक तयारी.', features: ['विशेष मैदानी सराव', 'Stamina Training', 'Test Series'] },
+  { slug: 'written', title: 'Written Examination', image: '/images/courses/written.svg', description: 'गणित, बुद्धिमत्ता, मराठी, इंग्रजी आणि सामान्य ज्ञानाची सखोल तयारी.', features: ['गणित व बुद्धिमत्ता', 'मराठी / इंग्रजी', 'Daily Mock Tests'] },
 ]
 
 export const TRAINING_POINTS = [

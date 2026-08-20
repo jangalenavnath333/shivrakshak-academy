@@ -21,7 +21,7 @@ export default function Courses({ photos }: { photos: Record<string, string | un
                 <Image
                   src={photos[course.slug] || course.image}
                   alt={`${course.title} प्रशिक्षण`}
-                  fill quality={90}
+                  fill quality={90} unoptimized={true}
                   style={{ objectPosition: 'center', objectFit: 'contain', padding: '1.5rem', background: 'var(--sra-ground-2)' }}
                   sizes="(max-width: 620px) 100vw, (max-width: 1080px) 50vw, 25vw"
                 />
