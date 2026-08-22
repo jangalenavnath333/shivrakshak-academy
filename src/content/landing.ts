@@ -68,7 +68,7 @@ export type DirectorDetail = {
 }
 
 /** Group photograph of both founders in uniform. */
-export const FOUNDERS_PHOTO = '/images/director/founders.png'
+export const FOUNDERS_PHOTO = '/images/director/founders-hero-transparent.png'
 
 /**
  * The two founders. Both are ex-servicemen who run the academy themselves.
@@ -80,6 +80,7 @@ export const DIRECTORS = [
     // Separate photograph for the small directors card only; the section
     // portrait and the dialog keep `photo`.
     cardPhoto: '/images/director/raje-pawar-yoddha.jpg' as string | null,
+    detailPhoto: '/images/director/raje-pawar-field-title-v2.png' as string | null,
     backgroundPosition: 'center 20%',
     name: 'वस्ताद योद्धा राजे पवार',
     role: 'माजी सैनिक, भारतीय सेना | संस्थापक व संचालक',
@@ -110,7 +111,8 @@ export const DIRECTORS = [
   {
     photo: '/images/director/sambhaji-mahadik-portrait.jpg' as string | null,
     cardPhoto: '/images/director/sambhaji-mahadik-portrait.jpg' as string | null,
-    backgroundPosition: 'center',
+    detailPhoto: '/images/director/sambhaji-mahadik-portrait.jpg' as string | null,
+    backgroundPosition: 'center 18%',
     name: 'वस्ताद संभाजी महाडिक',
     role: 'माजी सैनिक, भारतीय सेना | संस्थापक',
     phone: '9284842177',

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import NextImage from 'next/image'
 import type { FormValues } from './PrintableForm'
 
 /* ═══════════════════════════════════════════
@@ -88,7 +89,6 @@ async function compressImage(file: File): Promise<File> {
 }
 
 export default function AdmissionPage() {
-  const [started, setStarted] = useState(false)
   const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormValues>(EMPTY)
   const [files, setFiles] = useState<Record<string, { file: File; preview: string }>>({})
@@ -293,137 +293,35 @@ export default function AdmissionPage() {
     )
   }
 
-  /* ══════════ LANDING ══════════ */
-  if (!started) {
-    return (
-      <div className="sra">
-        <div className="adm-land no-print">
-          <div className="al-top">
-            <Link href="/" className="adm-back">← मुख्यपृष्ठ</Link>
-          </div>
-
-          {/* Hero */}
-          <div className="al-hero">
-            <div className="al-badge">🇮🇳 शिवमुद्रा रजि. ५२७/ए &nbsp;•&nbsp; रक्षक रजि. ००००० १३२०२४</div>
-            <h1>ऑनलाईन <span>प्रवेश अर्ज</span></h1>
-            <p className="al-lead">
-              शिवरक्षक करिअर अकॅडमी — पोलीस, आर्मी, नेव्ही व एम.पी.एस.सी. भरतीपूर्व प्रशिक्षण
-            </p>
-            <p className="al-sub">
-              घरबसल्या फक्त <b>5 मिनिटांत</b> अर्ज भरा. Admin approval आणि fee entry झाल्यानंतर
-              Student Code व <b>3 पानी अर्ज Print/PDF</b> ई-मेल व WhatsApp वर मिळेल.
-            </p>
-            <button className="al-cta" onClick={() => setStarted(true)}>
-              📋 अर्ज सुरू करा &nbsp;→
-            </button>
-            <div className="al-cta-note">कोणतेही शुल्क नाही • माहिती सुरक्षित राहील</div>
-          </div>
-
-          {/* How it works */}
-          <div className="al-sec">
-            <div className="al-sec-t"><span>प्रक्रिया</span>अर्ज कसा भरायचा?</div>
-            <div className="al-steps">
-              {[
-                { n: '1', i: '👤', t: 'वैयक्तिक माहिती', d: 'नाव, पालकांचे नाव, पत्ता, मोबाईल, ई-मेल, आधार व जन्म तारीख भरा. वय आपोआप मोजले जाईल.' },
-                { n: '2', i: '🎯', t: 'कोर्स निवडा', d: 'हवा तो कोर्स आणि कालावधी निवडा. फी अकॅडमीमध्ये Admin ठरवेल.' },
-                { n: '3', i: '📎', t: 'कागदपत्रे', d: 'पासपोर्ट फोटो व आधार कार्ड अपलोड करा. इतर कागदपत्रे नंतरही देता येतील.' },
-                { n: '4', i: '✅', t: 'Approval', d: 'माहिती तपासून submit करा. Fee entry नंतर code व 3 पानी form मिळेल.' },
-              ].map(s => (
-                <div key={s.n} className="al-step">
-                  <div className="al-step-n">{s.n}</div>
-                  <div className="al-step-i">{s.i}</div>
-                  <div className="al-step-t">{s.t}</div>
-                  <div className="al-step-d">{s.d}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* What you get */}
-          <div className="al-sec">
-            <div className="al-sec-t"><span>तुम्हाला काय मिळेल</span>3 पानी अर्ज</div>
-            <div className="al-papers">
-              {[
-                { i: '📄', t: 'पान 1 — प्रवेश अर्ज', d: 'संपूर्ण माहिती, फोटो, निवडलेला कोर्स, वय-उंची-वजन-छाती आणि सह्यांची जागा' },
-                { i: '📜', t: 'पान 2 — संमतीपत्र', d: 'अकॅडमीच्या सर्व 7 अटी व नियम, विद्यार्थी व पालकांच्या सहीसह' },
-                { i: '🧾', t: 'पान 3 — फी पावती', d: 'मेन फी पावती / क्लासेस फी पावती — कालावधी, एकूण रक्कम व तारखेसह' },
-              ].map(p => (
-                <div key={p.t} className="al-paper">
-                  <div className="al-paper-i">{p.i}</div>
-                  <div>
-                    <div className="al-paper-t">{p.t}</div>
-                    <div className="al-paper-d">{p.d}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Ready checklist */}
-          <div className="al-sec">
-            <div className="al-sec-t"><span>तयारी</span>अर्ज भरण्याआधी हे जवळ ठेवा</div>
-            <div className="al-check">
-              {[
-                ['📸', 'पासपोर्ट फोटो', 'अनिवार्य'],
-                ['🆔', 'आधार कार्ड नंबर', 'अनिवार्य'],
-                ['📱', 'विद्यार्थी व पालकांचा मोबाईल', 'अनिवार्य'],
-                ['🎂', 'जन्म तारीख', 'अनिवार्य'],
-                ['📧', 'ई-मेल आयडी', 'ऐच्छिक'],
-                ['📄', 'शाळा सोडल्याचा दाखला', 'ऐच्छिक'],
-              ].map(([i, t, r]) => (
-                <div key={t} className={`al-chk ${r === 'अनिवार्य' ? 'req' : ''}`}>
-                  <span className="al-chk-i">{i}</span>
-                  <span className="al-chk-t">{t}</span>
-                  <span className="al-chk-r">{r}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Courses */}
-          <div className="al-sec">
-            <div className="al-sec-t"><span>कोर्सेस</span>उपलब्ध प्रशिक्षण</div>
-            <div className="al-courses">
-              {COURSES.map(c => (
-                <div key={c.key} className="al-course">
-                  <b>{c.label}</b>
-                  <span>फी माहितीसाठी अकॅडमीशी संपर्क करा</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Final CTA */}
-          <div className="al-final">
-            <h2>तयार आहात?</h2>
-            <p>आजच अर्ज भरा आणि तुमच्या वर्दीच्या स्वप्नाकडे पहिले पाऊल टाका.</p>
-            <button className="al-cta" onClick={() => setStarted(true)}>📋 अर्ज सुरू करा &nbsp;→</button>
-            <div className="al-help">
-              अडचण आल्यास संपर्क करा —
-              <a href="tel:9284842177">📞 9284842177</a>
-              <a href="https://wa.me/919284842177" target="_blank" rel="noopener">💬 WhatsApp</a>
-            </div>
-          </div>
-        </div>
-        <FormStyles />
-      </div>
-    )
-  }
-
   /* ══════════ FORM ══════════ */
   const STEPS = ['वैयक्तिक माहिती', 'कोर्स', 'कागदपत्रे', 'तपासा']
 
   return (
     <div className="sra">
       <div className="adm-wrap no-print">
-        {/* Header */}
-        <div className="adm-head">
-          <Link href="/" className="adm-back">← परत</Link>
-          <div className="adm-title">
-            <div className="adm-t1">🛡️ शिवरक्षक करिअर अकॅडमी</div>
-            <div className="adm-t2">ऑनलाईन प्रवेश अर्ज</div>
+        <header className="adm-head">
+          <Link href="/" className="adm-brand" aria-label="मुख्यपृष्ठावर जा">
+            <NextImage src="/images/logo/academy-logo.png" alt="शिवरक्षक करिअर अकॅडमी" width={62} height={62} priority />
+            <span>
+              <b>शिवरक्षक करिअर अकॅडमी</b>
+              <small>अहिल्यानगर • माजी सैनिकांद्वारे संचलित</small>
+            </span>
+          </Link>
+          <Link href="/" className="adm-back">← मुख्यपृष्ठ</Link>
+        </header>
+
+        <section className="adm-intro">
+          <div className="adm-intro-copy">
+            <span className="adm-kicker">प्रवेश प्रक्रिया २०२६–२७</span>
+            <h1>ऑनलाईन प्रवेश अर्ज</h1>
+            <p>तुमच्या वर्दीच्या स्वप्नाकडे पहिले पाऊल — चार सोप्या टप्प्यांत अर्ज पूर्ण करा.</p>
           </div>
-        </div>
+          <div className="adm-help-card">
+            <b>अर्ज भरण्यापूर्वी</b>
+            <span>मोबाईल क्रमांक, जन्मतारीख आणि पासपोर्ट फोटो जवळ ठेवा.</span>
+            <small><strong>*</strong> असलेली माहिती भरणे आवश्यक आहे.</small>
+          </div>
+        </section>
 
         {/* Stepper */}
         <div className="stepper">
@@ -442,6 +340,13 @@ export default function AdmissionPage() {
         )}
 
         <div className="adm-card">
+          <div className="form-stage-title">
+            <span>टप्पा {step} / 4</span>
+            <div>
+              <b>{STEPS[step - 1]}</b>
+              <small>माहिती मराठी किंवा इंग्रजीमध्ये भरू शकता.</small>
+            </div>
+          </div>
 
           {/* ── STEP 1 ── */}
           {step === 1 && <>
@@ -659,6 +564,13 @@ function RevRow({ k, v, hi }: { k: string; v: string; hi?: boolean }) {
 
 function FormStyles() {
   return <style dangerouslySetInnerHTML={{ __html: `
+.sra {
+  --sra-ground:#f8f1e7; --sra-panel:#fffdf9; --sra-panel-2:#f7ede5;
+  --sra-text:#32171a; --sra-muted:#755f60; --sra-line:#e7d3c3;
+  --sra-gold:#c5962f; --sra-gold-lt:#e0ba5d; --sra-gold-dark:#9b6c18;
+  --sra-maroon:#681d25; --sra-display:var(--sra-body, sans-serif);
+  min-height:100vh; background:var(--sra-ground); color:var(--sra-text);
+}
 /* ═══ LANDING ═══ */
 .adm-land { min-height:100vh; background:var(--sra-ground); color:var(--sra-text); padding-bottom:70px; font-family:var(--sra-body); }
 .al-top { padding:16px 22px; }
@@ -853,6 +765,82 @@ select.inp option { background:var(--sra-panel); color:var(--sra-text); }
   .adm-success { margin:20px 12px; padding:28px 20px; }
   .succ-code strong { font-size:36px; letter-spacing:3px; }
   .adm-t1 { font-size:14px; }
+}
+
+/* ═══ ADMISSION EXPERIENCE ═══ */
+.adm-wrap { background:linear-gradient(180deg,#f8f1e7 0,#fffaf4 320px,#f8f1e7 100%); padding-bottom:72px; }
+.adm-head { position:relative; top:auto; max-width:none; min-height:82px; padding:10px max(24px,calc((100vw - 1120px)/2)); justify-content:space-between; background:#fff; border-bottom:4px solid var(--sra-maroon); box-shadow:0 4px 18px rgba(65,24,25,.08); backdrop-filter:none; }
+.adm-brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--sra-maroon); }
+.adm-brand img { width:58px; height:58px; object-fit:contain; }
+.adm-brand span { display:flex; flex-direction:column; line-height:1.25; }
+.adm-brand b { font-size:19px; font-weight:900; }
+.adm-brand small { color:#8a6a62; font-size:11px; margin-top:4px; }
+.adm-back { color:var(--sra-maroon); border-color:#dbc3b5; background:#fffaf4; border-radius:6px; padding:10px 16px; }
+.adm-back:hover { border-color:var(--sra-maroon); }
+.adm-intro { max-width:1100px; margin:0 auto; padding:34px 28px 28px; display:grid; grid-template-columns:1.4fr .75fr; gap:34px; align-items:center; }
+.adm-kicker { color:var(--sra-gold-dark); font-size:12px; font-weight:900; letter-spacing:.12em; }
+.adm-intro h1 { margin:7px 0 6px; color:var(--sra-maroon); font-size:clamp(32px,4vw,48px); line-height:1.12; font-weight:900; }
+.adm-intro p { margin:0; color:#755f60; font-size:16px; line-height:1.65; }
+.adm-help-card { padding:18px 20px; border-left:4px solid var(--sra-gold); background:#fff; box-shadow:0 8px 24px rgba(80,38,31,.08); display:flex; flex-direction:column; gap:5px; }
+.adm-help-card b { color:var(--sra-maroon); font-size:15px; }
+.adm-help-card span { color:#604b4b; font-size:13px; line-height:1.55; }
+.adm-help-card small { color:#8a6a62; font-size:11.5px; }
+.adm-help-card strong { color:#b4232f; }
+.stepper { position:relative; max-width:880px; margin:0 auto 22px; padding:0 18px; gap:0; }
+.stepper:before { content:''; position:absolute; top:20px; left:12%; right:12%; height:2px; background:#dcc9b9; }
+.stp { position:relative; z-index:1; }
+.stp-n { width:42px; height:42px; background:#fff; border:2px solid #dcc9b9; color:#806a67; box-shadow:0 0 0 5px #f8f1e7; }
+.stp.on .stp-n { background:var(--sra-maroon); border-color:var(--sra-maroon); color:#fff; }
+.stp.done .stp-n { background:var(--sra-gold-dark); border-color:var(--sra-gold-dark); }
+.stp-l { color:#796563; font-size:12px; margin-top:3px; }
+.stp.on .stp-l { color:var(--sra-maroon); font-weight:900; }
+.stp.done .stp-l { color:var(--sra-gold-dark); }
+.adm-card { max-width:1000px; padding:30px 34px 34px; background:#fff; border:1px solid #ead8ca; border-radius:12px; box-shadow:0 18px 50px rgba(79,39,32,.09); }
+.form-stage-title { display:flex; align-items:center; gap:15px; margin:-6px 0 26px; padding:0 0 20px; border-bottom:1px solid #ead8ca; }
+.form-stage-title > span { background:var(--sra-maroon); color:#fff; border-radius:5px; padding:8px 11px; font-size:11px; font-weight:800; white-space:nowrap; }
+.form-stage-title div { display:flex; flex-direction:column; }
+.form-stage-title b { color:var(--sra-maroon); font-size:20px; }
+.form-stage-title small { color:#88706c; font-size:11.5px; margin-top:2px; }
+.sec-title { color:var(--sra-maroon); font-size:16px; margin-top:30px; border-bottom-color:#ead8ca; }
+.sec-title span { width:30px; height:30px; display:grid; place-items:center; background:#f7ede5; border-radius:50%; font-size:15px; }
+.lbl { color:#573f40; font-size:12.5px; text-transform:none; letter-spacing:0; }
+.inp { min-height:48px; background:#fffaf6; border-color:#dcc9ba; border-radius:7px; color:#32171a; font-size:15px; }
+.inp:hover { border-color:#c8a98f; }
+.inp:focus { border-color:var(--sra-maroon); box-shadow:0 0 0 3px rgba(104,29,37,.09); background:#fff; }
+.inp::placeholder { color:#a38f89; }
+.radio,.course-chk,.doc-card { background:#fffaf6; border-color:#dcc9ba; border-radius:8px; color:#32171a; }
+.radio.on,.course-chk.on { border-color:var(--sra-maroon); background:#f9e9e8; color:var(--sra-maroon); }
+.course-chk.on .cc-box { background:var(--sra-maroon); border-color:var(--sra-maroon); color:#fff; }
+.cc-lbl,.doc-name { color:#32171a; }
+.auto-box { background:#eef8f0; border-color:#b9dec2; }
+.auto-box b { color:#22723a; }
+.auto-strip { background:#fff5d9; border-color:#ead18d; color:#5e4512; }
+.auto-strip b { color:#79520b; }
+.login-help,.doc-hint { color:#755f60; background:#fff8e7; border-left:3px solid var(--sra-gold); padding:10px 12px; }
+.err-box { background:#fff0f0; border-color:#e8a8ad; color:#991b28; border-radius:8px; }
+.b-ghost { background:#fff; border-color:#cfb9aa; color:var(--sra-maroon); border-radius:7px; }
+.b-main { background:var(--sra-maroon); color:#fff; border-radius:7px; box-shadow:0 8px 18px rgba(104,29,37,.18); text-transform:none; letter-spacing:0; }
+.b-main:hover { background:#7b252e; transform:translateY(-1px); }
+.b-sub { background:#28733d; }
+
+@media (max-width:700px) {
+  .adm-head { min-height:68px; padding:8px 14px; }
+  .adm-brand { gap:8px; }
+  .adm-brand img { width:46px; height:46px; }
+  .adm-brand b { font-size:14px; }
+  .adm-brand small { display:none; }
+  .adm-back { padding:8px 10px; font-size:11px; }
+  .adm-intro { padding:24px 18px 20px; grid-template-columns:1fr; gap:16px; }
+  .adm-intro h1 { font-size:31px; }
+  .adm-intro p { font-size:14px; }
+  .adm-help-card { padding:14px 16px; }
+  .stepper { margin-bottom:18px; }
+  .stepper:before { top:17px; }
+  .stp-n { width:34px; height:34px; box-shadow:0 0 0 4px #f8f1e7; }
+  .stp-l { font-size:9.5px; }
+  .adm-card { margin:0 10px; padding:22px 15px 26px; border-radius:9px; }
+  .form-stage-title { margin-top:0; align-items:flex-start; }
+  .form-stage-title b { font-size:18px; }
 }
   ` }} />
 }

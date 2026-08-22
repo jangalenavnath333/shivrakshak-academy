@@ -1,4 +1,4 @@
-import { Noto_Sans_Devanagari, Oswald } from 'next/font/google'
+import { Mukta, Oswald } from 'next/font/google'
 import { MessageCircle } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { createPublicSiteClient } from '@/lib/public-site-supabase'
@@ -6,7 +6,7 @@ import type { Course, MediaAsset, SiteSettings } from '@/types'
 import { ACADEMY_ADDRESS, ACADEMY_EMAIL, RESULTS } from '@/content/landing'
 import { BranchNote, RegistrationStrip } from '@/components/landing/BranchNote'
 import LandingNav from '@/components/landing/LandingNav'
-import Hero from '@/components/landing/Hero'
+import Hero, { AcademyHeader } from '@/components/landing/Hero'
 import Strengths from '@/components/landing/Strengths'
 import Figures from '@/components/landing/Figures'
 import Mission from '@/components/landing/Mission'
@@ -23,7 +23,7 @@ import ContactBand from '@/components/landing/ContactBand'
 import LandingFooter from '@/components/landing/LandingFooter'
 import './landing.css'
 
-const noto = Noto_Sans_Devanagari({ subsets: ['devanagari', 'latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--font-noto', display: 'swap' })
+const mukta = Mukta({ subsets: ['devanagari', 'latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-mukta', display: 'swap' })
 const oswald = Oswald({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-oswald', display: 'swap' })
 
 const fallbackSettings: SiteSettings = {
@@ -87,28 +87,35 @@ export default async function HomePage() {
   const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('नमस्कार, मला शिवरक्षक करिअर अकॅडमीच्या प्रवेशाबद्दल माहिती हवी आहे.')}`
 
   return (
-    <main className={`sra ${noto.variable} ${oswald.variable}`}>
+    <main className={`sra ${mukta.variable} ${oswald.variable}`}>
       {/*
-        THESIS: A recruitment-drive noticeboard, not a coaching-class brochure — the
-        academy's authority is a retired Army officer, so the page leads with training
-        ground and command, and refuses the pastel edu-template.
-        OWN-WORLD: Near-black olive ground, deep olive panels, one military gold accent,
-        hairline gold rules, square corners, Oswald for command lettering and Mukta for Marathi.
-        STORY: The visitor sees disciplined training, learns who leads it, what is trained,
-        who got selected, and applies.
-        FIRST VIEWPORT: Full-bleed training photograph under a dark scrim, Marathi headline
-        with the second line in gold, admission as the gold primary action.
+        THESIS: A formal Maharashtra education-institution website translated for a defence academy.
+        OWN-WORLD: White identity masthead, maroon navigation, warm cream editorial ground,
+        restrained military gold and Mukta for Marathi.
+        STORY: Trust and registration lead into training, leadership, courses, results and admission.
+        FIRST VIEWPORT: Institutional masthead, notice strip and photographic cream hero with
+        a Marathi headline, founder authority and a gold admission action.
         FORM: Brief-pinned direction from the supplied reference; no roll.
         FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
       */}
-      <Hero phone={phone} academyName={academyName} />
-      <RegistrationStrip />
+      <AcademyHeader
+        academyName={academyName}
+        waLink={waLink}
+        socials={{
+          youtube: settings.youtube_url || shivrakshakYoutube,
+          instagram: settings.instagram_url || shivrakshakInstagram,
+          facebook: settings.facebook_url || undefined,
+          telegram: shivrakshakTelegram,
+        }}
+      />
       <LandingNav academyName={academyName} waLink={waLink} socials={{
         youtube: settings.youtube_url || shivrakshakYoutube,
         instagram: settings.instagram_url || shivrakshakInstagram,
         facebook: settings.facebook_url || undefined,
         telegram: shivrakshakTelegram,
       }} />
+      <RegistrationStrip />
+      <Hero academyName={academyName} />
       <Strengths />
       <BranchNote address={address} />
       <Director />

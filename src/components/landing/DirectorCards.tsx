@@ -76,9 +76,18 @@ export default function DirectorCards() {
               <X size={20} />
             </button>
             <div className="sra-story" style={{ marginTop: 0, border: 'none', background: 'transparent', padding: 0 }}>
-              <h3>{active.name}</h3>
-              <p className="sra-dir__role">{active.role}</p>
-              <p className="sra-story__born">{active.detail.born}</p>
+              <div className="sra-story__profile">
+                {active.detailPhoto && (
+                  <div className="sra-story__portrait">
+                    <Image src={active.detailPhoto} alt={`${active.name} — मैदानी प्रशिक्षण`} fill sizes="(max-width: 620px) 88vw, 260px" quality={92} />
+                  </div>
+                )}
+                <div>
+                  <h3>{active.name}</h3>
+                  <p className="sra-dir__role">{active.role}</p>
+                  <p className="sra-story__born">{active.detail.born}</p>
+                </div>
+              </div>
               <p className="sra-story__intro">{active.detail.intro}</p>
 
               <div className="sra-story__tl">

@@ -2,25 +2,26 @@
 
 ## Direction
 
-A recruitment-drive noticeboard for a defence academy, not a coaching-class brochure.
-The academy's authority is a retired Indian Army officer, so the public site leads with
-training-ground photography and command lettering, and states that leadership early.
+A formal Maharashtra education-institution website translated for a defence academy.
+The public landing page follows the supplied department-site reference: a white identity
+masthead, full-width maroon navigation, slim cream notice strip, warm editorial hero and
+gold actions. Shivrakshak's shield, Marathi voice and real training media keep it distinct.
 
-This replaces the earlier cream-paper / saffron editorial world on the public landing
-page. Admin, student and other operational screens keep their own light UI; the dark
-world is scoped to the landing page under `.sra` and must not leak into them.
+Admin, student and other operational screens retain their task-focused light UI. The
+reference-led public world remains scoped beneath `.sra` and does not leak into them.
 
 ## Color
 
-Ground and structure are near-black olive; a single military gold carries every accent.
+Warm cream is the page ground, institutional maroon carries navigation and structure,
+and military gold carries actions and emphasis.
 
-- Black: `#050804`
-- Ground: `#0a0f08`
-- Panel: `#101809` / `#16210f`
-- Olive: `#1e2b16` / `#26351b`
-- Gold: `#d4a437` (accent), `#f2ce74` (hover/light)
+- Maroon: `#641b23` / `#7c2029`
+- Ground: `#fffaf2`
+- Alternate ground: `#f8efe5`
+- Panel: `#fffdf9` / `#f4e6df`
+- Gold: `#c79b3b` (accent), `#e0bd6b` (hover/light)
 - Saffron: `#e08a2b` (sparingly)
-- Text: `#f5f2e9`; muted `#a7ac99`
+- Text: `#401d20`; muted `#7a6b70`
 - Hairlines: `rgba(212,164,55,.16)` over `#2a3520`
 - WhatsApp green: `#15703c` (darkened from brand green so white label text clears 4.5:1)
 
@@ -37,11 +38,10 @@ Fonts load through `next/font/google` inside the landing page and are applied vi
 
 ## Composition
 
-Full-bleed hero photograph under a two-axis dark scrim, headline left, second line in
-gold, admission as the gold primary action. A bordered statistics strip separates the
-hero from the founder section. Sections alternate between ground and black to pace the
-scroll. Square corners (3–4px), hairline gold rules, one diamond ornament under section
-titles. Cards lift on hover; images zoom inside a fixed frame.
+The masthead establishes identity before a sticky maroon navigation rail. A thin trust
+strip precedes a warm, lightly photographic hero: Marathi headline left, founders right,
+gold admission action. Cream and pale rose surfaces alternate down the page, with maroon
+bands for authority and gold hairlines for rhythm.
 
 ## Responsive behavior
 
