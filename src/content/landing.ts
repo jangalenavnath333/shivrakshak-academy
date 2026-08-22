@@ -80,7 +80,7 @@ export const DIRECTORS = [
     // Separate photograph for the small directors card only; the section
     // portrait and the dialog keep `photo`.
     cardPhoto: '/images/director/raje-pawar-yoddha.jpg' as string | null,
-    detailPhoto: '/images/director/raje-pawar-field-title-v2.png' as string | null,
+    detailPhoto: '/images/director/raje-pawar-field-title-v4.png' as string | null,
     backgroundPosition: 'center 20%',
     name: 'वस्ताद योद्धा राजे पवार',
     role: 'माजी सैनिक, भारतीय सेना | संस्थापक व संचालक',
