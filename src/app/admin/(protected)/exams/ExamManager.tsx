@@ -318,10 +318,13 @@ export default function ExamManager() {
   return (
     <div className="admin-page exam-manager">
       <div className="page-header"><div><h1 className="page-title">Online परीक्षा व्यवस्थापन</h1><p className="page-subtitle">Exam schedule, प्रश्नपत्रिका, live attempts आणि निकाल एकाच ठिकाणी.</p></div><div className="exam-security-note"><CheckCircle2 /> Server timer & secure scoring</div></div>
+      <div className="adm-workflow-help adm-workflow-help--numbered">
+        <strong>परीक्षेचा पूर्ण क्रम</strong><span>१. परीक्षा तयार करा</span><i>→</i><span>२. Questions जोडा</span><i>→</i><span>३. Publish / सुरू करा</span><i>→</i><span>४. निकाल पहा</span>
+      </div>
       {error && <div className="admin-alert error">{error}</div>}{message && <div className="admin-alert success">{message}</div>}
 
       <section className="admin-card exam-editor">
-        <div className="exam-editor-heading"><div><h2>{form.id ? 'परीक्षा Edit / Reschedule' : 'नवीन परीक्षा तयार करा'}</h2><p>Course, वेळ आणि कालावधी टाका — बाकी नंतर बदलता येईल.</p></div>{form.id && <button className="btn btn-secondary" onClick={() => { setForm(blankExam); setShowAdvanced(false) }}>नवीन Form</button>}</div>
+        <div className="exam-editor-heading"><div><span className="adm-section-kicker">STEP 1 · परीक्षा सेटअप</span><h2>{form.id ? 'परीक्षा Edit / Reschedule' : 'नवीन परीक्षा तयार करा'}</h2><p>आधी नाव, course आणि वेळ भरा. परीक्षा Save झाल्यावर खाली Questions जोडता येतील.</p></div>{form.id && <button className="btn btn-secondary" onClick={() => { setForm(blankExam); setShowAdvanced(false) }}>नवीन Form</button>}</div>
         <div className="admin-form-grid exam-form-grid">
           <label><span className="form-label">परीक्षेचे नाव *</span><input className="form-input" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>
           <label><span className="form-label">कोर्स</span><select className="form-input" value={form.course} onChange={(event) => setForm({ ...form, course: event.target.value })}><option value="all">सर्व विद्यार्थी</option><option value="police">Police</option><option value="army">Army</option><option value="navy">Navy</option><option value="mpsc">MPSC</option><option value="railway">Railway</option><option value="staff_selection">Staff Selection</option><option value="saral_seva">Saral Seva</option><option value="other">Other</option></select></label>
@@ -346,7 +349,7 @@ export default function ExamManager() {
       </section>
 
       <section className="exam-overview">
-        <div className="exam-list-panel admin-card"><h2>सर्व परीक्षा <span>{exams.length}</span></h2>{loading ? <div className="admin-loading"><LoaderCircle className="spin" /></div> : exams.length === 0 ? <div className="admin-empty"><FileQuestion /><p>पहिली परीक्षा तयार करा.</p></div> : examsListMemo}</div>
+        <div className="exam-list-panel admin-card"><span className="adm-section-kicker">STEP 2 · परीक्षा निवडा</span><h2>तयार केलेल्या परीक्षा <span>{exams.length}</span></h2>{loading ? <div className="admin-loading"><LoaderCircle className="spin" /></div> : exams.length === 0 ? <div className="admin-empty"><FileQuestion /><p>वरचा form भरून पहिली परीक्षा तयार करा.</p></div> : examsListMemo}</div>
 
         <div className="exam-workspace admin-card">
           {!selected ? <div className="admin-empty large"><FileQuestion /><h2>Question Paper तयार करा</h2><p>डावीकडून परीक्षा निवडा. येथे प्रश्न, correct answer आणि results दिसतील.</p></div> : <>

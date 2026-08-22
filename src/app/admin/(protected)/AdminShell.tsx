@@ -18,15 +18,15 @@ const GROUPS: { id: string; label: string; items: Item[] }[] = [
   {
     id: 'main', label: 'मुख्य', items: [
       { href: '/admin', label: 'डॅशबोर्ड', icon: LayoutDashboard, exact: true },
-      { href: '/admin/students', label: 'विद्यार्थी', icon: Users },
-      { href: '/admin/fees', label: 'प्रवेश मंजुरी व फी', icon: UserCheck },
+      { href: '/admin/students', label: 'विद्यार्थी प्रोफाइल', icon: Users },
+      { href: '/admin/fees', label: 'प्रवेश → फी → Code', icon: UserCheck },
     ],
   },
   {
     id: 'academy', label: 'अकॅडमी', items: [
-      { href: '/admin/leaves', label: 'विद्यार्थी सुट्टी', icon: CalendarDays },
-      { href: '/admin/attendance', label: 'Live Attendance', icon: ScanFace },
-      { href: '/admin/mess', label: 'मेस व्यवस्थापन', icon: Utensils },
+      { href: '/admin/attendance', label: 'आजची उपस्थिती', icon: ScanFace },
+      { href: '/admin/leaves', label: 'सुट्टी व परत येणे', icon: CalendarDays },
+      { href: '/admin/mess', label: 'मेस व Expiry', icon: Utensils },
     ],
   },
   {
@@ -37,7 +37,7 @@ const GROUPS: { id: string; label: string; items: Item[] }[] = [
   },
   {
     id: 'academic', label: 'शैक्षणिक', items: [
-      { href: '/admin/exams', label: 'Online परीक्षा', icon: ClipboardList },
+      { href: '/admin/exams', label: 'परीक्षा → प्रश्न → निकाल', icon: ClipboardList },
     ],
   },
   {

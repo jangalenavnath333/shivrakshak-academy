@@ -213,30 +213,34 @@ export default function FeesPage() {
   }
 
   const totalCollected = filtered.reduce((sum, item) => sum + Number(item.total_paid), 0)
-  const totalPending = filtered.reduce((sum, item) => sum + Number(item.pending_amount), 0)
+  const totalPending = filtered.reduce((sum, item) => sum + Math.max(0, Number(item.pending_amount)), 0)
 
   const feeForm = (kind: 'activate' | 'next') => (
     <div>
+      <div className="adm-action-note">
+        <b>{kind === 'activate' ? 'या नोंदीनंतर काय होईल?' : 'ही रक्कम कुठे दिसेल?'}</b>
+        <span>{kind === 'activate' ? 'पहिली फी सेव्ह होईल, Student Code तयार होईल आणि विद्यार्थी Active यादीत जाईल.' : 'रक्कम फी इतिहासात जोडली जाईल आणि उरलेली बाकी लगेच कमी होईल.'}</span>
+      </div>
       <div style={{ padding: 12, background: 'var(--a-green-50)', border: '1px solid #d7e9dd', borderRadius: 9, marginBottom: 14 }}>
         <b>{selectedApplication?.name || selectedActiveStudent?.name}</b>
         <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{selectedApplication?.phone || selectedActiveStudent?.roll_number}</div>
       </div>
       {kind === 'activate' && (
         <label style={{ display: 'block', marginBottom: 12 }}>
-          <span className="form-label">एकूण फी (₹) *</span>
+          <span className="form-label">कोर्सची ठरलेली एकूण फी (₹) *</span>
           <input className="form-input" type="number" value={totalFee} onChange={e => setTotalFee(e.target.value)} />
         </label>
       )}
       <label style={{ display: 'block', marginBottom: 12 }}>
-        <span className="form-label">आता भरलेली रक्कम (₹) *</span>
+        <span className="form-label">आज मिळालेली रक्कम (₹) *</span>
         <input className="form-input" type="number" value={amount} onChange={e => setAmount(e.target.value)} />
       </label>
       <label style={{ display: 'block', marginBottom: 12 }}>
-        <span className="form-label">तारीख</span>
+        <span className="form-label">पैसे मिळाल्याची तारीख</span>
         <input className="form-input" type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
       </label>
       <label style={{ display: 'block', marginBottom: 4 }}>
-        <span className="form-label">माध्यम</span>
+        <span className="form-label">पैसे कसे मिळाले?</span>
         <select className="form-input" value={mode} onChange={e => setMode(e.target.value as typeof mode)}>
           <option value="cash">Cash</option><option value="upi">UPI</option>
           <option value="bank_transfer">Bank Transfer</option><option value="cheque">Cheque</option>
@@ -257,9 +261,9 @@ export default function FeesPage() {
   )
 
   const TABS: { id: Tab; label: string; count?: number; hidden?: boolean }[] = [
-    { id: 'approval', label: 'प्रवेश मंजुरी', count: pendingApplications.length },
-    { id: 'fee', label: 'Fee Entry', count: approvedApplications.length },
-    { id: 'students', label: 'विद्यार्थी व फी', count: activeStudentsList.length },
+    { id: 'approval', label: '१. अर्ज तपासा', count: pendingApplications.length },
+    { id: 'fee', label: '२. पहिली फी व प्रवेश', count: approvedApplications.length },
+    { id: 'students', label: '३. पुढील फी / विद्यार्थी', count: activeStudentsList.length },
     { id: 'incomplete', label: 'अपूर्ण Activation', count: incompleteApplications.length, hidden: incompleteApplications.length === 0 },
     { id: 'archived', label: 'अर्काईव्ह', count: archivedStudentsList.length },
   ]
@@ -282,6 +286,14 @@ export default function FeesPage() {
           </li>
         ))}
       </ol>
+
+      <div className="adm-workflow-help">
+        <strong>कामाचा सोपा क्रम</strong>
+        <span>नवीन अर्ज तपासा व मंजूर करा</span><i>→</i>
+        <span>पहिली फी नोंदवा</span><i>→</i>
+        <span>Student Code व Form तयार</span><i>→</i>
+        <span>नंतरची फी विद्यार्थ्याच्या नावावर नोंदवा</span>
+      </div>
 
       {successMsg && <div className="adm-alert adm-alert--ok">{successMsg}</div>}
       {printUrl && (
@@ -462,7 +474,9 @@ export default function FeesPage() {
                         <td><b style={{ fontFamily: 'monospace' }}>{s.roll_number}</b> — {s.name}</td>
                         <td>{formatCurrency(s.total_fee)}</td>
                         <td style={{ color: '#027a48', fontWeight: 600 }}>{formatCurrency(s.total_paid)}</td>
-                        <td style={{ color: Number(s.pending_amount) > 0 ? '#b42318' : '#94a3b8', fontWeight: 600 }}>{formatCurrency(s.pending_amount)}</td>
+                        <td style={{ color: Number(s.pending_amount) > 0 ? '#b42318' : '#027a48', fontWeight: 600 }}>
+                          {Number(s.pending_amount) > 0 ? formatCurrency(s.pending_amount) : 'पूर्ण भरली'}
+                        </td>
                         <td>
                           <div style={{ display: 'flex', gap: 8 }}>
                             {tab !== 'archived' && (

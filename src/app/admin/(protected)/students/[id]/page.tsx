@@ -43,7 +43,9 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
   }
 
   const totalPaid = fees.reduce((sum, f) => sum + Number(f.amount_paid), 0)
-  const pending = student.total_fee - totalPaid
+  const rawBalance = Number(student.total_fee) - totalPaid
+  const pending = Math.max(0, rawBalance)
+  const excessPaid = Math.max(0, -rawBalance)
   const details = student.admission_details
   const hasDigitalDetails = Boolean(details && Object.keys(details).length > 0)
   const selectedCourses = details?.courses
@@ -54,7 +56,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
     : null
 
   return (
-    <div style={{ padding: 28 }}>
+    <div className="admin-page adm-student-profile">
       <div className="page-header">
         <div>
           <div className="page-title">{student.name}</div>
@@ -74,6 +76,18 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
           </a>
           <Link href="/admin/students" className="btn btn-secondary">← परत</Link>
         </div>
+      </div>
+
+      <div className="adm-profile-summary">
+        <div><span>Student Code</span><b>{student.roll_number}</b></div>
+        <div><span>कोर्स</span><b>{COURSES[student.course] || student.course}</b></div>
+        <div><span>प्रवेश तारीख</span><b>{student.admission_date ? formatDate(student.admission_date) : '—'}</b></div>
+        <div data-tone={pending > 0 ? 'warn' : 'ok'}><span>फी स्थिती</span><b>{pending > 0 ? `${formatCurrency(pending)} बाकी` : 'पूर्ण भरली'}</b></div>
+      </div>
+
+      <div className="adm-workflow-help">
+        <strong>या विद्यार्थ्यासाठी पुढचे काम</strong>
+        <span>माहिती तपासा</span><i>→</i><span>Login द्या</span><i>→</i><span>कागदपत्रे जोडा</span><i>→</i><span>फी व परीक्षा निकाल पहा</span>
       </div>
 
       <StudentCredentials studentId={student.id} hasCredentials={Boolean(student.auth_user_id)} />
@@ -132,6 +146,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
               <span style={{ color: pending > 0 ? '#dc2626' : '#16a34a' }}>⏳ बाकी:</span>
               <span style={{ fontWeight: 700, color: pending > 0 ? '#dc2626' : '#16a34a' }}>{formatCurrency(pending)}</span>
             </div>
+            {excessPaid > 0 && <div className="adm-fee-excess">अतिरिक्त जमा: {formatCurrency(excessPaid)} — ही रक्कम तपासा.</div>}
           </div>
           <Link href={`/admin/fees?student=${student.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}>
             + फी भरणे
