@@ -377,3 +377,35 @@ a.adm-stat:hover { transform: translateY(-2px); border-color: #cfd8cd; box-shado
 .adm-fee-excess { margin-top: 9px; padding: 8px 10px; border-radius: 7px; background: #fffaeb; color: #92400e; font-size: 12px; font-weight: 600; }
 @media (max-width: 900px) { .adm-profile-summary { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .adm-profile-summary { grid-template-columns: 1fr; } .adm-workflow-help i { display: none; } .adm-workflow-help span { width: 100%; } }
+
+/* Premium student directory: a calm registry, not a spreadsheet dump. */
+.adm-student-directory .page-header { padding: 3px 0 6px; }
+.adm-directory-tabs { display: inline-flex; gap: 5px; padding: 5px; margin-bottom: 16px; border: 1px solid var(--a-line); border-radius: 12px; background: #ece8e1; }
+.adm-directory-tabs a { padding: 9px 16px; border-radius: 8px; color: var(--a-text-2); font-size: 13px; font-weight: 700; text-decoration: none; }
+.adm-directory-tabs a[data-active='true'] { color: #fff; background: var(--a-green); box-shadow: 0 5px 14px -8px rgba(92,24,31,.75); }
+.adm-directory-table { border-color: #dfd3c7; box-shadow: 0 18px 42px -32px rgba(63,25,28,.45); }
+.adm-directory-table .data-table th { height: 48px; background: #f4eee7; color: #705c58; }
+.adm-directory-table .data-table td { padding-block: 15px; }
+.adm-student-row { transition: transform .16s, box-shadow .16s; }
+.adm-student-row:hover { position: relative; box-shadow: inset 4px 0 var(--a-gold); }
+.adm-student-row:hover td { background: #fffcf8 !important; }
+.adm-student-row .adm-avatar { width: 40px; height: 40px; border-radius: 12px; color: #fff; border: 0; background: linear-gradient(145deg,#8b3039,#5b1820); box-shadow: 0 7px 15px -10px #431117; }
+.adm-student-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.adm-student-actions .btn { min-height: 35px; padding: 7px 10px; font-size: 11.5px; }
+.adm-student-actions .adm-action-primary { color: #fff; background: var(--a-green); border-color: var(--a-green); }
+.adm-student-actions .adm-icon-button { width: 35px; padding: 0; justify-content: center; }
+.adm-student-actions .adm-action-danger { color: #a73535; }
+
+/* Student dossier: status first, detailed records second. */
+.adm-student-profile > .page-header { padding: 18px 22px; margin: 0 0 14px; border: 1px solid #dfd3c7; border-radius: 14px; background: linear-gradient(120deg,#fff 0%,#fbf5ec 68%,#f3e3c8 100%); box-shadow: 0 16px 38px -30px rgba(64,25,28,.55); }
+.adm-student-profile > .page-header .page-title { font-size: 25px; }
+.adm-student-profile > .page-header .btn { min-height: 42px; }
+.adm-profile-summary > div { position: relative; overflow: hidden; background: linear-gradient(145deg,#fff,#fdfaf6); border-color: #dfd3c7; }
+.adm-profile-summary > div::after { content: ''; position: absolute; width: 68px; height: 68px; right: -28px; bottom: -34px; border-radius: 50%; background: rgba(197,157,72,.11); }
+.adm-profile-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+.adm-profile-card { background: #fff; border-radius: 14px; border: 1px solid #dfd8d0; padding: 22px; box-shadow: 0 15px 34px -31px rgba(55,24,26,.55); }
+.adm-profile-card > h3 { display: flex; align-items: center; gap: 7px; margin-top: 0 !important; color: #3f2023 !important; border-bottom-color: #eee5dc !important; }
+.adm-profile-card--course { border-top: 3px solid var(--a-gold); }
+.adm-student-profile .student-credentials-card { border: 1px solid #dccdbf; border-left: 4px solid var(--a-green); border-radius: 14px; padding: 20px 22px; box-shadow: 0 14px 34px -31px rgba(55,24,26,.55); }
+@media (max-width: 1180px) { .adm-student-actions .btn:not(.adm-action-primary):not(.adm-icon-button) { font-size: 0; width: 35px; padding: 0; justify-content: center; } }
+@media (max-width: 850px) { .adm-profile-grid { grid-template-columns: 1fr; } .adm-student-profile > .page-header { padding: 16px; } }

@@ -33,7 +33,7 @@ export default async function StudentsPage({
   const filtered = Boolean(search || params.gender || params.course)
 
   return (
-    <div className="admin-page">
+    <div className="admin-page adm-student-directory">
       <div className="page-header">
         <div>
           <div className="page-title">विद्यार्थी</div>
@@ -60,11 +60,11 @@ export default async function StudentsPage({
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, borderBottom: '1px solid #e2e8f0', marginBottom: 20 }}>
-        <Link href="/admin/students?tab=active" style={{ padding: '10px 15px', fontWeight: 600, color: params.tab !== 'archived' ? '#1e293b' : '#64748b', borderBottom: params.tab !== 'archived' ? '2px solid #027a48' : 'none', textDecoration: 'none' }}>
+      <div className="adm-directory-tabs">
+        <Link href="/admin/students?tab=active" data-active={params.tab !== 'archived'}>
           सक्रिय विद्यार्थी
         </Link>
-        <Link href="/admin/students?tab=archived" style={{ padding: '10px 15px', fontWeight: 600, color: params.tab === 'archived' ? '#1e293b' : '#64748b', borderBottom: params.tab === 'archived' ? '2px solid #027a48' : 'none', textDecoration: 'none' }}>
+        <Link href="/admin/students?tab=archived" data-active={params.tab === 'archived'}>
           अर्काईव्ह (Archive)
         </Link>
       </div>
@@ -101,7 +101,7 @@ export default async function StudentsPage({
         </div>
       ) : (
         <>
-          <div className="adm-panel adm-onlydesk">
+          <div className="adm-panel adm-onlydesk adm-directory-table">
             <div className="adm-tablewrap">
               <table className="data-table">
                 <thead>
@@ -112,7 +112,7 @@ export default async function StudentsPage({
                 </thead>
                 <tbody>
                   {students.map(s => (
-                    <tr key={s.id}>
+                    <tr key={s.id} className="adm-student-row">
                       <td><span className="adm-badge adm-badge--muted" style={{ fontFamily: 'monospace' }}>{s.roll_number}</span></td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -92,10 +92,10 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
 
       <StudentCredentials studentId={student.id} hasCredentials={Boolean(student.auth_user_id)} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div className="adm-profile-grid">
 
         {/* Basic Info */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div className="adm-profile-card">
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>👤 मूलभूत माहिती</h3>
           {[
             ['नाव', student.name],
@@ -116,7 +116,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
         </div>
 
         {/* Course + Physical */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div className="adm-profile-card adm-profile-card--course">
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>📋 कोर्स माहिती</h3>
           {[
             ['कोर्स', COURSES[student.course] || student.course],
@@ -154,7 +154,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
         </div>
 
         {/* Complete digital admission form snapshot */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div className="adm-profile-card">
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
             🧾 डिजिटल प्रवेश अर्जाची संपूर्ण माहिती
           </h3>
@@ -187,7 +187,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
         </div>
 
         {/* Documents */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div className="adm-profile-card">
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
             📁 Documents
             <Link href={`/admin/students/${id}/documents`} style={{ fontSize: 12, color: '#b45309', marginLeft: 8, fontWeight: 400, textDecoration: 'none' }}>+ Upload करा</Link>
@@ -207,7 +207,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
         </div>
 
         {/* Exam Results */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div className="adm-profile-card">
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>📝 परीक्षांचे रिझल्ट्स</h3>
           {examAttempts.length === 0 ? (
             <p style={{ color: '#94a3b8', fontSize: 14 }}>अद्याप कोणतीही परीक्षा दिली नाही</p>
@@ -238,7 +238,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
         </div>
 
         {/* Fee History */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div className="adm-profile-card">
           <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>💳 फी इतिहास</h3>
           {fees.length === 0 ? (
             <p style={{ color: '#94a3b8', fontSize: 14 }}>अजून फी भरली नाही</p>
