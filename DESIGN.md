@@ -7,8 +7,9 @@ The public landing page follows the supplied department-site reference: a white 
 masthead, full-width maroon navigation, slim cream notice strip, warm editorial hero and
 gold actions. Shivrakshak's shield, Marathi voice and real training media keep it distinct.
 
-Admin, student and other operational screens retain their task-focused light UI. The
-reference-led public world remains scoped beneath `.sra` and does not leak into them.
+Admin screens keep their task-focused layout while inheriting the academy's maroon,
+warm cream and restrained-gold identity. The public composition remains scoped beneath
+`.sra`; admin reuses the brand tokens without copying the marketing-page structure.
 
 ## Color
 
@@ -34,7 +35,8 @@ Gold is an accent, never a fill for large areas. No gradient text.
   titles, small caps rules.
 
 Fonts load through `next/font/google` inside the landing page and are applied via
-`--font-mukta` / `--font-oswald` on the `.sra` wrapper, so admin typography is unaffected.
+`--font-mukta` / `--font-oswald` on the `.sra` wrapper. Admin keeps its operational
+type sizing while matching the public site's color and material character.
 
 ## Composition
 

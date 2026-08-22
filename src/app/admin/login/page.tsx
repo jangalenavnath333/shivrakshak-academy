@@ -15,7 +15,6 @@ import {
   UsersRound,
 } from 'lucide-react'
 import Logo from '@/components/Logo'
-import { supabase } from '@/lib/supabase'
 import styles from './login.module.css'
 
 const ADMIN_EMAIL = 'jangalenavnath333@gmail.com'
@@ -33,14 +32,15 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError('')
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
+    const response = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), password }),
     })
+    const result = await response.json().catch(() => null)
 
-    if (signInError || data.user?.app_metadata?.role !== 'admin') {
-      if (data.session) await supabase.auth.signOut()
-      setError('ईमेल, पासवर्ड किंवा Admin परवानगी योग्य नाही. कृपया पुन्हा तपासा.')
+    if (!response.ok) {
+      setError(result?.error || 'सध्या Login करता आले नाही. कृपया पुन्हा प्रयत्न करा.')
       setLoading(false)
       return
     }

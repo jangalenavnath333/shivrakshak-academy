@@ -21,8 +21,8 @@ export function TrendChart({ points, height = 190 }: { points: { label: string; 
       aria-label={`विद्यार्थी नोंदणी ट्रेंड: ${points.map(p => `${p.label} ${p.value}`).join(', ')}`}>
       <defs>
         <linearGradient id="admTrend" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#166534" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#166534" stopOpacity="0" />
+          <stop offset="0%" stopColor="#7c2029" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#7c2029" stopOpacity="0" />
         </linearGradient>
       </defs>
       {ticks.map(t => (
@@ -32,8 +32,8 @@ export function TrendChart({ points, height = 190 }: { points: { label: string; 
         </g>
       ))}
       <path d={area} fill="url(#admTrend)" />
-      <path d={line} fill="none" stroke="#166534" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      {coords.map(([x, yy], i) => <circle key={i} cx={x} cy={yy} r="3.1" fill="#fff" stroke="#166534" strokeWidth="2" />)}
+      <path d={line} fill="none" stroke="#7c2029" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      {coords.map(([x, yy], i) => <circle key={i} cx={x} cy={yy} r="3.1" fill="#fff" stroke="#7c2029" strokeWidth="2" />)}
       {points.map((p, i) => (
         <text key={p.label} x={padX + i * stepX} y={height + 12} textAnchor="middle" fontSize="9.5" fill="#94a3b8">{p.label}</text>
       ))}
@@ -66,7 +66,7 @@ export function DonutChart({ slices, total, caption }: {
           </g>
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'grid', placeContent: 'center', textAlign: 'center' }}>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#111827', lineHeight: 1 }}>{total}</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#401d20', lineHeight: 1 }}>{total}</div>
           <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>एकूण</div>
         </div>
       </div>

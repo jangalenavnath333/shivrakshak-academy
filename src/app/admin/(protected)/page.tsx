@@ -14,7 +14,7 @@ const COURSE_LABELS: Record<string, string> = {
   written: 'Written Exam', mpsc: 'MPSC', navy: 'Navy',
   railway: 'Railway', staff_selection: 'Staff Selection', saral_seva: 'सरळ सेवा', other: 'इतर',
 }
-const COURSE_COLORS = ['#166534', '#15803d', '#4d9c68', '#a7d5b6', '#d4a72c', '#94a3b8']
+const COURSE_COLORS = ['#641b23', '#7c2029', '#a54a51', '#d7aaa4', '#c79b3b', '#a58d90']
 const MONTHS_MR = ['जाने', 'फेब', 'मार्च', 'एप्रि', 'मे', 'जून', 'जुलै', 'ऑग', 'सप्टें', 'ऑक्टो', 'नोव्हें', 'डिसें']
 
 async function getDashboard() {
@@ -110,7 +110,7 @@ export default async function AdminDashboard() {
   const pct = marked > 0 ? Math.round((d.attendance.present / marked) * 100) : 0
 
   const kpis = [
-    { label: 'सक्रिय विद्यार्थी', value: String(d.totalActive), icon: Users, tint: '#166534', bg: '#f0fdf4', href: '/admin/students' },
+    { label: 'सक्रिय विद्यार्थी', value: String(d.totalActive), icon: Users, tint: '#7c2029', bg: '#fbf1ed', href: '/admin/students' },
     { label: 'प्रलंबित प्रवेश मंजुरी', value: String(d.pendingCount), icon: Inbox, tint: '#b54708', bg: '#fffaeb', href: '/admin/fees' },
     { label: 'आज उपस्थित', value: d.attendance.hasSession ? String(d.attendance.present) : '—', icon: CalendarCheck, tint: '#175cd3', bg: '#eff8ff', href: '/admin/attendance' },
     { label: 'फी जमा', value: formatCurrency(d.collected), icon: IndianRupee, tint: '#027a48', bg: '#ecfdf3', href: '/admin/fees' },
@@ -208,7 +208,7 @@ export default async function AdminDashboard() {
                     <svg width="132" height="132" role="img" aria-label={`उपस्थिती ${pct} टक्के`}>
                       <g transform="rotate(-90 66 66)">
                         <circle cx="66" cy="66" r="56" fill="none" stroke="#eef0eb" strokeWidth="16" />
-                        <circle cx="66" cy="66" r="56" fill="none" stroke="#166534" strokeWidth="16" strokeLinecap="round"
+                        <circle cx="66" cy="66" r="56" fill="none" stroke="#7c2029" strokeWidth="16" strokeLinecap="round"
                           strokeDasharray={`${(pct / 100) * 2 * Math.PI * 56} ${2 * Math.PI * 56}`} />
                       </g>
                     </svg>
@@ -219,7 +219,7 @@ export default async function AdminDashboard() {
                   </div>
                 </div>
                 <div className="adm-legend">
-                  <div><i style={{ background: '#166534' }} />उपस्थित<b>{d.attendance.present}</b></div>
+                  <div><i style={{ background: '#7c2029' }} />उपस्थित<b>{d.attendance.present}</b></div>
                   <div><i style={{ background: '#dc2626' }} />अनुपस्थित<b>{d.attendance.absent}</b></div>
                   <div><i style={{ background: '#d97706' }} />रजा<b>{d.attendance.leave}</b></div>
                 </div>

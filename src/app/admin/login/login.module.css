@@ -1,8 +1,8 @@
 .page {
-  --login-navy: #071b2d;
-  --login-orange: #ed6508;
-  --login-olive: #40591b;
-  --login-paper: #fffaf1;
+  --login-navy: #641b23;
+  --login-orange: #c79b3b;
+  --login-olive: #7c2029;
+  --login-paper: #fffaf2;
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.1fr);
@@ -29,7 +29,7 @@
   height: 340px;
   right: -190px;
   bottom: 8%;
-  border: 70px solid rgba(237, 101, 8, 0.11);
+  border: 70px solid rgba(224, 189, 107, 0.12);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -61,7 +61,7 @@
 
 .brandHeader span {
   margin-top: 7px;
-  color: #ff8a3a;
+  color: #e0bd6b;
   font-size: 18px;
   font-weight: 800;
 }
@@ -76,7 +76,7 @@
   align-items: center;
   gap: 12px;
   margin: 0 0 22px;
-  color: #ff9b57;
+  color: #e0bd6b;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -100,7 +100,7 @@
 .brandCopy > p:last-child {
   max-width: 540px;
   margin: 24px 0 0;
-  color: #c2ced7;
+  color: #f2ddd4;
   font-size: 17px;
   line-height: 1.75;
 }
@@ -126,7 +126,7 @@
 .featureList svg {
   width: 27px;
   height: 27px;
-  color: #d4ce65;
+  color: #e0bd6b;
 }
 
 .featureList span {
@@ -139,7 +139,7 @@
 }
 
 .featureList small {
-  color: #93a5b3;
+  color: #d8bfc0;
   font-size: 12px;
   line-height: 1.45;
 }
@@ -160,7 +160,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #526170;
+  color: #765e62;
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
@@ -194,7 +194,7 @@
   border-radius: 10px;
   background: #fff;
   color: var(--login-orange);
-  box-shadow: 0 10px 24px rgba(7, 27, 45, 0.08);
+  box-shadow: 0 10px 24px rgba(100, 27, 35, 0.09);
 }
 
 .shieldIcon svg {
@@ -221,7 +221,7 @@
 .formHeading > span:last-child {
   display: block;
   margin-top: 10px;
-  color: #66737e;
+  color: #7a6b70;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -232,7 +232,7 @@
 
 .form > label {
   margin: 0 0 8px;
-  color: #273c4c;
+  color: #401d20;
   font-size: 13px;
   font-weight: 800;
 }
@@ -256,7 +256,7 @@
 
 .inputWrap:focus-within {
   border-color: var(--login-orange);
-  box-shadow: 0 0 0 4px rgba(237, 101, 8, 0.1);
+  box-shadow: 0 0 0 4px rgba(199, 155, 59, 0.16);
 }
 
 .inputWrap > svg {
@@ -293,14 +293,14 @@
 }
 
 .passwordToggle:hover {
-  background: #f5eee5;
+  background: #f8efe5;
   color: var(--login-orange);
 }
 
 .passwordToggle:focus-visible,
 .backLink:focus-visible,
 .submitButton:focus-visible {
-  outline: 3px solid rgba(237, 101, 8, 0.35);
+  outline: 3px solid rgba(199, 155, 59, 0.38);
   outline-offset: 3px;
 }
 
@@ -331,8 +331,8 @@
   border: 0;
   border-radius: 8px;
   background: var(--login-orange);
-  color: #fff;
-  box-shadow: 0 12px 26px rgba(190, 72, 0, 0.23);
+  color: #401d20;
+  box-shadow: 0 12px 26px rgba(100, 27, 35, 0.18);
   font: inherit;
   font-size: 15px;
   font-weight: 900;
@@ -342,8 +342,8 @@
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: #d95705;
-  box-shadow: 0 15px 30px rgba(190, 72, 0, 0.3);
+  background: #e0bd6b;
+  box-shadow: 0 15px 30px rgba(100, 27, 35, 0.24);
 }
 
 .submitButton:disabled {
@@ -372,7 +372,7 @@
   margin: 22px 0 0;
   padding-top: 20px;
   border-top: 1px solid #ded8cd;
-  color: #66737e;
+  color: #7a6b70;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -419,7 +419,7 @@
 
 @media (max-width: 620px) {
   .brandPanel {
-    padding: 24px 20px 28px;
+    padding: 22px 20px 24px;
   }
 
   .brandHeader strong {
@@ -431,33 +431,25 @@
   }
 
   .brandCopy {
-    margin: 38px 0 28px;
+    margin: 28px 0 0;
   }
 
   .brandCopy h1 {
-    font-size: 2.15rem;
+    max-width: 330px;
+    font-size: 1.8rem;
+    line-height: 1.16;
   }
 
   .brandCopy > p:last-child {
-    font-size: 15px;
+    display: none;
   }
 
   .featureList {
-    grid-template-columns: 1fr;
-  }
-
-  .featureList > div {
-    padding: 18px 0;
-  }
-
-  .featureList > div + div {
-    padding-left: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 0;
+    display: none;
   }
 
   .formPanel {
-    padding: 82px 20px 46px;
+    padding: 70px 20px 42px;
   }
 
   .backLink {
